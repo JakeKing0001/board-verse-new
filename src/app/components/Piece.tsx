@@ -43,11 +43,8 @@ export default function Piece({ type }: PieceProps) {
     };
 
     return (
-        <Image
-            src={`https://www.chess.com/chess-themes/pieces/neo/150/${isWhitePiece}${pieceSymbol}.png`}
-            alt="Piece"  // or "" if decorative
-            width={150} // set appropriate width
-            height={150} // set appropriate height
+        <div
+            style={{ backgroundImage: `url(https://www.chess.com/chess-themes/pieces/neo/150/${isWhitePiece}${pieceSymbol}.png)` }}
             className="w-4/5 h-4/5 object-contain user-select-none z-10 transition-transform duration-300"
             onClick={isWhitePiece === "w" === isWhite ? handleClick : undefined}
             onMouseEnter={isWhitePiece === "w" === isWhite ? handleHover : undefined}
