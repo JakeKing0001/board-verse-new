@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, JSX } from 'react';
 import Piece from './Piece';
 import { movePiece, showPiece, getEnpassant, getWhiteCastling, getBlackCastling, setWhiteCastling, setBlackCastling } from '../pieceLogic';
 import { usePieceContext } from './PieceContext';
@@ -14,11 +14,12 @@ import TimerModal from './TimerModal';
 const letters = ["a", "b", "c", "d", "e", "f", "g", "h"];
 const numbers = [8, 7, 6, 5, 4, 3, 2, 1];
 const squaress: JSX.Element[] = [];
-var fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'; var empty = 0; var enPassant = '';
-var actualMove: string;
-var done = false;
-var subMoves: NodeListOf<HTMLDivElement>, moves: HTMLDivElement[];
-var bestmove: string;
+let fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'; let empty = 0; let enPassant = '';
+let actualMove: string;
+let done = false;
+let subMoves: NodeListOf<HTMLDivElement>, moves: HTMLDivElement[];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+let bestmove: string;
 
 export function getSquares() {
     return [...new Set(squaress)];
@@ -32,9 +33,9 @@ function parseFEN(fen: string): string[][] {
     const rows = fen.split(" ")[0].split("/");
     const board: string[][] = [];
 
-    for (let row of rows) {
+    for (const row of rows) {
         const boardRow: string[] = [];
-        for (let char of row) {
+        for (const char of row) {
             if (!isNaN(Number(char))) {
                 boardRow.push(...Array(Number(char)).fill(""));
             } else {
@@ -54,50 +55,50 @@ export default function ChessBoard({ mode, time }: { mode: string, time: number 
     useEffect(() => {
         const ws = new WebSocket("wss://board-verse.onrender.com");
         wsRef.current = ws;
-    
+
         ws.onopen = () => {
             console.log("✅ Connesso al server!");
             ws.send("Ciao, sono un client!");
         };
-        
+
         ws.onmessage = (event) => {
             console.log("📩 Messaggio dal server:", event.data);
         };
-        
+
         ws.onclose = () => {
             console.log("❌ Disconnesso dal server");
         };
-        
+
         ws.onerror = (event) => {
             console.error("⚠️ Errore WebSocket Client:", event);
         };
 
-      }, []);
-    
-      // Funzione per inviare una mossa
-      const sendMove = (move: string) => {
+    }, []);
+
+    // Funzione per inviare una mossa
+    const sendMove = (move: string) => {
         if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-          wsRef.current.send(move);
+            wsRef.current.send(move);
         }
-      };
+    };
 
     interface StockfishData {
         bestMove: string;
-        [key: string]: any;
+        [key: string]: string;
     }
 
     const squares: JSX.Element[] = [];
 
     const [lastMove, setLastMove] = useState<string | null>(null);
 
-    var isEnPassant = true;
+    const isEnPassant = true;
 
     useEffect(() => {
         getEnpassant(isEnPassant);
-    }, []);
+    }, [isEnPassant]);
 
     const initialFEN = fen;
-    const [board, setBoard] = useState<string[][]>(parseFEN(initialFEN));
+    const [board] = useState<string[][]>(parseFEN(initialFEN));
     const [isWhite, setIsWhite] = useState(initialFEN.split(" ")[1] === "w");
     const [showPromotionDiv, setShowPromotionDiv] = useState(false);
     const [promotionResolved, setPromotionResolved] = useState<((value: string) => void) | null>(null);
@@ -122,7 +123,7 @@ export default function ChessBoard({ mode, time }: { mode: string, time: number 
 
     function createFEN(): string {
 
-        var fen = '';
+        let fen = '';
 
         for (let i = 0; i < 8; i++) {
             for (let j = 0; j < 8; j++) {
@@ -300,8 +301,9 @@ export default function ChessBoard({ mode, time }: { mode: string, time: number 
     }
 
     function isKingInCheckDuringCastling(isWhite: boolean, kingPath: string[]): boolean {
-        for (const square of kingPath) {
-            if (getCheck(isWhite, square)) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        for (const _ of kingPath) {
+            if (getCheck(isWhite)) {
                 return true;
             }
         }
@@ -325,15 +327,18 @@ export default function ChessBoard({ mode, time }: { mode: string, time: number 
 
     //-----------------------------------------------------------
 
-    if (mode === 'ai') {
-        useEffect(() => {
+    useEffect(() => {
+        if (mode === 'ai') {
             fetchStockfishData(fen, 15).then(setData);
-        }, [fen]);
+        }
+    }, [mode]);
 
 
-        useEffect(() => {
+    useEffect(() => {
+        if (mode === 'ai') {
             const str = data?.bestmove ? JSON.stringify(data.bestmove, null, 2) : "";
             const bestmove = str ? str.split(" ")[1] : "No best move available";
+            console.log(bestmove);
             const fromSquare = bestmove.split('')[0] + bestmove.split('')[1];
             const toSquare = bestmove.split('')[2] + bestmove.split('')[3];
             setTimeout(() => {
@@ -345,8 +350,8 @@ export default function ChessBoard({ mode, time }: { mode: string, time: number 
                     }
                 }
             }, 1000);
-        });
-    }
+        }
+    });
     //---------------------------------------------------------------------
 
     function handleSquareClick(square: string) {
@@ -380,10 +385,10 @@ export default function ChessBoard({ mode, time }: { mode: string, time: number 
                     const div = document.getElementById(square.props.id) as HTMLElement;
                     if (div) {
                         if (div.classList.contains('bg-blue-400/75')) {
-                            let coordinates = square.props.id.split('');
+                            const coordinates = square.props.id.split('');
                             enPassant = square.props.id;
-                            let letter = coordinates[0];
-                            let number = coordinates[1];
+                            const letter = coordinates[0];
+                            const number = coordinates[1];
                             document.getElementById(letter + ((parseInt(number) + (isWhite ? -1 : 1)) + ''))?.children[0]?.remove();
                         }
                     }
@@ -425,7 +430,6 @@ export default function ChessBoard({ mode, time }: { mode: string, time: number 
             // Altrimenti, seleziona il pezzo
             enableOtherMoves();
             console.log("Turno del: " + ((isWhite) ? "bianco" : "nero"));
-            console.log(bestmove);
             getCheck(isWhite);
             if (document.getElementById(square)?.hasChildNodes() && document.getElementById(square)?.children[0]?.getAttribute('src')?.includes(`https://www.chess.com/chess-themes/pieces/neo/150/${isWhite ? 'w' : 'b'}`)) {
                 setSelectedPiece(square);

@@ -11,7 +11,7 @@ const CustomTimeForm = ({ onClose, onSubmit, setTime }: { onClose: () => void, o
     const [minutes, setMinutes] = useState('');
     const [seconds, setSeconds] = useState('');
 
-    const handleSubmit = (e: any) => {
+    const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
         // Convert all inputs to seconds
@@ -29,7 +29,7 @@ const CustomTimeForm = ({ onClose, onSubmit, setTime }: { onClose: () => void, o
         }
     };
 
-    const validateNumber = (value: any, max: any) => {
+    const validateNumber = (value: string , max: number) => {
         let num = value.replace(/\D/g, '');
         num = num === '' ? '' : Math.min(parseInt(num), max).toString();
         return num;

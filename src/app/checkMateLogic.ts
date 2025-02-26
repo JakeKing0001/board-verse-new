@@ -1,7 +1,7 @@
 import { getSquares, getLetters} from "./components/ChessBoard";
 
 
-export function getCheck(isWhite: boolean, square?: string): boolean {
+export function getCheck(isWhite: boolean): boolean {
     const king = isWhite ? 'wk' : 'bk';
     const letters = getLetters();
     const squaress = getSquares();

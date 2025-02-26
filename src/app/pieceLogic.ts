@@ -1,9 +1,9 @@
 import { getCheck } from './checkMateLogic';
 
-var enPassant: boolean | null = null;
-var castlingWhite = true; var castlingBlack = true;
-var littleCastlingWhite = true; var littleCastlingBlack = true;
-var bigCastlingWhite = true; var bigCastlingBlack = true;
+let enPassant: boolean | null = null;
+let castlingWhite = true; let castlingBlack = true;
+let littleCastlingWhite = true; let littleCastlingBlack = true;
+let bigCastlingWhite = true; let bigCastlingBlack = true;
 
 export function getEnpassant(passant: boolean | null) : void{
     enPassant = passant;
@@ -38,56 +38,90 @@ export function movePiece(fromSquare: string, toSquare: string): void {
 
 }
 
-function checkCastling(isWhite : boolean) : number { //0 = false, 1 = littleCastling, 2 = bigCastling, 3 = tutte e due
-
+function checkCastling(isWhite: boolean): number { // 0 = false, 1 = littleCastling, 2 = bigCastling, 3 = entrambe
+    console.log(isWhite);
     let ret = 0;
 
-    if(document.getElementById(`${isWhite ? 'e1':'e8'}`)?.children[0]?.getAttribute('src') !== undefined || document.getElementById(`${isWhite ? 'h1':'h8'}`)?.children[0]?.getAttribute('src') !== undefined) {
-        if(!document.getElementById(`${isWhite ? 'e1':'e8'}`)?.children[0].getAttribute('src')?.includes(`${isWhite ? 'wk':'bk'}`) ||
-            !document.getElementById(`${isWhite ? 'h1':'h8'}`)?.children[0].getAttribute('src')?.includes(`${isWhite ? 'wr':'br'}`)) {
-            (isWhite)? castlingWhite = false: castlingBlack = false; 
-            (isWhite)? littleCastlingWhite = false: littleCastlingBlack = false;
+    if (
+        document.getElementById(`${isWhite ? 'e1' : 'e8'}`)?.children[0]?.getAttribute('src') !== undefined ||
+        document.getElementById(`${isWhite ? 'h1' : 'h8'}`)?.children[0]?.getAttribute('src') !== undefined
+    ) {
+        if (
+            !document.getElementById(`${isWhite ? 'e1' : 'e8'}`)?.children[0]?.getAttribute('src')?.includes(`${isWhite ? 'wk' : 'bk'}`) ||
+            !document.getElementById(`${isWhite ? 'h1' : 'h8'}`)?.children[0]?.getAttribute('src')?.includes(`${isWhite ? 'wr' : 'br'}`)
+        ) {
+            if (isWhite) {
+                castlingWhite = false;
+                littleCastlingWhite = false;
+            } else {
+                castlingBlack = false;
+                littleCastlingBlack = false;
+            }
         }
     } else {
-        (isWhite)? castlingWhite = false: castlingBlack = false;
-        (isWhite)? littleCastlingWhite = false: littleCastlingBlack = false;
+        if (isWhite) {
+            castlingWhite = false;
+            littleCastlingWhite = false;
+        } else {
+            castlingBlack = false;
+            littleCastlingBlack = false;
+        }
     }
 
-    if(document.getElementById(`${isWhite ? 'e1':'e8'}`)?.children[0]?.getAttribute('src') !== undefined || document.getElementById(`${isWhite ? 'a1':'a8'}`)?.children[0]?.getAttribute('src') !== undefined) {
-        if(!document.getElementById(`${isWhite ? 'e1':'e8'}`)?.children[0].getAttribute('src')?.includes(`${isWhite ? 'wk':'bk'}`) ||
-            !document.getElementById(`${isWhite ? 'a1':'a8'}`)?.children[0].getAttribute('src')?.includes(`${isWhite ? 'wr':'br'}`)) {
-            (isWhite)? castlingWhite = false: castlingBlack = false; 
-            (isWhite)? bigCastlingWhite = false: bigCastlingBlack = false;
+    if (
+        document.getElementById(`${isWhite ? 'e1' : 'e8'}`)?.children[0]?.getAttribute('src') !== undefined ||
+        document.getElementById(`${isWhite ? 'a1' : 'a8'}`)?.children[0]?.getAttribute('src') !== undefined
+    ) {
+        if (
+            !document.getElementById(`${isWhite ? 'e1' : 'e8'}`)?.children[0]?.getAttribute('src')?.includes(`${isWhite ? 'wk' : 'bk'}`) ||
+            !document.getElementById(`${isWhite ? 'a1' : 'a8'}`)?.children[0]?.getAttribute('src')?.includes(`${isWhite ? 'wr' : 'br'}`)
+        ) {
+            if (isWhite) {
+                castlingWhite = false;
+                bigCastlingWhite = false;
+            } else {
+                castlingBlack = false;
+                bigCastlingBlack = false;
+            }
         }
     } else {
-        (isWhite)? castlingWhite = false: castlingBlack = false;
-        (isWhite)? bigCastlingWhite = false: bigCastlingBlack = false;
+        if (isWhite) {
+            castlingWhite = false;
+            bigCastlingWhite = false;
+        } else {
+            castlingBlack = false;
+            bigCastlingBlack = false;
+        }
     }
 
-    if(isWhite ? littleCastlingWhite : littleCastlingBlack) {
-        if(!document.getElementById(`${isWhite ? 'f1':'f8'}`)?.hasChildNodes() && !document.getElementById(`${isWhite ? 'g1':'g8'}`)?.hasChildNodes()) {
+    if (isWhite ? littleCastlingWhite : littleCastlingBlack) {
+        if (
+            !document.getElementById(`${isWhite ? 'f1' : 'f8'}`)?.hasChildNodes() &&
+            !document.getElementById(`${isWhite ? 'g1' : 'g8'}`)?.hasChildNodes()
+        ) {
             ret = 1;
         }
     }
 
-    if(isWhite ? bigCastlingWhite : bigCastlingBlack) {
-        if(!document.getElementById(`${isWhite ? 'd1':'d8'}`)?.hasChildNodes() && !document.getElementById(`${isWhite ? 'c1':'c8'}`)?.hasChildNodes() && !document.getElementById(`${isWhite ? 'b1':'b8'}`)?.hasChildNodes()) {
-            if(ret === 1) {
-                ret = 3;
-            } else {
-                ret = 2;
-            }
+    if (isWhite ? bigCastlingWhite : bigCastlingBlack) {
+        if (
+            !document.getElementById(`${isWhite ? 'd1' : 'd8'}`)?.hasChildNodes() &&
+            !document.getElementById(`${isWhite ? 'c1' : 'c8'}`)?.hasChildNodes() &&
+            !document.getElementById(`${isWhite ? 'b1' : 'b8'}`)?.hasChildNodes()
+        ) {
+            ret = ret === 1 ? 3 : 2;
         }
     }
 
     return ret;
 }
 
+
 function showPossibleMove(letter: string, number: string, letterNumber: number, numberNumber: number): void | boolean {
 
-    var isWhite = document.getElementById(letter + number)?.children[0]?.getAttribute('src')?.includes('https://www.chess.com/chess-themes/pieces/neo/150/w') ? true : false;
+    const isWhite = document.getElementById(letter + number)?.children[0]?.getAttribute('src')?.includes('https://www.chess.com/chess-themes/pieces/neo/150/w') ? true : false;
     const target = document.getElementById(String.fromCharCode(letter.charCodeAt(0) + letterNumber) + (parseInt(number) + numberNumber) + '');
-    var targetPiece = document.getElementById(String.fromCharCode(letter.charCodeAt(0) + letterNumber) + (parseInt(number) + numberNumber) + '')?.children[0];
+    let targetPiece = document.getElementById(String.fromCharCode(letter.charCodeAt(0) + letterNumber) + (parseInt(number) + numberNumber) + '')?.children[0];
     const stringInclusion = 'https://www.chess.com/chess-themes/pieces/neo/150/';
     const fromSquare = letter + number;
     const toSquare = String.fromCharCode(letter.charCodeAt(0) + letterNumber) + (parseInt(number) + numberNumber);
@@ -125,7 +159,7 @@ function showPossibleMove(letter: string, number: string, letterNumber: number, 
 
 function showPossibleCapturePawn(letter: string, number: string, letterNumber: number, numberNumber: number): void | boolean {
 
-    var isWhite = document.getElementById(letter + number)?.children[0]?.getAttribute('src')?.includes('https://www.chess.com/chess-themes/pieces/neo/150/w') ? true : false;
+    const isWhite = document.getElementById(letter + number)?.children[0]?.getAttribute('src')?.includes('https://www.chess.com/chess-themes/pieces/neo/150/w') ? true : false;
 
     if (document.getElementById(String.fromCharCode(letter.charCodeAt(0) + letterNumber) + (parseInt(number) + numberNumber) + '')?.children[0]?.getAttribute('src')?.includes(`https://www.chess.com/chess-themes/pieces/neo/150/${isWhite ? 'b' : 'w'}`)) {
         return document.getElementById(String.fromCharCode(letter.charCodeAt(0) + letterNumber) + (parseInt(number) + numberNumber) + '')?.classList.add('bg-red-400/75', 'rounded-full'), false;
@@ -137,7 +171,7 @@ function showPossibleCapturePawn(letter: string, number: string, letterNumber: n
 function showEnPassant(letter: string, number: string, lastMove: string | null): void | boolean {
 
     
-    var isWhite = document.getElementById(letter + number)?.children[0]?.getAttribute('src')?.includes('https://www.chess.com/chess-themes/pieces/neo/150/w') ? true : false;
+    const isWhite = document.getElementById(letter + number)?.children[0]?.getAttribute('src')?.includes('https://www.chess.com/chess-themes/pieces/neo/150/w') ? true : false;
 
     if(checkPossibleEnPassant(isWhite, lastMove)){
         if((lastMove?.charAt(0) === String.fromCharCode(letter.charCodeAt(0) + 1) && lastMove?.charAt(3) === number) || (lastMove?.charAt(0) === String.fromCharCode(letter.charCodeAt(0) - 1) && lastMove?.charAt(3) === number)){
@@ -201,9 +235,9 @@ export function showPiece(square: string, isWhite: boolean, lastMove: string | n
 
     const div = document.getElementById(square) as HTMLDivElement;
 
-    let coordinates = square.split('');
-    let letter = coordinates[0];
-    let number = coordinates[1];
+    const coordinates = square.split('');
+    const letter = coordinates[0];
+    const number = coordinates[1];
 
     if (div.children[0]?.getAttribute('src')?.includes(`https://www.chess.com/chess-themes/pieces/neo/150/${isWhite ? 'wp' : 'bp'}`)) {
 
@@ -213,31 +247,31 @@ export function showPiece(square: string, isWhite: boolean, lastMove: string | n
 
     if (div.children[0]?.getAttribute('src')?.includes(`https://www.chess.com/chess-themes/pieces/neo/150/${isWhite ? 'wr' : 'br'}`)) {
 
-        rookMove(letter, number, isWhite);
+        rookMove(letter, number);
 
     }
 
     if (div.children[0]?.getAttribute('src')?.includes(`https://www.chess.com/chess-themes/pieces/neo/150/${isWhite ? 'wn' : 'bn'}`)) {
 
-        knightMove(letter, number, isWhite);
+        knightMove(letter, number);
 
     }
 
     if (div.children[0]?.getAttribute('src')?.includes(`https://www.chess.com/chess-themes/pieces/neo/150/${isWhite ? 'wb' : 'bb'}`)) {
 
-        bishopMove(letter, number, isWhite);
+        bishopMove(letter, number);
 
     }
 
     if (div.children[0]?.getAttribute('src')?.includes(`https://www.chess.com/chess-themes/pieces/neo/150/${isWhite ? 'wq' : 'bq'}`)) {
 
-        queenMove(letter, number, isWhite);
+        queenMove(letter, number);
 
     }
 
     if (div.children[0]?.getAttribute('src')?.includes(`https://www.chess.com/chess-themes/pieces/neo/150/${isWhite ? 'wk' : 'bk'}`)) {
 
-        kingMove(letter, number, isWhite, lastMove);
+        kingMove(letter, number, isWhite);
 
     }
 
@@ -289,7 +323,7 @@ function pawnMove(letter: string, number: string, direction: number, lastMove: s
     }
 }
 
-function rookMove(letter: string, number: string, isWhite: boolean): void {
+function rookMove(letter: string, number: string): void {
 
     for (let i = 1; i < 8; i++) {
         if (!showPossibleMove(letter, number, i, 0)) {
@@ -317,7 +351,7 @@ function rookMove(letter: string, number: string, isWhite: boolean): void {
 }
 
 
-function knightMove(letter: string, number: string, isWhite: boolean): void {
+function knightMove(letter: string, number: string): void {
     const moves = [
         [1, 2],
         [-1, 2],
@@ -334,7 +368,7 @@ function knightMove(letter: string, number: string, isWhite: boolean): void {
     }
 }
 
-function bishopMove(letter: string, number: string, isWhite: boolean): void {
+function bishopMove(letter: string, number: string): void {
 
     for (let i = 1; i < 8; i++) {
         if (!showPossibleMove(letter, number, i, i)) {
@@ -362,14 +396,14 @@ function bishopMove(letter: string, number: string, isWhite: boolean): void {
 
 }
 
-function queenMove(letter: string, number: string, isWhite: boolean): void {
+function queenMove(letter: string, number: string): void {
 
-    rookMove(letter, number, isWhite);
-    bishopMove(letter, number, isWhite);
+    rookMove(letter, number);
+    bishopMove(letter, number);
 
 }
 
-function kingMove(letter: string, number: string, isWhite: boolean, lastMove: string | null): void {
+function kingMove(letter: string, number: string, isWhite: boolean): void {
     const moves = [
         [0, 1],
         [0, -1],

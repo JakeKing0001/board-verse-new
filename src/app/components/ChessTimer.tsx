@@ -16,7 +16,7 @@ const ChessTimer: React.FC<ChessTimerProps> = ({ isWhite, initialTime }) => {
   const [whiteTime, setWhiteTime] = useState<number>(initialTime);
   const [blackTime, setBlackTime] = useState<number>(initialTime);
 
-  const { isGameOver, setIsGameOver } = usePieceContext();
+  const {setIsGameOver } = usePieceContext();
 
   useEffect(() => {
 
@@ -42,7 +42,7 @@ const ChessTimer: React.FC<ChessTimerProps> = ({ isWhite, initialTime }) => {
     }
 
     return () => clearInterval(interval);
-  }, [isWhite, whiteTime, blackTime]);
+  }, [isWhite, whiteTime, blackTime, setIsGameOver]);
 
   const TimeUnit: React.FC<TimeUnitProps> = ({ value, label }) => (
     <div className="relative group">

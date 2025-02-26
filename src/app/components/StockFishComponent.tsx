@@ -4,7 +4,7 @@ import { fetchStockfishData } from "../stockFishUtils";
 const StockfishComponent = ({ s, n }: { s: string; n: number }) => {
   interface StockfishData {
     bestmove: string;
-    [key: string]: any;
+    [key: string]: string;
   }
 
   const [data, setData] = useState<StockfishData | null>(null);

@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { usePieceContext } from './PieceContext';
 import RenderModel from './RenderModel';
 import { Trophy } from './models/Trophy';
 import { X } from 'lucide-react';

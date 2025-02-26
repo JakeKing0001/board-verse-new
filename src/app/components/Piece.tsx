@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import { usePieceContext } from './PieceContext';
 
 interface PieceProps {
@@ -42,10 +43,12 @@ export default function Piece({ type }: PieceProps) {
     };
 
     return (
-        <img
+        <Image
             src={`https://www.chess.com/chess-themes/pieces/neo/150/${isWhitePiece}${pieceSymbol}.png`}
-            className={`w-4/5 h-4/5 object-contain user-select-none z-10 transition-transform duration-300 
-            ${isActive ? 'transition-all' : 'transition-all'}`}
+            alt="Piece"  // or "" if decorative
+            width={150} // set appropriate width
+            height={150} // set appropriate height
+            className="w-4/5 h-4/5 object-contain user-select-none z-10 transition-transform duration-300"
             onClick={isWhitePiece === "w" === isWhite ? handleClick : undefined}
             onMouseEnter={isWhitePiece === "w" === isWhite ? handleHover : undefined}
         />

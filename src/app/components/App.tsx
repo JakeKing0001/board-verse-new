@@ -2,8 +2,8 @@
 
 import React from 'react';
 import ChessBoard from './ChessBoard';
-import RenderModel from './RenderModel';
-import { Pawn } from './models/Pawn';
+// import RenderModel from './RenderModel';
+// import { Pawn } from './models/Pawn';
 import SideBar from './SideBar';
 
 export default function App({ mode, time }: { mode: string, time: number }) {
