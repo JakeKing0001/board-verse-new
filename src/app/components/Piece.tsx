@@ -41,8 +41,8 @@ export default function Piece({ type }: PieceProps) {
         setActivePiece(isActive ? null : pieceId);
     };
 
+    /* eslint-disable @typescript-eslint/no-unused-vars */
     return (
-        /* eslint-disable @typescript-eslint/no-unused-vars */
         <img
             src={`url(https://www.chess.com/chess-themes/pieces/neo/150/${isWhitePiece}${pieceSymbol}.png)`}
             alt='piece'
@@ -51,6 +51,6 @@ export default function Piece({ type }: PieceProps) {
             onClick={isWhitePiece === "w" === isWhite ? handleClick : undefined}
             onMouseEnter={isWhitePiece === "w" === isWhite ? handleHover : undefined}
         />
-        /* eslint-enable @typescript-eslint/no-unused-vars */
     );
+    /* eslint-enable @typescript-eslint/no-unused-vars */
 }
