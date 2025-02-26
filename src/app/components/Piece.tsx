@@ -28,7 +28,7 @@ export default function Piece({ type }: PieceProps) {
     const isWhitePiece = type === type.toUpperCase() ? "w" : "b";
     const pieceSymbol = pieceMap[type];
 
-    if (!pieceSymbol) return null; // Se il simbolo non esiste, evita errori
+    if (!pieceSymbol) return null; // Se il simbolo non esiste, evita di renderizzare il pezzo
 
     const pieceId = `piece-${type}`;
     const isActive = activePiece === pieceId;
