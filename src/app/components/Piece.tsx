@@ -42,11 +42,15 @@ export default function Piece({ type }: PieceProps) {
     };
 
     return (
-        <div
-            style={{ backgroundImage: `url(https://www.chess.com/chess-themes/pieces/neo/150/${isWhitePiece}${pieceSymbol}.png)` }}
-            className="w-4/5 h-4/5 object-contain user-select-none z-10 transition-transform duration-300"
+        /* eslint-disable @typescript-eslint/no-unused-vars */
+        <img
+            src={`url(https://www.chess.com/chess-themes/pieces/neo/150/${isWhitePiece}${pieceSymbol}.png)`}
+            alt='piece'
+            className={`w-4/5 h-4/5 object-contain user-select-none z-10 transition-transform duration-300 
+            ${isActive ? 'transition-all' : 'transition-all'}`}
             onClick={isWhitePiece === "w" === isWhite ? handleClick : undefined}
             onMouseEnter={isWhitePiece === "w" === isWhite ? handleHover : undefined}
         />
+        /* eslint-enable @typescript-eslint/no-unused-vars */
     );
 }
