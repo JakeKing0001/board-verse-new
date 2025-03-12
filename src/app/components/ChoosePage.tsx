@@ -12,7 +12,7 @@ export default function TablePage() {
     const { mode, setMode } = usePieceContext();
 
     useEffect(() => {
-        console.log('Mode aggiornato: ', mode);
+        // console.log('Mode aggiornato: ', mode);
     }, [mode]);
 
     return (
@@ -50,8 +50,8 @@ export default function TablePage() {
                             </button>
                         </Link>
                         <Link href="/chooseTime" className="w-full">
-                            <button className="w-full bg-amber-200 hover:bg-amber-300 text-green-900 font-semibold py-4 px-6 rounded-lg transition-colors duration-200 shadow-lg hover:shadow-xl" onClick={() => setMode('local')}>
-                                Local
+                            <button className="w-full bg-amber-200 hover:bg-amber-300 text-green-900 font-semibold py-4 px-6 rounded-lg transition-colors duration-200 shadow-lg hover:shadow-xl" onClick={() => setMode('challenge')}>
+                                Challenge
                             </button>
                         </Link>
                     </div>

@@ -22,7 +22,7 @@ const CustomTimeForm = ({ onClose, onSubmit, setTime }: { onClose: () => void, o
             (parseInt(seconds) || 0);
 
         if (totalSeconds > 0) {
-            console.log(totalSeconds);
+            // console.log(totalSeconds);
             setTime(totalSeconds);
             onSubmit(totalSeconds);
             onClose();
@@ -124,11 +124,11 @@ export default function ChooseTime() {
     const router = useRouter();
 
     useEffect(() => {
-        console.log('Time aggiornato: ', time);
+        // console.log('Time aggiornato: ', time);
     }, [time]);
 
     const context = usePieceContext();
-    console.log(context);
+    // console.log(context);
 
     const categories = [
         { id: 'quick', label: 'Quick' },
@@ -175,7 +175,7 @@ export default function ChooseTime() {
         }
         setActiveTime(value);
         setTime(totalSeconds);
-        console.log(`Custom time set: ${totalSeconds} seconds`);
+        // console.log(`Custom time set: ${totalSeconds} seconds`);
 
         router.push(`/chessboard?mode=${mode}&time=${totalSeconds}`);
     };
@@ -210,7 +210,7 @@ export default function ChooseTime() {
                                                     const seconds = convertToSeconds(option.value);
                                                     setTime(seconds);
                                                     setActiveTime(option.value);
-                                                    console.log(`Button time set: ${seconds} seconds`);
+                                                    // console.log(`Button time set: ${seconds} seconds`);
                                                 }}
                                                 className={`p-4 rounded-xl font-medium transition-all duration-200 ${
                                                     activeTime === option.value

@@ -33,6 +33,8 @@ export default function NavBar({ current = 0 }: { current?: number }) {
               <Image
                 alt="My App"
                 src="./logo.svg"
+                width={100}
+                height={100}
                 className="h-14 w-auto brightness-125"
               />
             </div>
@@ -76,6 +78,8 @@ export default function NavBar({ current = 0 }: { current?: number }) {
                   <Image
                     alt=""
                     src="/profile-circle.svg"
+                    width={40}
+                    height={40}
                     className="size-8 rounded-lg"
                   />
                 </MenuButton>

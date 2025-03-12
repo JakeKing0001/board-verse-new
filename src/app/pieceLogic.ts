@@ -39,7 +39,7 @@ export function movePiece(fromSquare: string, toSquare: string): void {
 }
 
 function checkCastling(isWhite: boolean): number { // 0 = false, 1 = littleCastling, 2 = bigCastling, 3 = entrambe
-    console.log(isWhite);
+    // console.log(isWhite);
     let ret = 0;
 
     if (
@@ -131,7 +131,8 @@ function showPossibleMove(letter: string, number: string, letterNumber: number, 
         !document.getElementById(letter + number)?.children[0]?.getAttribute('src')?.includes(`${stringInclusion}${isWhite ? 'wp' : 'bp'}`)) {
             targetPiece = target.children[0];
             movePiece(fromSquare, toSquare);
-            if(!getCheck(isWhite)){
+            console.log(getCheck(isWhite));
+            if(getCheck(isWhite) === false) {
                 movePiece(toSquare, fromSquare);
                 target.appendChild(targetPiece);
                 return target?.classList.add('bg-red-400/75', 'rounded-full'), false;
@@ -146,7 +147,8 @@ function showPossibleMove(letter: string, number: string, letterNumber: number, 
     } else {
         if(target !== null) {
             movePiece(letter + number, String.fromCharCode(letter.charCodeAt(0) + letterNumber) + (parseInt(number) + numberNumber));
-            if(!getCheck(isWhite)){
+            console.log(getCheck(isWhite));
+            if(getCheck(isWhite) === false) {
                 movePiece(toSquare, fromSquare);
                 return target?.classList.add('bg-gray-400/75', 'scale-[0.50]', 'rounded-full'), true;
             } else {

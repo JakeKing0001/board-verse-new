@@ -3,7 +3,7 @@
 import { Environment, PerspectiveCamera } from '@react-three/drei';
 import { Canvas } from '@react-three/fiber';
 import clsx from 'clsx';
-import React, { Suspense } from 'react';
+import React, { Suspense, useEffect, useRef } from 'react';
 
 interface RenderModelProps {
   children: React.ReactNode;
@@ -16,6 +16,7 @@ export default function RenderModel({
   className,
   gradientClassName = "" 
 }: RenderModelProps) {
+
   return (
     <div className={clsx("w-full h-full", gradientClassName)}>
       <Canvas

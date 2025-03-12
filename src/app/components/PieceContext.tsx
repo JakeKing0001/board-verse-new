@@ -35,7 +35,7 @@ export const PieceProvider = ({ children }: { children: ReactNode }) => {
     const activeClass = 'scale-[1.15] bg-[#ffff33] opacity-50 rounded-full';
 
     useEffect(() => {
-        console.log('Time aggiornato: ', time);
+        // console.log('Time aggiornato: ', time);
     }, [time]);
 
 

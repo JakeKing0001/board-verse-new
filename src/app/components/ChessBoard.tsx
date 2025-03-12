@@ -53,25 +53,28 @@ export default function ChessBoard({ mode, time }: { mode: string, time: number 
     const wsRef = React.useRef<WebSocket | null>(null);
 
     useEffect(() => {
-        const ws = new WebSocket("wss://board-verse.onrender.com");
-        wsRef.current = ws;
 
-        ws.onopen = () => {
-            console.log("✅ Connesso al server!");
-            ws.send("Ciao, sono un client!");
-        };
+        if(mode === 'online') {
+            const ws = new WebSocket("wss://board-verse.onrender.com");
+            wsRef.current = ws;
 
-        ws.onmessage = (event) => {
-            console.log("📩 Messaggio dal server:", event.data);
-        };
+            ws.onopen = () => {
+                console.log("✅ Connesso al server!");
+                ws.send("Ciao, sono un client!");
+            };
 
-        ws.onclose = () => {
-            console.log("❌ Disconnesso dal server");
-        };
+            ws.onmessage = (event) => {
+                console.log("📩 Messaggio dal server:", event.data);
+            };
 
-        ws.onerror = (event) => {
-            console.error("⚠️ Errore WebSocket Client:", event);
-        };
+            ws.onclose = () => {
+                console.log("❌ Disconnesso dal server");
+            };
+
+            ws.onerror = (event) => {
+                console.error("⚠️ Errore WebSocket Client:", event);
+            };
+        }
 
     }, []);
 
@@ -329,35 +332,35 @@ export default function ChessBoard({ mode, time }: { mode: string, time: number 
 
     useEffect(() => {
         if (mode === 'ai') {
-            fetchStockfishData(fen, 15).then(setData);
+            fetchStockfishData(fen, 13).then(setData);
         }
-    }, [mode]);
+    }, [mode, fen]);
 
 
     useEffect(() => {
         if (mode === 'ai') {
             const str = data?.bestmove ? JSON.stringify(data.bestmove, null, 2) : "";
             const bestmove = str ? str.split(" ")[1] : "No best move available";
-            console.log(bestmove);
+            // console.log(bestmove);
             const fromSquare = bestmove.split('')[0] + bestmove.split('')[1];
             const toSquare = bestmove.split('')[2] + bestmove.split('')[3];
             setTimeout(() => {
-                console.log(fromSquare, toSquare);
+                // console.log(fromSquare, toSquare);
                 if (document.getElementById(fromSquare)?.hasChildNodes()) {
                     if (document.getElementById(fromSquare)?.children[0].getAttribute('src')?.includes('https://www.chess.com/chess-themes/pieces/neo/150/b')) {
                         movePiece(fromSquare, toSquare);
                         setIsWhite(true);
                     }
                 }
-            }, 1000);
+            }, 0);
         }
-    });
+    }, [data, mode]);
     //---------------------------------------------------------------------
 
     function handleSquareClick(square: string) {
 
-        console.log(document.getElementById(square)?.classList.contains('bg-purple-400/75'));
-        console.log(getWhiteCastling(), getBlackCastling());
+        // console.log(document.getElementById(square)?.classList.contains('bg-purple-400/75'));
+        // console.log(getWhiteCastling(), getBlackCastling());
 
         if (document.getElementById(square)?.classList.contains('bg-purple-400/75')) {
             if (isWhite) {
@@ -397,8 +400,9 @@ export default function ChessBoard({ mode, time }: { mode: string, time: number 
                 enableOtherMoves();
                 fen = createFEN();
                 actualMove = selectedPiece + square;
-                console.log(actualMove);
-                console.log(fen);
+                // console.log(actualMove);
+                // console.log(fen);
+                sendMove(actualMove);
                 setIsWhite(!isWhite);
                 console.log("Turno del: " + ((!isWhite) ? "bianco" : "nero"));
                 if (getCheck(!isWhite)) {
@@ -408,7 +412,7 @@ export default function ChessBoard({ mode, time }: { mode: string, time: number 
                             if (div.children[0]?.getAttribute('src')?.includes(`https://www.chess.com/chess-themes/pieces/neo/150/${!isWhite ? 'w' : 'b'}`)) {
                                 moves = Array.from(showPiece(square.props.id, !isWhite, lastMove));
                                 const subMovesArray = Array.from(subMoves);
-
+                                console.log(subMovesArray);
                                 subMovesArray.forEach((subMove) => {
                                     moves.forEach((move, index) => {
                                         if (move.id === subMove.id) {
@@ -437,7 +441,7 @@ export default function ChessBoard({ mode, time }: { mode: string, time: number 
             const subChoosedMoves = showPiece(square, isWhite, lastMove);
             subMoves = subChoosedMoves;
             // console.log(lastMove);
-            console.log(subChoosedMoves);
+            // console.log(subChoosedMoves);
             disableOtherMoves(subChoosedMoves);
             //console.log(`No piece selected`);
             squares.forEach((square) => {
@@ -503,7 +507,6 @@ export default function ChessBoard({ mode, time }: { mode: string, time: number 
             {showTimerDiv && (
                 <TimerModal onTimerComplete={handleTimerComplete} isWhite={isWhite} />
             )}
-            <button onClick={() => sendMove("a2a4")}>Invia mossa: a2a4</button>
             <ChessTimer isWhite={isWhite} initialTime={time} />
             <div className="w-full max-w-[95vh] lg:max-w-[85vh] xl:max-w-[86vh] mx-auto -mt-14">
                 {/* Scacchiera */}
