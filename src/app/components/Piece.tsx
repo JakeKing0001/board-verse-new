@@ -5,6 +5,7 @@ import { usePieceContext } from './PieceContext';
 
 interface PieceProps {
     type: string;
+    id : string;
 }
 
 const pieceMap: Record<string, string> = {
@@ -16,8 +17,8 @@ const pieceMap: Record<string, string> = {
     k: "k", K: "k"
 };
 
-export default function Piece({ type }: PieceProps) {
-    const { activePiece, setActivePiece, isWhite, hoverPiece, setHoverPiece } = usePieceContext();
+export default function Piece({ type, id }: PieceProps) {
+    const { activePiece, setActivePiece, isWhite, hoverPiece, setHoverPiece, setSelectedPiece } = usePieceContext();
 
     // Se non c'è pezzo, ritorna uno spazio vuoto
     if (!type) {
@@ -41,6 +42,12 @@ export default function Piece({ type }: PieceProps) {
         setActivePiece(isActive ? null : pieceId);
     };
 
+    function handleDragStart(event: React.DragEvent, pieceId: string) {
+        event.dataTransfer.setData("text/plain", pieceId);
+        setSelectedPiece(pieceId);
+    }
+
+
     /* eslint-disable @typescript-eslint/no-unused-vars */
     return (
         <img
@@ -50,6 +57,9 @@ export default function Piece({ type }: PieceProps) {
             ${isActive ? 'transition-all' : 'transition-all'}`}
             onClick={isWhitePiece === "w" === isWhite ? handleClick : undefined}
             onMouseEnter={isWhitePiece === "w" === isWhite ? handleHover : undefined}
+            draggable={true}
+            onDragStart={(e) => handleDragStart(e, id)}
+            style={{ cursor: "grab" }}
         />
     );
     /* eslint-enable @typescript-eslint/no-unused-vars */

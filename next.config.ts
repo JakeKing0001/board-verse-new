@@ -4,7 +4,10 @@ const nextConfig = {
   webpack: (config: any) => {
     config.resolve.alias.canvas = false;
     return config;
-  }
+  },
+  images: {
+    domains: ['www.chess.com'],
+  },
 };
 
 module.exports = nextConfig;

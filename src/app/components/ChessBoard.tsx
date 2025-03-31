@@ -51,10 +51,11 @@ function parseFEN(fen: string): string[][] {
 export default function ChessBoard({ mode, time }: { mode: string, time: number }) {
 
     const wsRef = React.useRef<WebSocket | null>(null);
+    const [isInCheck, setIsInCheck] = useState(false);
 
     useEffect(() => {
 
-        if(mode === 'online') {
+        if (mode === 'online') {
             const ws = new WebSocket("wss://board-verse.onrender.com");
             wsRef.current = ws;
 
@@ -118,6 +119,169 @@ export default function ChessBoard({ mode, time }: { mode: string, time: number 
             setTimerDiv(true);
         }
     }, [isGameOver]);
+
+    // Add effect for check border animation and scared king
+    useEffect(() => {
+        // Create and append the check border element if it doesn't exist
+        if (!document.getElementById('check-border-effect')) {
+            const borderElement = document.createElement('div');
+            borderElement.id = 'check-border-effect';
+            borderElement.style.position = 'fixed';
+            borderElement.style.top = '0';
+            borderElement.style.left = '0';
+            borderElement.style.right = '0';
+            borderElement.style.bottom = '0';
+            borderElement.style.pointerEvents = 'none';
+            borderElement.style.zIndex = '9999';
+            borderElement.style.transition = 'all 0.3s ease';
+            document.body.appendChild(borderElement);
+
+            // Add enhanced animations with CSS
+            const style = document.createElement('style');
+            style.id = 'check-border-style';
+            style.textContent = `
+            @keyframes check-effect {
+                0% { 
+                    box-shadow: inset 0 0 20px 5px rgba(255, 0, 0, 0.7),
+                                0 0 20px 10px rgba(255, 0, 0, 0.5);
+                    background: radial-gradient(circle, rgba(255,0,0,0.1) 0%, rgba(255,0,0,0) 70%);
+                }
+                50% { 
+                    box-shadow: inset 0 0 35px 10px rgba(255, 0, 0, 0.5),
+                                0 0 30px 15px rgba(255, 0, 0, 0.3);
+                    background: radial-gradient(circle, rgba(255,0,0,0.15) 0%, rgba(255,0,0,0) 60%);
+                }
+                100% { 
+                    box-shadow: inset 0 0 20px 5px rgba(255, 0, 0, 0.7),
+                                0 0 20px 10px rgba(255, 0, 0, 0.5);
+                    background: radial-gradient(circle, rgba(255,0,0,0.1) 0%, rgba(255,0,0,0) 70%);
+                }
+            }
+            
+            @keyframes heartbeat {
+                0% { transform: scale(1); }
+                14% { transform: scale(1.05); }
+                28% { transform: scale(1); }
+                42% { transform: scale(1.08); }
+                70% { transform: scale(1); }
+                100% { transform: scale(1); }
+            }
+            
+            @keyframes scared-king {
+                0%, 100% { transform: translate(0, 0) rotate(0); }
+                10% { transform: translate(-1px, -1px) rotate(-1deg); }
+                20% { transform: translate(1px, -1px) rotate(1deg); }
+                30% { transform: translate(-1px, 1px) rotate(-1deg); }
+                40% { transform: translate(1px, 1px) rotate(1deg); }
+                50% { transform: translate(-1px, -1px) rotate(-1deg); }
+                60% { transform: translate(1px, -1px) rotate(1deg); }
+                70% { transform: translate(-1px, 1px) rotate(-1deg); }
+                80% { transform: translate(1px, 1px) rotate(1deg); }
+                90% { transform: translate(-1px, 0) rotate(-1deg); }
+            }
+            
+            .check-active {
+                animation: check-effect 2s infinite, heartbeat 1.5s infinite;
+                backdrop-filter: contrast(1.05) saturate(1.1);
+            }
+            
+            .scared-king {
+                animation: scared-king 0.5s infinite;
+                filter: drop-shadow(0 0 3px red);
+            }
+            
+            .sweat-drop {
+                position: absolute;
+                width: 5px;
+                height: 8px;
+                background: rgba(120, 180, 255, 0.8);
+                border-radius: 50%;
+                filter: drop-shadow(0 0 1px skyblue);
+                z-index: 100;
+            }
+        `;
+            document.head.appendChild(style);
+        }
+
+        // Toggle the border effect based on check state
+        const borderElement = document.getElementById('check-border-effect');
+        if (borderElement) {
+            if (isInCheck) {
+                borderElement.classList.add('check-active');
+
+                // Add dramatic audio cue for check (optional)
+                if (!document.getElementById('check-sound')) {
+                    const sound = document.createElement('audio');
+                    sound.id = 'check-sound';
+                    sound.src = 'https://www.chess.com/sounds/move-check';
+                    sound.volume = 0.4;
+                    document.body.appendChild(sound);
+                    sound.play().catch(e => console.log("Audio play prevented:", e));
+                } else {
+                    const sound = document.getElementById('check-sound') as HTMLAudioElement;
+                    sound.currentTime = 0;
+                    sound.play().catch(e => console.log("Audio play prevented:", e));
+                }
+
+                // Find the king that is in check and make it look scared
+                const kingColor = isWhite ? 'w' : 'b';
+
+                // Look through all squares to find the king of the current player's color
+                for (let i = 0; i < letters.length; i++) {
+                    for (let j = 0; j < numbers.length; j++) {
+                        const squareId = `${letters[i]}${numbers[j]}`;
+                        const square = document.getElementById(squareId);
+
+                        if (square && square.children.length > 0) {
+                            const piece = square.children[0] as HTMLElement;
+                            const srcAttr = piece.getAttribute('src');
+
+                            // Check if this is the king of the current player
+                            if (srcAttr && srcAttr.includes(`${kingColor}k`)) {
+                                // Add scared animation to the king
+                                piece.classList.add('scared-king');
+
+                                // Add sweat droplets to the king
+                                if (!square.querySelector('.sweat-drop-left')) {
+                                    const sweatLeft = document.createElement('div');
+                                    sweatLeft.className = 'sweat-drop sweat-drop-left';
+                                    sweatLeft.style.top = '25%';
+                                    sweatLeft.style.left = '25%';
+                                    sweatLeft.style.animation = 'scared-king 0.5s infinite, heartbeat 1s infinite';
+
+                                    const sweatRight = document.createElement('div');
+                                    sweatRight.className = 'sweat-drop sweat-drop-right';
+                                    sweatRight.style.top = '25%';
+                                    sweatRight.style.right = '25%';
+                                    sweatRight.style.animation = 'scared-king 0.5s infinite, heartbeat 1s infinite';
+                                    sweatRight.style.animationDelay = '0.2s';
+
+                                    square.appendChild(sweatLeft);
+                                    square.appendChild(sweatRight);
+                                }
+
+                                break;
+                            }
+                        }
+                    }
+                }
+            } else {
+                borderElement.classList.remove('check-active');
+
+                // Remove scared effect from any pieces
+                const scaredPieces = document.querySelectorAll('.scared-king');
+                scaredPieces.forEach(piece => {
+                    piece.classList.remove('scared-king');
+                });
+
+                // Remove sweat drops
+                const sweatDrops = document.querySelectorAll('.sweat-drop');
+                sweatDrops.forEach(drop => {
+                    drop.remove();
+                });
+            }
+        }
+    }, [isInCheck, isWhite]);
 
     function getLastMove(firstPosition: string, lastPosition: string) {
         setLastMove(`${firstPosition}${lastPosition}`);
@@ -200,7 +364,7 @@ export default function ChessBoard({ mode, time }: { mode: string, time: number 
     }
 
 
-    const [selectedPiece, setSelectedPiece] = useState<string | null>(null); // Stato del pezzo attivo
+    const {selectedPiece, setSelectedPiece} = usePieceContext(); // Stato del pezzo attivo
 
     // useEffect per gestire l'aggiunta della classe quando selectedPiece cambia
     useEffect(() => {
@@ -328,11 +492,10 @@ export default function ChessBoard({ mode, time }: { mode: string, time: number 
         }
     }
 
-    //-----------------------------------------------------------
-
+    //-----------------------------------------------------------------------------
     useEffect(() => {
         if (mode === 'ai') {
-            fetchStockfishData(fen, 13).then(setData);
+            fetchStockfishData(fen, 15).then(setData);
         }
     }, [mode, fen]);
 
@@ -348,8 +511,13 @@ export default function ChessBoard({ mode, time }: { mode: string, time: number 
                 // console.log(fromSquare, toSquare);
                 if (document.getElementById(fromSquare)?.hasChildNodes()) {
                     if (document.getElementById(fromSquare)?.children[0].getAttribute('src')?.includes('https://www.chess.com/chess-themes/pieces/neo/150/b')) {
-                        movePiece(fromSquare, toSquare);
-                        setIsWhite(true);
+                        document.getElementById(fromSquare)?.click();
+                        setTimeout(() => {
+                            document.getElementById(toSquare)?.click();
+                            setIsWhite(true);
+                        }, 500);
+                        document.body.style.pointerEvents = 'none';
+                        document.body.style.pointerEvents = 'auto';
                     }
                 }
             }, 0);
@@ -359,99 +527,111 @@ export default function ChessBoard({ mode, time }: { mode: string, time: number 
 
     function handleSquareClick(square: string) {
 
-        // console.log(document.getElementById(square)?.classList.contains('bg-purple-400/75'));
-        // console.log(getWhiteCastling(), getBlackCastling());
+        if (mode === 'ai' && isWhite || true) {
+            // console.log(document.getElementById(square)?.classList.contains('bg-purple-400/75'));
+            // console.log(getWhiteCastling(), getBlackCastling());
 
-        if (document.getElementById(square)?.classList.contains('bg-purple-400/75')) {
-            if (isWhite) {
-                if (getWhiteCastling()) {
-                    performCastling(true, getWhiteCastling(), square);
-                    setWhiteCastling(false);
-                }
-            } else {
-                if (getBlackCastling()) {
-                    performCastling(false, getBlackCastling(), square);
-                    setBlackCastling(false);
+            if (document.getElementById(square)?.classList.contains('bg-purple-400/75')) {
+                if (isWhite) {
+                    if (getWhiteCastling()) {
+                        performCastling(true, getWhiteCastling(), square);
+                        setWhiteCastling(false);
+                    }
+                } else {
+                    if (getBlackCastling()) {
+                        performCastling(false, getBlackCastling(), square);
+                        setBlackCastling(false);
+                    }
                 }
             }
-        }
 
-        if (selectedPiece !== null) {
+            if (selectedPiece !== null) {
 
-            if (!document.getElementById(square)?.hasChildNodes() ||
-                !document.getElementById(square)?.children[0]?.getAttribute('src')?.includes(`https://www.chess.com/chess-themes/pieces/neo/150/${isWhite ? 'w' : 'b'}`)) {
-                getLastMove(selectedPiece, square);
-                movePiece(selectedPiece, square);
-                //console.log(`Moved piece from ${selectedPiece} to ${square}`);
-                setSelectedPiece(null); // Deseleziona il pezzo attivo
-                squares.forEach((square) => {
-                    const div = document.getElementById(square.props.id) as HTMLElement;
-                    if (div) {
-                        if (div.classList.contains('bg-blue-400/75')) {
-                            const coordinates = square.props.id.split('');
-                            enPassant = square.props.id;
-                            const letter = coordinates[0];
-                            const number = coordinates[1];
-                            document.getElementById(letter + ((parseInt(number) + (isWhite ? -1 : 1)) + ''))?.children[0]?.remove();
-                        }
-                    }
-                });
-                checkPromotion();
-                enableOtherMoves();
-                fen = createFEN();
-                actualMove = selectedPiece + square;
-                // console.log(actualMove);
-                // console.log(fen);
-                sendMove(actualMove);
-                setIsWhite(!isWhite);
-                console.log("Turno del: " + ((!isWhite) ? "bianco" : "nero"));
-                if (getCheck(!isWhite)) {
+                if (!document.getElementById(square)?.hasChildNodes() ||
+                    !document.getElementById(square)?.children[0]?.getAttribute('src')?.includes(`https://www.chess.com/chess-themes/pieces/neo/150/${isWhite ? 'w' : 'b'}`)) {
+                    getLastMove(selectedPiece, square);
+                    movePiece(selectedPiece, square);
+                    //console.log(`Moved piece from ${selectedPiece} to ${square}`);
+                    setSelectedPiece(null); // Deseleziona il pezzo attivo
                     squares.forEach((square) => {
                         const div = document.getElementById(square.props.id) as HTMLElement;
                         if (div) {
-                            if (div.children[0]?.getAttribute('src')?.includes(`https://www.chess.com/chess-themes/pieces/neo/150/${!isWhite ? 'w' : 'b'}`)) {
-                                moves = Array.from(showPiece(square.props.id, !isWhite, lastMove));
-                                const subMovesArray = Array.from(subMoves);
-                                console.log(subMovesArray);
-                                subMovesArray.forEach((subMove) => {
-                                    moves.forEach((move, index) => {
-                                        if (move.id === subMove.id) {
-                                            moves.splice(index, 1);
-                                        }
-                                    });
-                                });
+                            if (div.classList.contains('bg-blue-400/75')) {
+                                const coordinates = square.props.id.split('');
+                                enPassant = square.props.id;
+                                const letter = coordinates[0];
+                                const number = coordinates[1];
+                                document.getElementById(letter + ((parseInt(number) + (isWhite ? -1 : 1)) + ''))?.children[0]?.remove();
                             }
                         }
-                    })
-                    if (moves.length === 0) {
-                        setShowCheckMateDiv(true);
+                    });
+                    checkPromotion();
+                    enableOtherMoves();
+                    fen = createFEN();
+                    actualMove = selectedPiece + square;
+                    // console.log(actualMove);
+                    // console.log(fen);
+                    sendMove(actualMove);
+                    setIsWhite(!isWhite);
+                    console.log("Turno del: " + ((!isWhite) ? "bianco" : "nero"));
+
+                    // Check if the opponent is in check after the move
+                    const opponentInCheck = getCheck(!isWhite);
+                    setIsInCheck(opponentInCheck);
+
+                    if (opponentInCheck) {
+                        squares.forEach((square) => {
+                            const div = document.getElementById(square.props.id) as HTMLElement;
+                            if (div) {
+                                if (div.children[0]?.getAttribute('src')?.includes(`https://www.chess.com/chess-themes/pieces/neo/150/${!isWhite ? 'w' : 'b'}`)) {
+                                    moves = Array.from(showPiece(square.props.id, !isWhite, lastMove));
+                                    moves.push(document.getElementById(square.props.id) as HTMLDivElement);
+                                    moves = moves.filter((move) => !Array.from(subMoves).some((subMove) => subMove.id === move.id));
+                                }
+                            }
+                        })
+                        console.log(moves);
+                        if (moves.length === 0) {
+                            setShowCheckMateDiv(true);
+                        }
                     }
+                } else if (document.getElementById(square)?.children[0]?.getAttribute('src')?.includes(`https://www.chess.com/chess-themes/pieces/neo/150/${isWhite ? 'w' : 'b'}`)) {
+                    setSelectedPiece(null);
                 }
-            } else if (document.getElementById(square)?.children[0]?.getAttribute('src')?.includes(`https://www.chess.com/chess-themes/pieces/neo/150/${isWhite ? 'w' : 'b'}`)) {
-                setSelectedPiece(null);
-            }
-        } else {
-            // Altrimenti, seleziona il pezzo
-            enableOtherMoves();
-            console.log("Turno del: " + ((isWhite) ? "bianco" : "nero"));
-            getCheck(isWhite);
-            if (document.getElementById(square)?.hasChildNodes() && document.getElementById(square)?.children[0]?.getAttribute('src')?.includes(`https://www.chess.com/chess-themes/pieces/neo/150/${isWhite ? 'w' : 'b'}`)) {
-                setSelectedPiece(square);
-            }
-            const subChoosedMoves = showPiece(square, isWhite, lastMove);
-            subMoves = subChoosedMoves;
-            // console.log(lastMove);
-            // console.log(subChoosedMoves);
-            disableOtherMoves(subChoosedMoves);
-            //console.log(`No piece selected`);
-            squares.forEach((square) => {
-                const div = document.getElementById(square.props.id) as HTMLElement;
-                if (div.classList.contains('bg-blue-400/75')) {
-                    enPassant = square.props.id;
+            } else {
+                // Altrimenti, seleziona il pezzo
+                enableOtherMoves();
+                console.log("Turno del: " + ((isWhite) ? "bianco" : "nero"));
+
+                // Check if current player is in check
+                const currentPlayerInCheck = getCheck(isWhite);
+                setIsInCheck(currentPlayerInCheck);
+
+                if (document.getElementById(square)?.hasChildNodes() && document.getElementById(square)?.children[0]?.getAttribute('src')?.includes(`https://www.chess.com/chess-themes/pieces/neo/150/${isWhite ? 'w' : 'b'}`)) {
+                    setSelectedPiece(square);
                 }
-            })
+                const subChoosedMoves = showPiece(square, isWhite, lastMove);
+                subMoves = subChoosedMoves;
+                // console.log(lastMove);
+                // console.log(subChoosedMoves);
+                disableOtherMoves(subChoosedMoves);
+                //console.log(`No piece selected`);
+                squares.forEach((square) => {
+                    const div = document.getElementById(square.props.id) as HTMLElement;
+                    if (div.classList.contains('bg-blue-400/75')) {
+                        enPassant = square.props.id;
+                    }
+                })
+            }
         }
     }
+
+    function handleDrop(event: React.DragEvent, targetSquareId: string) {
+        const pieceId = event.dataTransfer.getData("text/plain");
+        movePiece(pieceId, targetSquareId); // Funzione che aggiorna lo stato della scacchiera
+        setSelectedPiece(null);
+    }
+
 
 
     function createBoard() {
@@ -465,8 +645,12 @@ export default function ChessBoard({ mode, time }: { mode: string, time: number 
                         onClick={() => {
                             handleSquareClick(`${letters[j]}${numbers[i]}`);
                         }}
+                        onDragOver={(e) => {
+                            e.preventDefault();
+                        }}
+                        onDrop={(e) => handleDrop(e, `${letters[j]}${numbers[i]}`)}
                     >
-                        {board[i][j] && <Piece type={board[i][j]} />}
+                        {board[i][j] && <Piece type={board[i][j]} id={`${letters[j]}${numbers[i]}`} />}
                     </div>
                 );
             }
@@ -497,7 +681,7 @@ export default function ChessBoard({ mode, time }: { mode: string, time: number 
     };
 
     return (
-        <div className="flex items-center justify-center min-h-screen p-4 md:p-8 lg:p-12 relative">
+        <div className="flex items-center justify-center min-h-screen p-4 md:p-8 lg:p-12 -translate-x-4 relative">
             {showPromotionDiv && (
                 <PromotionModal onPromotionComplete={handlePromotionComplete} />
             )}
@@ -508,7 +692,7 @@ export default function ChessBoard({ mode, time }: { mode: string, time: number 
                 <TimerModal onTimerComplete={handleTimerComplete} isWhite={isWhite} />
             )}
             <ChessTimer isWhite={isWhite} initialTime={time} />
-            <div className="w-full max-w-[95vh] lg:max-w-[85vh] xl:max-w-[86vh] mx-auto -mt-14">
+            <div className="w-full max-w-[95vh] lg:max-w-[85vh] xl:max-w-[86vh] mx-auto -mt-14 max-xl:-translate-x-32">
                 {/* Scacchiera */}
                 <div
                     className="relative w-full aspect-square border-8 md:border-12 lg:border-16 shadow-xl border-solid border-orange-900 bg-white bg-cover bg-no-repeat rounded-lg z-0"

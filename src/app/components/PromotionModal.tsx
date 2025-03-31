@@ -27,25 +27,25 @@ const PromotionModal: React.FC<PromotionModalProps> = ({ onPromotionComplete }) 
           onClick={() => onPromotionComplete('q')}
           className={buttonClass}
         >
-          <Image src={`https://www.chess.com/chess-themes/pieces/neo/150/${!isWhite ? 'wq' : 'bq'}.png`} alt="queen" />
+          <Image src={`https://www.chess.com/chess-themes/pieces/neo/150/${isWhite ? 'wq' : 'bq'}.png`} alt="queen" width={50} height={50} />
         </button>
         <button
           onClick={() => onPromotionComplete('r')}
           className={buttonClass}
         >
-          <Image src={`https://www.chess.com/chess-themes/pieces/neo/150/${!isWhite ? 'wr' : 'br'}.png`} alt="rook" />
+          <Image src={`https://www.chess.com/chess-themes/pieces/neo/150/${isWhite ? 'wr' : 'br'}.png`} alt="rook" width={50} height={50} />
         </button>
         <button
           onClick={() => onPromotionComplete('b')}
           className={buttonClass}
         >
-          <Image src={`https://www.chess.com/chess-themes/pieces/neo/150/${!isWhite ? 'wb' : 'bb'}.png`} alt="bishop" />
+          <Image src={`https://www.chess.com/chess-themes/pieces/neo/150/${isWhite ? 'wb' : 'bb'}.png`} alt="bishop" width={50} height={50} />
         </button>
         <button
           onClick={() => onPromotionComplete('n')}
           className={buttonClass}
         >
-          <Image src={`https://www.chess.com/chess-themes/pieces/neo/150/${!isWhite ? 'wn' : 'bn'}.png`} alt="knight" />
+          <Image src={`https://www.chess.com/chess-themes/pieces/neo/150/${isWhite ? 'wn' : 'bn'}.png`} alt="knight" width={50} height={50} />
         </button>
       </div>
     </div>

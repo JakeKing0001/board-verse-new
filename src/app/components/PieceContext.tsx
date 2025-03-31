@@ -16,6 +16,8 @@ const PieceContext = createContext<{
     setMode : (value : string) => void;
     isGameOver : string;
     setIsGameOver : (value : string) => void;
+    selectedPiece: string | null;
+    setSelectedPiece: (piece: string | null) => void;
 } | null>(null);
 
 export const PieceProvider = ({ children }: { children: ReactNode }) => {
@@ -32,15 +34,13 @@ export const PieceProvider = ({ children }: { children: ReactNode }) => {
 
     const [isGameOver, setIsGameOver] = useState<string>('');
 
-    const activeClass = 'scale-[1.15] bg-[#ffff33] opacity-50 rounded-full';
+    const [selectedPiece, setSelectedPiece] = useState<string | null>(null); // Stato del pezzo attivo
 
-    useEffect(() => {
-        // console.log('Time aggiornato: ', time);
-    }, [time]);
+    const activeClass = 'scale-[1.15] bg-[#ffff33] opacity-50 rounded-full';
 
 
     return (
-        <PieceContext.Provider value={{ activePiece, setActivePiece, activeClass, isWhite, setIsWhite, hoverPiece, setHoverPiece, time, setTime, mode, setMode, isGameOver, setIsGameOver }}>
+        <PieceContext.Provider value={{ activePiece, setActivePiece, activeClass, isWhite, setIsWhite, hoverPiece, setHoverPiece, time, setTime, mode, setMode, isGameOver, setIsGameOver, selectedPiece, setSelectedPiece }}>
             {children}
         </PieceContext.Provider>
     );

@@ -74,7 +74,7 @@ const ChessTimer: React.FC<ChessTimerProps> = ({ isWhite, initialTime }) => {
   };
 
   return (
-    <div className="absolute w-full h-full pointer-events-none flex flex-col items-end justify-center gap-4 pr-8">
+    <div className="absolute w-full h-full pointer-events-none flex flex-col items-end justify-center gap-12 pr-8">
       {/* Black Timer */}
       <div className={`p-4 rounded-2xl shadow-xl transition-all duration-300 ${!isWhite ? 'bg-black/90 ring-2 ring-white/20' : 'bg-black/70'
         }`}>

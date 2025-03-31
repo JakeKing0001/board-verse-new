@@ -2,165 +2,75 @@ import { getSquares, getLetters } from "./components/ChessBoard";
 
 export function getCheck(isWhite: boolean): boolean {
     const king = isWhite ? 'wk' : 'bk';
-    const letters = getLetters();
-    const squaress = getSquares();
-    const kingPosition = squaress.find((square) => document.getElementById(square.props.id)?.children[0]?.getAttribute('src')?.includes(king))?.props.id;
-    if (!kingPosition) return false;
-    const [letter, number] = kingPosition.split('');
     const enemy = isWhite ? 'b' : 'w';
-    const allie = isWhite ? 'w' : 'b';
+
+    const letters = getLetters();
+    const squares = getSquares();
+
+    const kingPosition = squares.find((square) =>
+        document.getElementById(square.props.id)?.children[0]?.getAttribute('src')?.includes(king)
+    )?.props.id;
+
+    if (!kingPosition) return false;
+
+    const [letter, number] = kingPosition.split('');
+
+    const directions = {
+        vertical: [[0, 1], [0, -1]],
+        horizontal: [[1, 0], [-1, 0]],
+        diagonal: [[1, 1], [1, -1], [-1, 1], [-1, -1]]
+    };
+
+    const isCheckDirection = (moves: number[][], threats: string[]): boolean => {
+        for (const [dx, dy] of moves) {
+            for (let i = 1; i < 8; i++) {
+                const newLetter = letters[letters.findIndex((l) => l === letter) + dx * i];
+                const newNumber = parseInt(number) + dy * i;
+                if (!newLetter || newNumber < 1 || newNumber > 8) break;
+
+                const square = `${newLetter}${newNumber}`;
+                const piece = document.getElementById(square)?.children[0]?.getAttribute('src');
+
+                if (piece) {
+                    if (threats.some(threat => piece.includes(enemy + threat))) return true;
+                    break;
+                }
+            }
+        }
+        return false;
+    };
+
     let check = false;
 
-    //Sopra
-    for (let i = 1; i < 8; i++) {
-        const foundLetter = letters.find((l) => l === letter);
-        if (!foundLetter) break;
-        const square = foundLetter + (parseInt(number) + i);
-        if (!square) break;
-        const piece = document.getElementById(square)?.children[0]?.getAttribute('src');
-        if (piece) {
-            if (piece.includes(enemy + 'q') || piece.includes(enemy + 'r')) check = true;
-            break;
-        }
-    }
+    check ||= isCheckDirection([...directions.vertical, ...directions.horizontal], ['q', 'r']); // Torre e Regina
+    check ||= isCheckDirection(directions.diagonal, ['q', 'b']); // Alfiere e Regina
 
-    //Sotto
-    for (let i = 1; i < 8; i++) {
-        const foundLetter = letters.find((l) => l === letter);
-        if (!foundLetter) break;
-        const square = foundLetter + (parseInt(number) - i);
-        if (!square) break;
-        const piece = document.getElementById(square)?.children[0]?.getAttribute('src');
-        if (piece) {
-            if (piece.includes(enemy + 'q') || piece.includes(enemy + 'r')) check = true;
-            break;
-        }
-    }
-
-    //Destra
-    for (let i = 1; i < 8; i++) {
-        const index = letters.findIndex((l) => l === letter);
-        if (index === -1) break;
-        const square = letters[index + i] + number;
-        if (!square) break;
-        const piece = document.getElementById(square)?.children[0]?.getAttribute('src');
-        if (piece) {
-            if (piece.includes(enemy + 'q') || piece.includes(enemy + 'r')) check = true;
-            break;
-        }
-    }
-
-    //Sinistra
-    for (let i = 1; i < 8; i++) {
-        const index = letters.findIndex((l) => l === letter);
-        if (index === -1) break;
-        const square = letters[index - i] + number;
-        if (!square) break;
-        const piece = document.getElementById(square)?.children[0]?.getAttribute('src');
-        if (piece) {
-            if (piece.includes(enemy + 'q') || piece.includes(enemy + 'r')) check = true;
-            break;
-        }
-    }
-
-    //Diagonale in alto a destra
-    for (let i = 1; i < 8; i++) {
-        const index = letters.findIndex((l) => l === letter);
-        if (index === -1) break;
-        const square = letters[index + i] + (parseInt(number) + i);
-        if (!square) break;
-        const piece = document.getElementById(square)?.children[0]?.getAttribute('src');
-        if (piece) {
-            if (piece.includes(enemy + 'q') || piece.includes(enemy + 'b')) check = true;
-            break;
-        }
-    }
-
-    //Diagonale in alto a sinistra
-    for (let i = 1; i < 8; i++) {
-        const index = letters.findIndex((l) => l === letter);
-        if (index === -1) break;
-        const square = letters[index - i] + (parseInt(number) + i);
-        if (!square) break;
-        const piece = document.getElementById(square)?.children[0]?.getAttribute('src');
-        if (piece) {
-            if (piece.includes(enemy + 'q') || piece.includes(enemy + 'b')) check = true;
-            break;
-        }
-    }
-
-    //Diagonale in basso a destra
-    for (let i = 1; i < 8; i++) {
-        const index = letters.findIndex((l) => l === letter);
-        if (index === -1) break;
-        const square = letters[index + i] + (parseInt(number) - i);
-        if (!square) break;
-        const piece = document.getElementById(square)?.children[0]?.getAttribute('src');
-        if (piece) {
-            if (piece.includes(enemy + 'q') || piece.includes(enemy + 'b')) check = true;
-            break;
-        }
-    }
-
-    //Diagonale in basso a sinistra
-    for (let i = 1; i < 8; i++) {
-        const index = letters.findIndex((l) => l === letter);
-        if (index === -1) break;
-        const square = letters[index - i] + (parseInt(number) - i);
-        if (!square) break;
-        const piece = document.getElementById(square)?.children[0]?.getAttribute('src');
-        if (piece) {
-            if (piece.includes(enemy + 'q') || piece.includes(enemy + 'b')) check = true;
-            break;
-        }
-    }
-
-    //Cavallo
+    // Cavallo
     const knightMoves = [
-        [2, 1],
-        [2, -1],
-        [-2, 1],
-        [-2, -1],
-        [1, 2],
-        [1, -2],
-        [-1, 2],
-        [-1, -2]
+        [2, 1], [2, -1], [-2, 1], [-2, -1],
+        [1, 2], [1, -2], [-1, 2], [-1, -2]
     ];
-    knightMoves.forEach((move) => {
-        const square = letters[letters.findIndex((l) => l === letter) + move[0]] + (parseInt(number) + move[1]);
-        if (!square) return;
-        const piece = document.getElementById(square)?.children[0]?.getAttribute('src');
-        if (piece && piece.includes(enemy + 'n')) check = true;
+    check ||= knightMoves.some(([dx, dy]) => {
+        const square = letters[letters.findIndex((l) => l === letter) + dx] + (parseInt(number) + dy);
+        return square && document.getElementById(square)?.children[0]?.getAttribute('src')?.includes(enemy + 'n');
     });
 
-    //Pedone
-    const pawnMoves = isWhite ? [[1, 1], [-1, 1]] : [[1, -1], [-1, -1]]; // [x, y]
-    pawnMoves.forEach((move) => {
-        const square = letters[letters.findIndex((l) => l === letter) + move[0]] + (parseInt(number) + move[1]);
-        if (!square) return;
-        const piece = document.getElementById(square)?.children[0]?.getAttribute('src');
-        if (piece && piece.includes(enemy + 'p')) check = true;
+    // Pedone
+    const pawnMoves = isWhite ? [[1, 1], [-1, 1]] : [[1, -1], [-1, -1]];
+    check ||= pawnMoves.some(([dx, dy]) => {
+        const square = letters[letters.findIndex((l) => l === letter) + dx] + (parseInt(number) + dy);
+        return square && document.getElementById(square)?.children[0]?.getAttribute('src')?.includes(enemy + 'p');
     });
 
-    //Re
+    // Re
     const kingMoves = [
-        [1, 1],
-        [1, 0],
-        [1, -1],
-        [0, 1],
-        [0, -1],
-        [-1, 1],
-        [-1, 0],
-        [-1, -1]
+        [1, 1], [1, 0], [1, -1], [0, 1], [0, -1], [-1, 1], [-1, 0], [-1, -1]
     ];
-    kingMoves.forEach((move) => {
-        const square = letters[letters.findIndex((l) => l === letter) + move[0]] + (parseInt(number) + move[1]);
-        if (!square) return;
-        const piece = document.getElementById(square)?.children[0]?.getAttribute('src');
-        if (piece && piece.includes(enemy + 'k')) check = true;
+    check ||= kingMoves.some(([dx, dy]) => {
+        const square = letters[letters.findIndex((l) => l === letter) + dx] + (parseInt(number) + dy);
+        return square && document.getElementById(square)?.children[0]?.getAttribute('src')?.includes(enemy + 'k');
     });
 
     console.log(check);
-
     return check;
 }

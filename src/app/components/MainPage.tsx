@@ -1,7 +1,17 @@
 import Link from "next/link";
 import NavBar from "./NavBar";
+import { useEffect } from "react";
 
 const MainPage = () => {
+
+  useEffect(() => {
+    const style = document.getElementById("check-border-style");
+    console.log(style);
+    if (style) {
+      document.head.removeChild(style);
+    }
+  }, []);
+
   return (
     <>
       <div className="fixed top-0 left-0 w-full bg-white shadow-md z-50">
