@@ -1,7 +1,6 @@
-'use client';
-
 import React from 'react';
 import { usePieceContext } from './PieceContext';
+import { showPiece } from '../pieceLogic';
 
 interface PieceProps {
     type: string;
@@ -18,7 +17,7 @@ const pieceMap: Record<string, string> = {
 };
 
 export default function Piece({ type, id }: PieceProps) {
-    const { activePiece, setActivePiece, isWhite, hoverPiece, setHoverPiece, setSelectedPiece } = usePieceContext();
+    const { activePiece, setActivePiece, isWhite, hoverPiece, setHoverPiece, setSelectedPiece, setsubMovesDrag } = usePieceContext();
 
     // Se non c'è pezzo, ritorna uno spazio vuoto
     if (!type) {
@@ -45,6 +44,9 @@ export default function Piece({ type, id }: PieceProps) {
     function handleDragStart(event: React.DragEvent, pieceId: string) {
         event.dataTransfer.setData("text/plain", pieceId);
         setSelectedPiece(pieceId);
+        const subMovesDrag = showPiece(pieceId, isWhite, null);
+        
+        setsubMovesDrag(subMovesDrag.toString());
     }
 
 
@@ -58,8 +60,9 @@ export default function Piece({ type, id }: PieceProps) {
             onClick={isWhitePiece === "w" === isWhite ? handleClick : undefined}
             onMouseEnter={isWhitePiece === "w" === isWhite ? handleHover : undefined}
             draggable={true}
-            onDragStart={(e) => handleDragStart(e, id)}
+            // onDragStart={(e) => handleDragStart(e, id)}
             style={{ cursor: "grab" }}
+            onContextMenu={(e) => { e.preventDefault(); }}
         />
     );
     /* eslint-enable @typescript-eslint/no-unused-vars */

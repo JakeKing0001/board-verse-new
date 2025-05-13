@@ -16,7 +16,9 @@ const ChessTimer: React.FC<ChessTimerProps> = ({ isWhite, initialTime }) => {
   const [whiteTime, setWhiteTime] = useState<number>(initialTime);
   const [blackTime, setBlackTime] = useState<number>(initialTime);
 
-  const {setIsGameOver } = usePieceContext();
+  const { t } = usePieceContext();
+
+  const { setIsGameOver } = usePieceContext();
 
   useEffect(() => {
 
@@ -25,7 +27,7 @@ const ChessTimer: React.FC<ChessTimerProps> = ({ isWhite, initialTime }) => {
     if (whiteTime > 0 && blackTime > 0) {
       interval = setInterval(() => {
         if (isWhite) {
-          
+
           setWhiteTime(prev => prev - 1);
         } else {
           setBlackTime(prev => prev - 1);
@@ -33,10 +35,10 @@ const ChessTimer: React.FC<ChessTimerProps> = ({ isWhite, initialTime }) => {
       }, 1000);
     }
 
-    if(whiteTime === 0) {
+    if (whiteTime === 0) {
       // alert("Nero hai vinto!!!!!!!!");
       setIsGameOver('black');
-    } else if(blackTime === 0) {
+    } else if (blackTime === 0) {
       // alert("Bianco hai vinto!!!!!!!!");
       setIsGameOver('white');
     }
@@ -80,7 +82,7 @@ const ChessTimer: React.FC<ChessTimerProps> = ({ isWhite, initialTime }) => {
         }`}>
         <div className="mb-2 flex items-center gap-2">
           <div className={`w-2 h-2 rounded-full ${!isWhite ? 'bg-green-400 animate-pulse' : 'bg-gray-500'}`} />
-          <span className="text-white font-semibold">Black</span>
+          <span className="text-white font-semibold">{t.black}</span>
         </div>
         <div className="text-white">
           {formatTime(blackTime)}
@@ -92,7 +94,7 @@ const ChessTimer: React.FC<ChessTimerProps> = ({ isWhite, initialTime }) => {
         }`}>
         <div className="mb-2 flex items-center gap-2">
           <div className={`w-2 h-2 rounded-full ${isWhite ? 'bg-green-400 animate-pulse' : 'bg-gray-500'}`} />
-          <span className="text-black font-semibold">White</span>
+          <span className="text-black font-semibold">{t.white}</span>
         </div>
         <div className="text-black">
           {formatTime(whiteTime)}

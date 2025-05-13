@@ -1,15 +1,16 @@
-"use client";
-
 import React from 'react';
 import ChessBoard from './ChessBoard';
+import { usePieceContext } from './PieceContext';
 // import RenderModel from './RenderModel';
 // import { Pawn } from './models/Pawn';
-import SideBar from './SideBar';
 
-export default function App({ mode, time }: { mode: string, time: number }) {
+export default function App({ mode, time, fen_challenge, check_moves }: { mode: string, time: number, fen_challenge: string, check_moves: number }) {
+
+    const { darkMode} = usePieceContext();
+
     return (
         <div className="relative w-full h-screen overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-green-100 via-stone-100 to-green-100 animate-gradient-xy">
+            <div className={`absolute inset-0 bg-gradient-to-br ${darkMode? 'from-slate-800 via-slate-400 to-slate-800':'from-green-100 via-stone-100 to-green-100'} animate-gradient-xy`}>
                 {/* <RenderModel gradientClassName='canvas-gradient'>
                     <Pawn position={[-6, 0, -4]} />
                     <Pawn position={[6, 0, -4]} />
@@ -20,8 +21,7 @@ export default function App({ mode, time }: { mode: string, time: number }) {
                 </RenderModel> */}
             </div>
             <div className="relative z-10">
-                <SideBar />
-                <ChessBoard mode={mode} time={time} />
+                <ChessBoard mode={mode} time={time} fen_challenge={fen_challenge} check_moves={check_moves} />
             </div>
         </div>
     );

@@ -1,5 +1,3 @@
-"use client";
-
 import { Environment, PerspectiveCamera } from '@react-three/drei';
 import { Canvas } from '@react-three/fiber';
 import clsx from 'clsx';

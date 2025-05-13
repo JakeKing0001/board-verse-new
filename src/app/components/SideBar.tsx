@@ -1,23 +1,42 @@
-"use client";
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import {
+    HomeIcon,
+    UserGroupIcon,
+    PuzzlePieceIcon,
+    InformationCircleIcon,
+    Cog6ToothIcon,
+} from "@heroicons/react/24/outline";
+import { BarChartIcon } from "lucide-react";
+import { usePieceContext } from "./PieceContext";
 
 export default function SideBar() {
     const [isOpen, setIsOpen] = useState(false);
+    const { user, t, darkMode } = usePieceContext();
+
+    const menuItems = [
+        { name: `${t.home}`, icon: HomeIcon, href: "/" },
+        { name: `${t.gameTypes}`, icon: PuzzlePieceIcon, href: "/games" },
+        { name: `${t.friends}`, icon: UserGroupIcon, href: "/friends" },
+        { name: `${t.about}`, icon: InformationCircleIcon, href: "/about" },
+        { name: `${t.statistics}`, icon: BarChartIcon, href: "/statistics" },
+    ];
 
     return (
         <>
-            {/* Toggle Button */}
             <button
-                onClick={() => setIsOpen(!isOpen)}
-                className="inline-flex items-center p-2 mt-2 ms-3 text-sm text-gray-500 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
+                id="SidebarButton"
+                onClick={(e) => {
+                    setIsOpen(!isOpen);
+                    (e.currentTarget as HTMLButtonElement).style.display = "none";
+                }}
+                className={`fixed top-4 left-4 z-50 inline-flex items-center p-2 text-sm ${darkMode? 'text-white bg-slate-600 hover:bg-slate-500 focus:ring-slate-300':'text-green-600 bg-white hover:bg-green-50 focus:ring-green-300'} rounded-lg shadow-md focus:outline-none focus:ring-2`}
             >
                 <span className="sr-only">Toggle sidebar</span>
                 <svg
                     className="w-6 h-6"
                     aria-hidden="true"
-                    fill="currentColor"
+                    fill={darkMode? 'white':'green'}
                     viewBox="0 0 20 20"
                     xmlns="http://www.w3.org/2000/svg"
                 >
@@ -31,41 +50,83 @@ export default function SideBar() {
 
             {/* Sidebar */}
             <aside
-                id="default-sidebar"
-                className={`fixed top-0 left-0 z-40 h-screen transition-transform duration-300 ease-in-out bg-gray-50 dark:bg-gray-800
-                    ${isOpen ? "translate-x-0" : "-translate-x-full"}
-                    w-40 md:w-72 sm:w-40`}
+                className={`fixed top-0 left-0 z-40 h-screen transition-transform duration-300 ease-in-out bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 shadow-lg
+                ${isOpen ? "translate-x-0" : "-translate-x-full"}
+                w-64`}
                 aria-label="Sidebar"
             >
-                <div className="h-full px-3 py-4 overflow-y-auto">
-                    <ul className="space-y-2 font-medium">
-                        <li>
-                            <Link
-                                href="/"
-                                className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
+                <div className="h-full flex flex-col justify-between">
+                    {/* Logo and Menu Items */}
+                    <div className="px-3 py-4 overflow-y-auto">
+                        <div className="flex items-center justify-center mb-6">
+                            <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-green-700'}`}>{t.gameTypes}</h2>
+                        </div>
+
+                        <ul className="space-y-5 font-medium">
+                            {menuItems.map((item, index) => (
+                                <li key={index}>
+                                    <a
+                                        href={item.href}
+                                        className={`flex items-center p-3 rounded-lg group transition-all duration-200 ${
+                                            darkMode
+                                                ? 'text-white hover:bg-slate-600'
+                                                : 'text-gray-900 hover:bg-green-100'
+                                        }`}
+                                    >
+                                        <item.icon className={`w-5 h-5 ${darkMode ? 'text-white' : 'text-green-600'}`} />
+                                        <span className="ms-3">{item.name}</span>
+                                    </a>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+
+                    {/* User Profile and Settings */}
+                    <div className="border-t border-gray-200 dark:border-gray-700 px-3 py-4">
+                        <Link href="/settingsProfile">
+                            <button
+                                className={`w-full flex items-center p-3 rounded-lg group transition-all duration-200 mb-3 no-underline ${
+                                    darkMode
+                                        ? 'text-white bg-slate-900 hover:bg-slate-600'
+                                        : 'text-gray-900 bg-green-100 hover:bg-green-50'
+                                }`}
                             >
-                                <svg
-                                    className="w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
-                                    aria-hidden="true"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="currentColor"
-                                    viewBox="0 0 22 21"
-                                >
-                                    <path d="M16.975 11H10V4.025a1 1 0 0 0-1.066-.998 8.5 8.5 0 1 0 9.039 9.039.999.999 0 0 0-1-1.066h.002Z" />
-                                    <path d="M12.5 0c-.157 0-.311.01-.565.027A1 1 0 0 0 11 1.02V10h8.975a1 1 0 0 0 1-.935c.013-.188.028-.374.028-.565A8.51 8.51 0 0 0 12.5 0Z" />
-                                </svg>
-                                <span className="ms-3">Home</span>
-                            </Link>
-                        </li>
-                    </ul>
+                                <Cog6ToothIcon className={`w-5 h-5 ${darkMode ? 'text-white' : 'text-green-600'}`} />
+                                <span className="ms-3 no-underline font-medium">
+                                    {t.profileSettings}
+                                </span>
+                            </button>
+                        </Link>
+
+                        {/* User Profile */}
+                        {user && (
+                            <div className={`flex items-center p-3 rounded-lg ${darkMode ? 'text-white bg-slate-900' : 'text-gray-900 bg-green-50'}`}>
+                                <img
+                                    src={user.avatar || "/default_avatar.png"}
+                                    alt="User Avatar"
+                                    className="w-10 h-10 rounded-lg"
+                                />
+                                <div className="ms-3">
+                                    <p />
+                                    <p className="text-sm font-medium">{user.username}</p>
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </aside>
 
-            {/* Overlay per dispositivi mobili */}
+            {/* Overlay for mobile */}
             {isOpen && (
                 <div
-                    className="fixed inset-0 z-30 bg-black opacity-50"
-                    onClick={() => setIsOpen(false)}
+                    className="fixed inset-0 z-30 bg-black/50 backdrop-blur-sm transition-opacity duration-300 ease-in-out"
+                    onClick={() => {
+                        setIsOpen(false);
+                        const button = document.getElementById("SidebarButton");
+                        if (button) {
+                            button.style.display = "inline-flex";
+                        }
+                    }}
                 ></div>
             )}
         </>

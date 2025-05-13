@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useState, useEffect, JSX } from 'react';
 import Piece from './Piece';
 import { movePiece, showPiece, getEnpassant, getWhiteCastling, getBlackCastling, setWhiteCastling, setBlackCastling } from '../pieceLogic';
@@ -10,6 +8,10 @@ import { getCheck } from '../checkMateLogic';
 import { fetchStockfishData } from '../stockFishUtils';
 import ChessTimer from './ChessTimer';
 import TimerModal from './TimerModal';
+import Sidebar from './SideBar';
+import ChessMoves from './ChessMoves';
+import MovesModal from './MovesModal';
+import { setChallengeComplete } from '../../../services/challengeComplete';
 
 const letters = ["a", "b", "c", "d", "e", "f", "g", "h"];
 const numbers = [8, 7, 6, 5, 4, 3, 2, 1];
@@ -48,10 +50,20 @@ function parseFEN(fen: string): string[][] {
     return board;
 }
 
-export default function ChessBoard({ mode, time }: { mode: string, time: number }) {
+export default function ChessBoard({ mode, time, fen_challenge, check_moves }: { mode: string, time: number, fen_challenge?: string, check_moves?: number }) {
 
     const wsRef = React.useRef<WebSocket | null>(null);
     const [isInCheck, setIsInCheck] = useState(false);
+    const { isGameOver, subMovesDrag, selectedPiece, setSelectedPiece, user, challenges, darkMode} = usePieceContext();
+
+    useEffect(() => {
+        const style = document.getElementById("check-border-style");
+        if (style) {
+            document.head.removeChild(style);
+        }
+    }, []);
+
+    useEffect(() => {}, []);
 
     useEffect(() => {
 
@@ -101,7 +113,7 @@ export default function ChessBoard({ mode, time }: { mode: string, time: number 
         getEnpassant(isEnPassant);
     }, [isEnPassant]);
 
-    const initialFEN = fen;
+    const initialFEN = (fen_challenge && mode === 'challenge') ? fen_challenge : fen;
     const [board] = useState<string[][]>(parseFEN(initialFEN));
     const [isWhite, setIsWhite] = useState(initialFEN.split(" ")[1] === "w");
     const [showPromotionDiv, setShowPromotionDiv] = useState(false);
@@ -109,8 +121,8 @@ export default function ChessBoard({ mode, time }: { mode: string, time: number 
     const [data, setData] = useState<StockfishData | null>(null);
     const [showCheckMateDiv, setShowCheckMateDiv] = useState(false);
     const [showTimerDiv, setTimerDiv] = useState(false);
-
-    const { isGameOver } = usePieceContext();
+    const [showMovesDiv, setShowMovesDiv] = useState(false);
+    const [checkMoves, setCheckMoves] = useState<number | undefined>(check_moves);
 
     let promoted = '';
 
@@ -363,9 +375,6 @@ export default function ChessBoard({ mode, time }: { mode: string, time: number 
         }
     }
 
-
-    const {selectedPiece, setSelectedPiece} = usePieceContext(); // Stato del pezzo attivo
-
     // useEffect per gestire l'aggiunta della classe quando selectedPiece cambia
     useEffect(() => {
         const updatePiece = () => {
@@ -525,7 +534,7 @@ export default function ChessBoard({ mode, time }: { mode: string, time: number 
     }, [data, mode]);
     //---------------------------------------------------------------------
 
-    function handleSquareClick(square: string) {
+    async function handleSquareClick(square: string) {
 
         if (mode === 'ai' && isWhite || true) {
             // console.log(document.getElementById(square)?.classList.contains('bg-purple-400/75'));
@@ -574,7 +583,9 @@ export default function ChessBoard({ mode, time }: { mode: string, time: number 
                     sendMove(actualMove);
                     setIsWhite(!isWhite);
                     console.log("Turno del: " + ((!isWhite) ? "bianco" : "nero"));
-
+                    if ((checkMoves ?? -1) > 0) {
+                        setCheckMoves((prev) => Math.max((prev ?? 0) - 1, 0)); // Decrementa ma si ferma a zero
+                    }
                     // Check if the opponent is in check after the move
                     const opponentInCheck = getCheck(!isWhite);
                     setIsInCheck(opponentInCheck);
@@ -591,8 +602,31 @@ export default function ChessBoard({ mode, time }: { mode: string, time: number 
                             }
                         })
                         console.log(moves);
-                        if (moves.length === 0) {
+                        if (moves.length === 1) {
                             setShowCheckMateDiv(true);
+                            if(mode === 'challenge'){
+                                try {
+                                    let challengeIdToSet = challenges[0]?.id;
+                                    // Cerca l'id della challenge corrispondente al fen_challenge
+                                    if (fen_challenge && Array.isArray(challenges)) {
+                                        const foundChallenge = challenges.find((ch: any) => ch.fen === fen_challenge);
+                                        if (foundChallenge) {
+                                            challengeIdToSet = foundChallenge.id;
+                                        }
+                                    }
+                                    if (user?.id !== undefined && challengeIdToSet !== undefined) {
+                                        const formData = {
+                                            userID: user.id,
+                                            challengeID: challengeIdToSet,
+                                        };
+                                        await setChallengeComplete(formData);
+                                    } else {
+                                        console.warn('userID or challengeID is undefined');
+                                    }
+                                } catch (error) {
+                                    console.log(error);
+                                }
+                            }
                         }
                     }
                 } else if (document.getElementById(square)?.children[0]?.getAttribute('src')?.includes(`https://www.chess.com/chess-themes/pieces/neo/150/${isWhite ? 'w' : 'b'}`)) {
@@ -628,7 +662,9 @@ export default function ChessBoard({ mode, time }: { mode: string, time: number 
 
     function handleDrop(event: React.DragEvent, targetSquareId: string) {
         const pieceId = event.dataTransfer.getData("text/plain");
-        movePiece(pieceId, targetSquareId); // Funzione che aggiorna lo stato della scacchiera
+        const subMovesArray = subMovesDrag.split(",");
+        alert(subMovesArray)
+        movePiece(pieceId, targetSquareId);
         setSelectedPiece(null);
     }
 
@@ -645,10 +681,10 @@ export default function ChessBoard({ mode, time }: { mode: string, time: number 
                         onClick={() => {
                             handleSquareClick(`${letters[j]}${numbers[i]}`);
                         }}
-                        onDragOver={(e) => {
-                            e.preventDefault();
-                        }}
-                        onDrop={(e) => handleDrop(e, `${letters[j]}${numbers[i]}`)}
+                    // onDragOver={(e) => {
+                    //     e.preventDefault();
+                    // }}
+                    // onDrop={(e) => handleDrop(e, `${letters[j]}${numbers[i]}`)}
                     >
                         {board[i][j] && <Piece type={board[i][j]} id={`${letters[j]}${numbers[i]}`} />}
                     </div>
@@ -676,39 +712,59 @@ export default function ChessBoard({ mode, time }: { mode: string, time: number 
         setShowCheckMateDiv(false);
     };
 
+    const handleMovesComplete = () => {
+        setShowMovesDiv(false);
+    };
+
     const handleTimerComplete = () => {
         setTimerDiv(false);
     };
 
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const hasCheckMovesInUrl = urlParams.has('check_moves');
+
+        if (checkMoves !== undefined && checkMoves === 0 && hasCheckMovesInUrl && mode === 'challenge' && !isInCheck) {
+            setShowMovesDiv(true);
+        }
+    }, [checkMoves]);
+
     return (
-        <div className="flex items-center justify-center min-h-screen p-4 md:p-8 lg:p-12 -translate-x-4 relative">
-            {showPromotionDiv && (
-                <PromotionModal onPromotionComplete={handlePromotionComplete} />
-            )}
-            {showCheckMateDiv && (
-                <CheckMateModal onCheckMateComplete={handleCheckMateComplete} />
-            )}
-            {showTimerDiv && (
-                <TimerModal onTimerComplete={handleTimerComplete} isWhite={isWhite} />
-            )}
-            <ChessTimer isWhite={isWhite} initialTime={time} />
-            <div className="w-full max-w-[95vh] lg:max-w-[85vh] xl:max-w-[86vh] mx-auto -mt-14 max-xl:-translate-x-32">
-                {/* Scacchiera */}
-                <div
-                    className="relative w-full aspect-square border-8 md:border-12 lg:border-16 shadow-xl border-solid border-orange-900 bg-white bg-cover bg-no-repeat rounded-lg z-0"
-                    style={{
-                        backgroundImage: `url('https://assets-themes.chess.com/image/9rdwe/200.png')`,
-                        backgroundBlendMode: 'multiply'
-                    }}
-                >
-                    <svg viewBox="0 0 100 100" className="coordinates">
-                        <text x="0.75" y="3.5" fontSize="2.8" style={{ fill: '#739552' }}>8</text><text x="0.75" y="15.75" fontSize="2.8" style={{ fill: '#EBECD0' }}>7</text><text x="0.75" y="28.25" fontSize="2.8" style={{ fill: '#739552' }}>6</text><text x="0.75" y="40.75" fontSize="2.8" style={{ fill: '#EBECD0' }}>5</text><text x="0.75" y="53.25" fontSize="2.8" style={{ fill: '#739552' }}>4</text><text x="0.75" y="65.75" fontSize="2.8" style={{ fill: '#EBECD0' }}>3</text><text x="0.75" y="78.25" fontSize="2.8" style={{ fill: '#739552' }}>2</text><text x="0.75" y="90.75" fontSize="2.8" style={{ fill: '#EBECD0' }}>1</text><text x="10" y="99" fontSize="2.8" style={{ fill: '#EBECD0' }}>a</text><text x="22.5" y="99" fontSize="2.8" style={{ fill: '#739552' }}>b</text><text x="35" y="99" fontSize="2.8" style={{ fill: '#EBECD0' }}>c</text><text x="47.5" y="99" fontSize="2.8" style={{ fill: '#739552' }}>d</text><text x="60" y="99" fontSize="2.8" style={{ fill: '#EBECD0' }}>e</text><text x="72.5" y="99" fontSize="2.8" style={{ fill: '#739552' }}>f</text><text x="85" y="99" fontSize="2.8" style={{ fill: '#EBECD0' }}>g</text><text x="97.5" y="99" fontSize="2.8" style={{ fill: '#739552' }}>h</text>
-                    </svg>
-                    <div className="absolute inset-0 grid-chess grid-cols-8 grid-rows-8 bg-cover bg-center z-20">
-                        {squares}
+        <>
+            <Sidebar />
+            <div className="flex items-center justify-center min-h-screen p-4 md:p-8 lg:p-12 -translate-x-4 translate-y-7 relative">
+                {showPromotionDiv && (
+                    <PromotionModal onPromotionComplete={handlePromotionComplete} />
+                )}
+                {showCheckMateDiv && (
+                    <CheckMateModal onCheckMateComplete={handleCheckMateComplete} isWhite={isWhite} isChallenge={mode === 'challenge'} />
+                )}
+                {showTimerDiv && (check_moves ?? 0) <= 0 && (
+                    <TimerModal onTimerComplete={handleTimerComplete} isWhite={isWhite} />
+                )}
+                {showMovesDiv && (
+                    <MovesModal onMovesComplete={handleMovesComplete} />
+                )}
+                {(check_moves ?? 0) <= 0 && <ChessTimer isWhite={isWhite} initialTime={time} />}
+                {(check_moves ?? 0) > 0 && <ChessMoves check_moves={checkMoves ?? 0} />}
+                <div className="w-full max-w-[95vh] lg:max-w-[85vh] xl:max-w-[86vh] mx-auto -mt-14 max-xl:-translate-x-32">
+                    {/* Scacchiera */}
+                    <div
+                        className={`relative w-full aspect-square border-8 md:border-12 lg:border-16 shadow-xl border-solid ${darkMode? 'border-slate-800':'border-orange-900'} bg-white bg-cover bg-no-repeat rounded-lg z-0`}
+                        style={{
+                            backgroundImage: `url(${darkMode? 'https://images.chesscomfiles.com/chess-themes/boards/glass/200.png':'https://assets-themes.chess.com/image/9rdwe/200.png'})`,
+                            backgroundBlendMode: 'multiply'
+                        }}
+                    >
+                        <svg viewBox="0 0 100 100" className="coordinates">
+                            <text x="0.75" y="3.5" fontSize="2.8" style={{ fill: `${darkMode? '#1c2f2f':'#739552'}`}}>8</text><text x="0.75" y="15.75" fontSize="2.8" style={{ fill: '#EBECD0' }}>7</text><text x="0.75" y="28.25" fontSize="2.8" style={{ fill: `${darkMode? '#1c2f2f':'#739552'}`}}>6</text><text x="0.75" y="40.75" fontSize="2.8" style={{ fill: '#EBECD0' }}>5</text><text x="0.75" y="53.25" fontSize="2.8" style={{ fill: `${darkMode? '#1c2f2f':'#739552'}`}}>4</text><text x="0.75" y="65.75" fontSize="2.8" style={{ fill: '#EBECD0' }}>3</text><text x="0.75" y="78.25" fontSize="2.8" style={{ fill: `${darkMode? '#1c2f2f':'#739552'}`}}>2</text><text x="0.75" y="90.75" fontSize="2.8" style={{ fill: '#EBECD0' }}>1</text><text x="10" y="99" fontSize="2.8" style={{ fill: '#EBECD0' }}>a</text><text x="22.5" y="99" fontSize="2.8" style={{ fill: `${darkMode? '#1c2f2f':'#739552'}`}}>b</text><text x="35" y="99" fontSize="2.8" style={{ fill: '#EBECD0' }}>c</text><text x="47.5" y="99" fontSize="2.8" style={{ fill: `${darkMode? '#1c2f2f':'#739552'}`}}>d</text><text x="60" y="99" fontSize="2.8" style={{ fill: '#EBECD0' }}>e</text><text x="72.5" y="99" fontSize="2.8" style={{ fill: `${darkMode? '#1c2f2f':'#739552'}`}}>f</text><text x="85" y="99" fontSize="2.8" style={{ fill: '#EBECD0' }}>g</text><text x="97.5" y="99" fontSize="2.8" style={{ fill: `${darkMode? '#1c2f2f':'#739552'}`}}>h</text>
+                        </svg>
+                        <div className="absolute inset-0 grid-chess grid-cols-8 grid-rows-8 bg-cover bg-center z-20">
+                            {squares}
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </>
     );
 }
