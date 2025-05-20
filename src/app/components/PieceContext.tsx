@@ -85,12 +85,13 @@ export const PieceProvider = ({ children }: { children: ReactNode }) => {
     const activeClass = 'scale-[1.15] bg-[#ffff33] opacity-50 rounded-full';
 
     useEffect(() => {
+        // Recupera login salvato
         const storedLogin = localStorage.getItem('isLoggedIn') || sessionStorage.getItem('isLoggedIn') || '';
         setIsLoggedIn(storedLogin);
     }, []);
 
     useEffect(() => {
-        // Ogni volta che cambia, salvalo
+        // Salva il login corrente in base a rememberMe
         if (isLoggedIn) {
             if (localStorage.getItem('rememberMe') === "true") {
                 localStorage.setItem('isLoggedIn', isLoggedIn);
@@ -104,159 +105,125 @@ export const PieceProvider = ({ children }: { children: ReactNode }) => {
     }, [isLoggedIn]);
 
     useEffect(() => {
-        // Quando isLoggedIn (email) cambia, recupera l'intero utente
-        const fetchUser = async () => {
-            if (isLoggedIn) {
-                const users = await getUsers();
-                setAllUsers(users); // Salva tutti gli utenti nello stato
-                console.log('users', users);
-                const foundUser = users.find((u: any) => u.email === isLoggedIn);
-                console.log('foundUser', foundUser);
-                setUser(foundUser || null);
-                const userLanguage = foundUser.language || 'en'; // Imposta la lingua dell'utente
-                setLanguage(userLanguage);
-                const userDarkMode = foundUser.theme || 'light'; // Imposta la lingua dell'utente
-                setDarkMode(userDarkMode === 'dark' ? true : false); // Imposta la lingua dell'utente
-
-                if (userLanguage === 'it') {
-                    setT(it);
-                } else if (userLanguage === 'es') {
-                    setT(es);
-                } else if (userLanguage === 'fr') {
-                    setT(fr);
-                } else if (userLanguage === 'de') {
-                    setT(de);
-                } else {
-                    setT(en);
-                }
-
-                const completed = await getChallengeComplete(); // Ottieni le sfide completate
-                const loggedCompleted = (completed && completed.filter((challenge: { user_id: number }) => challenge.user_id === foundUser.id)); // Stampa le sfide completate
-                setCompletedChallenges(loggedCompleted); // Filtra le sfide completate per l'utente
-
-                // Fetch pending friend requests (senza un altro useEffect)
-                const friendRequests = await getRequests();
-
-                // Filter requests where the current user is the receiver
-                const requestsArray = Array.isArray(friendRequests) ? friendRequests : [];
-                const pending = requestsArray
-                    .filter((req: any) => req.receiver_id === foundUser.id)
-                    .map((req: any) => {
-                        const sender = users.find((u: any) => u.id === req.sender_id);
-                        if (!sender) return undefined;
-                        // Calcola i giorni fa in modo leggibile
-                        const sentAt = new Date(req.sent_at);
-                        const now = new Date();
-                        const diffMs = now.getTime() - sentAt.getTime();
-                        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-                        let requestDate = '';
-                        if (diffDays === 0) {
-                            requestDate = t.today || "Today";
-                        } else if (diffDays === 1) {
-                            requestDate = t.yesterday || "Yesterday";
-                        } else {
-                            requestDate = `${diffDays} ${t.daysAgo || "days ago"}`;
-                        }
-                        return {
-                            id: req.id,
-                            sender_id: req.sender_id,
-                            receiver_id: req.receiver_id,
-                            username: sender.username,
-                            email: sender.email,
-                            avatar: sender.avatar,
-                            requestDate,
-                        };
-                    })
-                    .filter((x): x is { id: number; sender_id: number; receiver_id: number; username: string; email: string; avatar: string; requestDate: string } => !!x); // remove undefined with type guard
-
-                setRequests_(pending);
-
-                try {
-                    const friends = await getFriends();
-                    const friendsArray = Array.isArray(friends) ? friends : [];
-                    const friendsList = friendsArray
-                        .filter((friend: any) =>
-                            friend.user_id === foundUser.id || friend.friend_id === foundUser.id
-                        )
-                        .map((friend: any) => {
-                            // Determina l'ID dell'altro utente (l'amico)
-                            const friendUserId = friend.user_id === foundUser.id ? friend.friend_id : friend.user_id;
-                            const friendUser = allUsers.find((u: any) => u.id === friendUserId);
-                            if (!friendUser) return undefined;
-                            return {
-                                id: friend.id,
-                                user_id: friend.user_id,
-                                friend_id: friend.friend_id,
-                                username: friendUser.username,
-                                email: friendUser.email,
-                                avatar: friendUser.avatar,
-                                status: friend.status,
-                                lastSeen: friend.last_seen,
-                            };
-                        })
-                        .filter((x): x is { id: number; user_id: number; friend_id: number; username: string; email: string; avatar: string; status: string; lastSeen: string } => !!x); // remove undefined with type guard
-                    setFriends_(friendsList);
-                } catch (error) {
-                    console.error('Error retrieving friends:', error);
-                    setFriends_([]);
-                }
-
-            } else {
+        // Fetch generale dell'utente e dei suoi dati associati
+        const fetchUserData = async () => {
+            if (!isLoggedIn) {
                 setUser(null);
+                return;
             }
+
+            const users = await getUsers();
+            setAllUsers(users);
+            console.log("All users:", allUsers)
+
+            const foundUser = users.find((u: any) => u.email === isLoggedIn);
+            if (!foundUser) return;
+
+            setUser(foundUser);
+            console.log("Found user:", foundUser);
+
+            // Imposta lingua
+            const userLanguage = foundUser.language || 'en';
+            setLanguage(userLanguage);
+
+            switch (userLanguage) {
+                case 'it': setT(it); break;
+                case 'es': setT(es); break;
+                case 'fr': setT(fr); break;
+                case 'de': setT(de); break;
+                default: setT(en);
+            }
+
+            // Imposta tema
+            const userDarkMode = foundUser.theme || 'light';
+            setDarkMode(userDarkMode === 'dark');
+
+            // Sfide completate
+            const completed = await getChallengeComplete();
+            const userCompleted = completed.filter((c: any) => c.user_id === foundUser.id);
+            setCompletedChallenges(userCompleted);
+
+            // Richieste amicizia
+            const friendRequests = await getRequests();
+            const pending = formatFriendRequests(friendRequests, foundUser, users, t);
+            setRequests_(pending);
+
+            // Amici
+            const friends = await getFriends();
+            const friendsList = formatFriendsList(friends, foundUser.id, users);
+            setFriends_(friendsList);
         };
-        fetchUser();
+
+        fetchUserData();
     }, [isLoggedIn]);
 
     useEffect(() => {
+        // Sfide generali (non collegate all'utente)
         const fetchChallenges = async () => {
             try {
                 const challenges = await getChallenge();
                 setChallenges(challenges);
-                console.log(challenges);
             } catch (err) {
                 console.error("Errore nel get delle sfide:", err);
             }
         };
 
-        fetchChallenges(); // Esegui la funzione al caricamento del componente
-    }, []); // L'array vuoto indica che l'effetto viene eseguito solo al montaggio del componente
-
-    useEffect(() => {
-        const fetchFriends = async () => {
-            try {
-                const friends = await getFriends();
-                const friendsArray = Array.isArray(friends) ? friends : [];
-                const friendsList = friendsArray
-                    .filter((friend: any) =>
-                        friend.user_id === user.id || friend.friend_id === user.id
-                    )
-                    .map((friend: any) => {
-                        // Determina l'ID dell'altro utente (l'amico)
-                        const friendUserId = friend.user_id === user.id ? friend.friend_id : friend.user_id;
-                        const friendUser = allUsers.find((u: any) => u.id === friendUserId);
-                        if (!friendUser) return undefined;
-                        return {
-                            id: friendUser.id,
-                            username: friendUser.username,
-                            email: friendUser.email,
-                            avatar: friendUser.avatar,
-                            status: friend.status,
-                            lastSeen: friend.last_seen,
-                        };
-                    })
-                    .filter((x): x is { id: number; username: string; email: string; avatar: string; status: string; lastSeen: string } => !!x); // remove undefined with type guard
-                setFriends_(friendsList);
-            } catch (error) {
-                console.error('Error retrieving friends:', error);
-                setFriends_([]);
-            }
-        };
-
-        if (user) {
-            fetchFriends();
-        }
+        fetchChallenges();
     }, []);
+
+    function formatFriendRequests(friendRequests: any[], user: any, users: any[], t: any) {
+        return friendRequests
+            .filter((req: any) => req.receiver_id === user.id)
+            .map((req: any) => {
+                const sender = users.find((u: any) => u.id === req.sender_id);
+                if (!sender) return undefined;
+
+                const sentAt = new Date(req.sent_at);
+                const now = new Date();
+                const diffMs = now.getTime() - sentAt.getTime();
+                const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+                let requestDate = '';
+                if (diffDays === 0) requestDate = t.today || "Today";
+                else if (diffDays === 1) requestDate = t.yesterday || "Yesterday";
+                else requestDate = `${diffDays} ${t.daysAgo || "days ago"}`;
+
+                return {
+                    id: req.id,
+                    sender_id: req.sender_id,
+                    receiver_id: req.receiver_id,
+                    username: sender.username,
+                    email: sender.email,
+                    avatar: sender.avatar,
+                    requestDate,
+                };
+            })
+            .filter((x): x is NonNullable<typeof x> => !!x);
+    }
+
+    function formatFriendsList(friends: any[], userId: number, users: any[]) {
+        return friends
+            .filter((friend: any) =>
+                friend.user_id === userId || friend.friend_id === userId
+            )
+            .map((friend: any) => {
+                const friendUserId = friend.user_id === userId ? friend.friend_id : friend.user_id;
+                const friendUser = users.find((u: any) => u.id === friendUserId);
+                if (!friendUser) return undefined;
+                return {
+                    id: friend.id,
+                    user_id: friend.user_id,
+                    friend_id: friend.friend_id,
+                    username: friendUser.username,
+                    email: friendUser.email,
+                    avatar: friendUser.avatar,
+                    status: friend.status,
+                    lastSeen: friend.last_seen,
+                };
+            })
+            .filter((x): x is NonNullable<typeof x> => !!x);
+    }
+
 
 
     return (

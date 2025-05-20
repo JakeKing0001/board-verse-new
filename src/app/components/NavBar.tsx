@@ -18,9 +18,9 @@ export default function NavBar({ current = 0 }: { current?: number }) {
   const navigation = useMemo(() => [
     { name: t.home, href: '/', current: current === 0 },
     { name: t.gameTypes, href: 'gameMode', current: current === 1},
-    { name: t.turn3D, href: '#', current: current === 2, alert: t.turn3dSoon },
+    { name: t.statistics, href: 'statistics', current: current === 2},
     { name: t.friends, href: 'friends', current: current === 3},
-    { name: t.about, href: '#', current: current === 4, alert: t.portfolioSoon },
+    { name: t.about, href: 'about', current: current === 4},
   ], [t, current]);
 
   return (
@@ -66,11 +66,6 @@ export default function NavBar({ current = 0 }: { current?: number }) {
                         ),
                       'rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200 hover:shadow-lg'
                     )}
-                    onClick={() => {
-                      if (item.alert) {
-                        alert(item.alert)
-                      }
-                    }}
                   >
                     {item.name}
                   </Link>
