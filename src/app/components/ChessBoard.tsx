@@ -12,6 +12,25 @@ import Sidebar from './SideBar';
 import ChessMoves from './ChessMoves';
 import MovesModal from './MovesModal';
 import { setChallengeComplete } from '../../../services/challengeComplete';
+import { supabase } from '../../../lib/supabase';
+import { useSearchParams } from 'next/navigation';
+
+// Sopprimi silenziosamente i NotFoundError generati da React quando prova a rimuovere un nodo già rimosso
+if (typeof window !== 'undefined') {
+  const nativeRemoveChild = Node.prototype.removeChild;
+  Node.prototype.removeChild = function<T extends Node>(child: T): T {
+    try {
+      return nativeRemoveChild.call(this, child) as T;
+    } catch (err: any) {
+      if (err.name === 'NotFoundError') {
+        // qui semplicemente ignoro l'errore
+        return child;
+      }
+      // per qualsiasi altro errore, rilancio
+      throw err;
+    }
+  };
+}
 
 const letters = ["a", "b", "c", "d", "e", "f", "g", "h"];
 const numbers = [8, 7, 6, 5, 4, 3, 2, 1];
@@ -50,53 +69,75 @@ function parseFEN(fen: string): string[][] {
     return board;
 }
 
-export default function ChessBoard({ mode, time, fen_challenge, check_moves }: { mode: string, time: number, fen_challenge?: string, check_moves?: number }) {
+export default function ChessBoard({ mode, time, fen_challenge, check_moves, gameData }: { mode: string, time: number, fen_challenge?: string, check_moves?: number, gameData?: any }) {
 
     const wsRef = React.useRef<WebSocket | null>(null);
     const [isInCheck, setIsInCheck] = useState(false);
-    const { isGameOver, subMovesDrag, selectedPiece, setSelectedPiece, user, challenges, darkMode} = usePieceContext();
+    const [movesList, setMovesList] = useState<any[]>([]);
+    const searchParams = useSearchParams();
+    const gameId = searchParams.get('gameId') || '';
+    const { isGameOver, subMovesDrag, selectedPiece, setSelectedPiece, user, allUsers, challenges, darkMode } = usePieceContext();
+
+    const hostUser = allUsers.find((u) => u.id === gameData?.host_id);
+    const guestUser = allUsers.find((u) => u.id === gameData?.guest_id);
+
+    const [whiteTime, setWhiteTimeState] = useState(time); // tempo iniziale per il bianco
+    const [blackTime, setBlackTimeState] = useState(time);
 
     useEffect(() => {
         const style = document.getElementById("check-border-style");
-        if (style) {
-            document.head.removeChild(style);
+        if (style && style.parentNode) {
+            try {
+                style.parentNode.removeChild(style);
+            } catch (err) {
+                // Se lo style non è più figlio, ignoro l’errore
+                console.warn("check-border-style già rimosso:", err);
+            }
         }
     }, []);
-
-    useEffect(() => {}, []);
 
     useEffect(() => {
+        if (mode === 'online' && gameId) {
+            console.log('🚀 Inizializzo realtime per gameId:', gameId);
+            const channel = supabase
+                .channel('game-moves-listen')
+                .on(
+                    'postgres_changes',
+                    {
+                        event: 'INSERT',
+                        schema: 'public',
+                        table: 'game_moves',
+                        filter: `game_id=eq.${gameId}`
+                    },
+                    (payload) => {
+                        // payload è un oggetto { old, new, ... }
+                        console.log("⏱️ real-time payload:", payload.new)
+                        const gm = payload.new
 
-        if (mode === 'online') {
-            const ws = new WebSocket("wss://board-verse.onrender.com");
-            wsRef.current = ws;
+                        setMovesList(prev => {
+                            // 1) aggiorno la lista
+                            const updated = [...prev, gm]
+                            // 2) salvo l’ultima mossa per evidenziare
+                            setLastMove(gm.from_sq + gm.to_sq)
+                            return updated
+                        })
+                    }
+                )
+                .subscribe()
 
-            ws.onopen = () => {
-                console.log("✅ Connesso al server!");
-                ws.send("Ciao, sono un client!");
-            };
+            // Carica le mosse esistenti all'avvio
+            supabase
+                .from('game_moves')
+                .select('*')
+                .eq('game_id', gameId)
+                .order('created_at', { ascending: true })
+                .then(({ data }) => setMovesList(data || []));
 
-            ws.onmessage = (event) => {
-                console.log("📩 Messaggio dal server:", event.data);
-            };
-
-            ws.onclose = () => {
-                console.log("❌ Disconnesso dal server");
-            };
-
-            ws.onerror = (event) => {
-                console.error("⚠️ Errore WebSocket Client:", event);
+            return () => {
+                supabase.removeChannel(channel);
             };
         }
-
-    }, []);
-
-    // Funzione per inviare una mossa
-    const sendMove = (move: string) => {
-        if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-            wsRef.current.send(move);
-        }
-    };
+    }, [mode, gameId]);
 
     interface StockfishData {
         bestMove: string;
@@ -114,7 +155,8 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves }: {
     }, [isEnPassant]);
 
     const initialFEN = (fen_challenge && mode === 'challenge') ? fen_challenge : fen;
-    const [board] = useState<string[][]>(parseFEN(initialFEN));
+    const [fenState, setFenState] = useState(initialFEN);
+    const [board, setBoard] = useState<string[][]>(parseFEN(initialFEN));
     const [isWhite, setIsWhite] = useState(initialFEN.split(" ")[1] === "w");
     const [showPromotionDiv, setShowPromotionDiv] = useState(false);
     const [promotionResolved, setPromotionResolved] = useState<((value: string) => void) | null>(null);
@@ -123,8 +165,6 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves }: {
     const [showTimerDiv, setTimerDiv] = useState(false);
     const [showMovesDiv, setShowMovesDiv] = useState(false);
     const [checkMoves, setCheckMoves] = useState<number | undefined>(check_moves);
-
-    let promoted = '';
 
     useEffect(() => {
         if (isGameOver !== '') {
@@ -289,15 +329,197 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves }: {
                 // Remove sweat drops
                 const sweatDrops = document.querySelectorAll('.sweat-drop');
                 sweatDrops.forEach(drop => {
-                    drop.remove();
+                    // drop.remove();
                 });
             }
         }
     }, [isInCheck, isWhite]);
 
+    // useEffect per gestire l'aggiunta della classe quando selectedPiece cambia
+    useEffect(() => {
+        const updatePiece = () => {
+            const previousPiece = document.querySelector('.bg-yellow-200');
+            if (previousPiece) {
+                previousPiece.classList.remove('bg-yellow-200', 'rounded-full');
+                const subChoosedPiece = document.querySelectorAll('.bg-gray-400\\/75');
+                const capturedPiece = document.querySelectorAll('.bg-red-400\\/75');
+                const enPassantPiece = document.querySelectorAll('.bg-blue-400\\/75');
+                const castlingPiece = document.querySelectorAll('.bg-purple-400\\/75');
+                if (subChoosedPiece) {
+                    subChoosedPiece.forEach((piece) => {
+                        piece.classList.remove('bg-gray-400/75', 'scale-[0.50]', 'rounded-full');
+                    });
+                }
+                if (capturedPiece) {
+                    capturedPiece.forEach((piece) => {
+                        piece.classList.remove('bg-red-400/75', 'rounded-full', 'scale-[0.50]');
+                    });
+                }
+                if (enPassantPiece) {
+                    enPassantPiece.forEach((piece) => {
+                        piece.classList.remove('bg-blue-400/75', 'rounded-full', 'scale-[0.50]');
+                    });
+                }
+                if (castlingPiece) {
+                    castlingPiece.forEach((piece) => {
+                        piece.classList.remove('bg-purple-400/75', 'rounded-full', 'scale-[0.50]');
+                    });
+                }
+            }
+
+
+            if (selectedPiece) {
+                const currentPiece = document.getElementById(selectedPiece);
+                if (currentPiece) {
+                    currentPiece.classList.add('bg-yellow-200', 'rounded-full');
+                } else {
+                    console.error(`Div con id="${selectedPiece}" non trovato`);
+                }
+            }
+        };
+
+        updatePiece();
+    }, [selectedPiece]);
+
+    //-----------------------------------------------------------------------------
+    useEffect(() => {
+        if (mode === "online" && gameId) {
+            supabase
+                .from("games")
+                .select("*")
+                .eq("id", gameId)
+                .single()
+                .then(({ data }) => data);
+            // Puoi anche aggiungere un listener realtime per aggiornare lo stato
+        }
+    }, [mode, gameId]);
+
+    useEffect(() => {
+        if (mode !== 'online') return;
+
+        // 1) Pulisci tutte le evidenziazioni precedenti
+        document.querySelectorAll('[class*="bg-"]').forEach(el => {
+            el.classList.remove(
+                'bg-gray-400/75', 'bg-red-400/75', 'bg-blue-400/75', 'bg-purple-400/75'
+            );
+            (el as HTMLElement).style.pointerEvents = 'auto';
+        });
+
+        // 2) Ricostruisci la board dal FEN in stato
+        const newBoard = applyMovesToBoard(fenState, movesList);
+        setBoard(newBoard);
+
+        // 3) Alterna subito il turno
+        const nextIsWhite = movesList.length % 2 === 0;
+        setIsWhite(nextIsWhite);
+
+        //4) check & checkmate
+        //    chi ha la mossa è nextIsWhite? vero=bianco, falso=nero
+        if (getCheck(nextIsWhite)) {
+            let legal = 0;
+            // scorro la matrice per trovare tutti i pezzi del colore a mossa
+            newBoard.forEach((row, i) =>
+                row.forEach((cell, j) => {
+                    if (cell) {
+                        const isOwn = nextIsWhite
+                            ? cell === cell.toUpperCase()
+                            : cell === cell.toLowerCase();
+                        if (isOwn) {
+                            const sq = `${letters[j]}${numbers[i]}`;
+                            legal += showPiece(sq, nextIsWhite, lastMove).length;
+                        }
+                    }
+                })
+            );
+            if (legal === 0) {
+                setShowCheckMateDiv(true);
+            }
+        }
+
+        // 4) (Opzionale) Se vuoi mostrare mosse possibili all’inizio del turno
+        //    fallo **solo** per il pezzo selezionato, non per tutti i pezzi.
+        if (selectedPiece) {
+            const moves = showPiece(selectedPiece, isWhite, lastMove);
+            disableOtherMoves(moves);
+        }
+    }, [movesList, mode, fenState, selectedPiece, lastMove]);
+
+    //-----------------------------------------------------------------------------
+    useEffect(() => {
+        if (mode === 'ai') {
+            fetchStockfishData(fen, 15).then(setData);
+        }
+    }, [mode, fen]);
+
+
+    useEffect(() => {
+        if (mode === 'ai') {
+            const str = data?.bestmove ? JSON.stringify(data.bestmove, null, 2) : "";
+            const bestmove = str ? str.split(" ")[1] : "No best move available";
+            // console.log(bestmove);
+            const fromSquare = bestmove.split('')[0] + bestmove.split('')[1];
+            const toSquare = bestmove.split('')[2] + bestmove.split('')[3];
+            setTimeout(() => {
+                // console.log(fromSquare, toSquare);
+                if (document.getElementById(fromSquare)?.hasChildNodes()) {
+                    if (document.getElementById(fromSquare)?.children[0].getAttribute('src')?.includes('https://www.chess.com/chess-themes/pieces/neo/150/b')) {
+                        document.getElementById(fromSquare)?.click();
+                        setTimeout(() => {
+                            document.getElementById(toSquare)?.click();
+                            setIsWhite(true);
+                        }, 500);
+                        document.body.style.pointerEvents = 'none';
+                        document.body.style.pointerEvents = 'auto';
+                    }
+                }
+            }, 0);
+        }
+    }, [data, mode]);
+
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const hasCheckMovesInUrl = urlParams.has('check_moves');
+
+        if (checkMoves !== undefined && checkMoves === 0 && hasCheckMovesInUrl && mode === 'challenge' && !isInCheck) {
+            setShowMovesDiv(true);
+        }
+    }, [checkMoves]);
+
+    //-----------------------------------------------------------------------------
+
+    if (!user || !gameData) {
+        return <div>Caricamento partita...</div>;
+    }
+
+    const isHost = user.id === gameData.host_id;
+    const isGuest = user.id === gameData.guest_id;
+    const role = isHost ? 'host' : isGuest ? 'guest' : 'spectator';
+
+    let promoted = '';
+
+    async function updateWhiteTime(time: number) {
+        if (!gameId) return;
+        await supabase
+            .from('games')
+            .update({ white_time_remaining: time })
+            .eq('id', gameId);
+    }
+
+    async function updateBlackTime(time: number) {
+        if (!gameId) return;
+        await supabase
+            .from('games')
+            .update({ black_time_remaining: time })
+            .eq('id', gameId);
+    }
+
+
+
     function getLastMove(firstPosition: string, lastPosition: string) {
         setLastMove(`${firstPosition}${lastPosition}`);
     }
+
+    if (!gameData || !user) return <div>Loading...</div>;
 
 
     function createFEN(): string {
@@ -374,52 +596,6 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves }: {
                 return '';
         }
     }
-
-    // useEffect per gestire l'aggiunta della classe quando selectedPiece cambia
-    useEffect(() => {
-        const updatePiece = () => {
-            const previousPiece = document.querySelector('.bg-yellow-200');
-            if (previousPiece) {
-                previousPiece.classList.remove('bg-yellow-200', 'rounded-full');
-                const subChoosedPiece = document.querySelectorAll('.bg-gray-400\\/75');
-                const capturedPiece = document.querySelectorAll('.bg-red-400\\/75');
-                const enPassantPiece = document.querySelectorAll('.bg-blue-400\\/75');
-                const castlingPiece = document.querySelectorAll('.bg-purple-400\\/75');
-                if (subChoosedPiece) {
-                    subChoosedPiece.forEach((piece) => {
-                        piece.classList.remove('bg-gray-400/75', 'scale-[0.50]', 'rounded-full');
-                    });
-                }
-                if (capturedPiece) {
-                    capturedPiece.forEach((piece) => {
-                        piece.classList.remove('bg-red-400/75', 'rounded-full', 'scale-[0.50]');
-                    });
-                }
-                if (enPassantPiece) {
-                    enPassantPiece.forEach((piece) => {
-                        piece.classList.remove('bg-blue-400/75', 'rounded-full', 'scale-[0.50]');
-                    });
-                }
-                if (castlingPiece) {
-                    castlingPiece.forEach((piece) => {
-                        piece.classList.remove('bg-purple-400/75', 'rounded-full', 'scale-[0.50]');
-                    });
-                }
-            }
-
-
-            if (selectedPiece) {
-                const currentPiece = document.getElementById(selectedPiece);
-                if (currentPiece) {
-                    currentPiece.classList.add('bg-yellow-200', 'rounded-full');
-                } else {
-                    console.error(`Div con id="${selectedPiece}" non trovato`);
-                }
-            }
-        };
-
-        updatePiece();
-    }, [selectedPiece]);
 
     function disableOtherMoves(possibleMoves: NodeListOf<HTMLDivElement>) {
 
@@ -501,40 +677,67 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves }: {
         }
     }
 
-    //-----------------------------------------------------------------------------
-    useEffect(() => {
-        if (mode === 'ai') {
-            fetchStockfishData(fen, 15).then(setData);
-        }
-    }, [mode, fen]);
-
-
-    useEffect(() => {
-        if (mode === 'ai') {
-            const str = data?.bestmove ? JSON.stringify(data.bestmove, null, 2) : "";
-            const bestmove = str ? str.split(" ")[1] : "No best move available";
-            // console.log(bestmove);
-            const fromSquare = bestmove.split('')[0] + bestmove.split('')[1];
-            const toSquare = bestmove.split('')[2] + bestmove.split('')[3];
-            setTimeout(() => {
-                // console.log(fromSquare, toSquare);
-                if (document.getElementById(fromSquare)?.hasChildNodes()) {
-                    if (document.getElementById(fromSquare)?.children[0].getAttribute('src')?.includes('https://www.chess.com/chess-themes/pieces/neo/150/b')) {
-                        document.getElementById(fromSquare)?.click();
-                        setTimeout(() => {
-                            document.getElementById(toSquare)?.click();
-                            setIsWhite(true);
-                        }, 500);
-                        document.body.style.pointerEvents = 'none';
-                        document.body.style.pointerEvents = 'auto';
-                    }
-                }
-            }, 0);
-        }
-    }, [data, mode]);
     //---------------------------------------------------------------------
 
     async function handleSquareClick(square: string) {
+
+        console.log({
+            game_id: gameId,
+            from_sq: selectedPiece,
+            to_sq: square,
+            moved_by: user?.id,
+            created_at: new Date().toISOString(),
+        });
+
+
+        if (mode === 'online') {
+
+            if (!gameId || !square || !user?.id) {
+                alert("Dati mancanti per la mossa!");
+                return;
+            }
+
+            if (role === 'spectator') return;
+
+            const isMyTurn = (isWhite && role === "host") || (!isWhite && role === "guest");
+            if (mode === 'online' && !isMyTurn) return;
+
+            // 2) Se non ho ancora selezionato un pezzo, seleziono solo se è mio
+            if (selectedPiece === null) {
+                // prendo l'img dentro la casella
+                const imgSrc = document.getElementById(square)
+                    ?.children[0]
+                    ?.getAttribute('src') || '';
+                const isMyPiece = isWhite
+                    ? imgSrc.includes('/neo/150/w')
+                    : imgSrc.includes('/neo/150/b');
+                if (isMyPiece) {
+                    setSelectedPiece(square);
+                    const possible = showPiece(square, isWhite, lastMove);
+                    disableOtherMoves(possible);
+                }
+                return;
+            }
+
+            if (!selectedPiece) {
+                setSelectedPiece(square);
+                return;
+            }
+
+            //Dopo aver mosso
+            await supabase.from('game_moves').insert([{
+                game_id: gameId,
+                from_sq: selectedPiece!,
+                to_sq: square,
+                moved_by: user?.id,
+                created_at: new Date().toISOString(),
+            }]);
+
+            setIsWhite(prev => !prev)
+            setSelectedPiece(null); // Deseleziona il pezzo attivo
+            movePiece(selectedPiece, square)
+            return;
+        }
 
         if (mode === 'ai' && isWhite || true) {
             // console.log(document.getElementById(square)?.classList.contains('bg-purple-400/75'));
@@ -566,11 +769,22 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves }: {
                         const div = document.getElementById(square.props.id) as HTMLElement;
                         if (div) {
                             if (div.classList.contains('bg-blue-400/75')) {
-                                const coordinates = square.props.id.split('');
-                                enPassant = square.props.id;
-                                const letter = coordinates[0];
-                                const number = coordinates[1];
-                                document.getElementById(letter + ((parseInt(number) + (isWhite ? -1 : 1)) + ''))?.children[0]?.remove();
+                                // calcola la casella del pedone catturato
+                                const file = square.props.id[0];                // es. 'e'
+                                const rank = square.props.id[1];               // es. '5'
+                                const capturedRank = isWhite            // se è bianco, il pedone avversario era un passo più sotto
+                                    ? String(Number(rank) + 1)
+                                    : String(Number(rank) - 1);
+                                const capturedSquare = file + capturedRank;
+
+                                // aggiorna lo stato della scacchiera
+                                setBoard(prevBoard => {
+                                    const newBoard = prevBoard.map(row => [...row]);
+                                    const rowIdx = 8 - Number(capturedRank);
+                                    const colIdx = file.charCodeAt(0) - 97;
+                                    newBoard[rowIdx][colIdx] = "";
+                                    return newBoard;
+                                });
                             }
                         }
                     });
@@ -580,7 +794,16 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves }: {
                     actualMove = selectedPiece + square;
                     // console.log(actualMove);
                     // console.log(fen);
-                    sendMove(actualMove);
+                    // sendMove(actualMove);
+                    const moveData = {
+                        game_id: gameId,
+                        from: selectedPiece,
+                        to: square,
+                        fen: createFEN(),
+                        user_id: user?.id,
+                        created_at: new Date().toISOString(),
+                    };
+                    await supabase.from('game_moves').insert([moveData]);
                     setIsWhite(!isWhite);
                     console.log("Turno del: " + ((!isWhite) ? "bianco" : "nero"));
                     if ((checkMoves ?? -1) > 0) {
@@ -591,20 +814,19 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves }: {
                     setIsInCheck(opponentInCheck);
 
                     if (opponentInCheck) {
+                        let legalMoves = 0;
                         squares.forEach((square) => {
                             const div = document.getElementById(square.props.id) as HTMLElement;
                             if (div) {
                                 if (div.children[0]?.getAttribute('src')?.includes(`https://www.chess.com/chess-themes/pieces/neo/150/${!isWhite ? 'w' : 'b'}`)) {
-                                    moves = Array.from(showPiece(square.props.id, !isWhite, lastMove));
-                                    moves.push(document.getElementById(square.props.id) as HTMLDivElement);
-                                    moves = moves.filter((move) => !Array.from(subMoves).some((subMove) => subMove.id === move.id));
+                                    const movesForPiece = Array.from(showPiece(square.props.id, !isWhite, lastMove));
+                                    legalMoves += movesForPiece.length;
                                 }
                             }
                         })
-                        console.log(moves);
-                        if (moves.length === 1) {
+                        if (legalMoves === 0) {
                             setShowCheckMateDiv(true);
-                            if(mode === 'challenge'){
+                            if (mode === 'challenge') {
                                 try {
                                     let challengeIdToSet = challenges[0]?.id;
                                     // Cerca l'id della challenge corrispondente al fen_challenge
@@ -668,18 +890,40 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves }: {
         setSelectedPiece(null);
     }
 
-
+    function applyMovesToBoard(initialFEN: string, moves: any[]): string[][] {
+        let board = parseFEN(initialFEN);
+        moves.forEach(move => {
+            // Applica la mossa: move.from_sq -> move.to_sq
+            // Trova le coordinate da from_sq e to_sq (es: "e2" -> [6,4])
+            const from = move.from_sq;
+            const to = move.to_sq;
+            const fromRow = 8 - parseInt(from[1]);
+            const fromCol = from.charCodeAt(0) - 97;
+            const toRow = 8 - parseInt(to[1]);
+            const toCol = to.charCodeAt(0) - 97;
+            board[toRow][toCol] = board[fromRow][fromCol];
+            board[fromRow][fromCol] = "";
+        });
+        return board;
+    }
 
     function createBoard() {
-        for (let i: number = 0; i < 8; i++) {
-            for (let j: number = 0; j < 8; j++) {
+
+        squares.length = 0; // Reset squares array
+
+        const rowIndexes = role === 'guest' ? [...Array(8).keys()].reverse() : [...Array(8).keys()];
+        const colIndexes = role === 'guest' ? [...Array(8).keys()].reverse() : [...Array(8).keys()];
+
+        for (let i of rowIndexes) {
+            for (let j of colIndexes) {
+                const squareId = `${letters[j]}${numbers[i]}`;
                 squares.push(
                     <div
-                        key={`${letters[j]}${numbers[i]}`}
-                        id={`${letters[j]}${numbers[i]}`}
+                        key={squareId}
+                        id={squareId}
                         className={`relative aspect-square w-full flex items-center justify-center transition-effect --grid-area: ${letters[j]}${numbers[i]}`}
                         onClick={() => {
-                            handleSquareClick(`${letters[j]}${numbers[i]}`);
+                            handleSquareClick(squareId);
                         }}
                     // onDragOver={(e) => {
                     //     e.preventDefault();
@@ -720,47 +964,83 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves }: {
         setTimerDiv(false);
     };
 
-    useEffect(() => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const hasCheckMovesInUrl = urlParams.has('check_moves');
-
-        if (checkMoves !== undefined && checkMoves === 0 && hasCheckMovesInUrl && mode === 'challenge' && !isInCheck) {
-            setShowMovesDiv(true);
-        }
-    }, [checkMoves]);
-
     return (
         <>
             <Sidebar />
-            <div className="flex items-center justify-center min-h-screen p-4 md:p-8 lg:p-12 -translate-x-4 translate-y-7 relative">
-                {showPromotionDiv && (
-                    <PromotionModal onPromotionComplete={handlePromotionComplete} />
-                )}
-                {showCheckMateDiv && (
-                    <CheckMateModal onCheckMateComplete={handleCheckMateComplete} isWhite={isWhite} isChallenge={mode === 'challenge'} />
-                )}
-                {showTimerDiv && (check_moves ?? 0) <= 0 && (
-                    <TimerModal onTimerComplete={handleTimerComplete} isWhite={isWhite} />
-                )}
-                {showMovesDiv && (
-                    <MovesModal onMovesComplete={handleMovesComplete} />
-                )}
-                {(check_moves ?? 0) <= 0 && <ChessTimer isWhite={isWhite} initialTime={time} />}
-                {(check_moves ?? 0) > 0 && <ChessMoves check_moves={checkMoves ?? 0} />}
-                <div className="w-full max-w-[95vh] lg:max-w-[85vh] xl:max-w-[86vh] mx-auto -mt-14 max-xl:-translate-x-32">
-                    {/* Scacchiera */}
-                    <div
-                        className={`relative w-full aspect-square border-8 md:border-12 lg:border-16 shadow-xl border-solid ${darkMode? 'border-slate-800':'border-orange-900'} bg-white bg-cover bg-no-repeat rounded-lg z-0`}
-                        style={{
-                            backgroundImage: `url(${darkMode? 'https://images.chesscomfiles.com/chess-themes/boards/glass/200.png':'https://assets-themes.chess.com/image/9rdwe/200.png'})`,
-                            backgroundBlendMode: 'multiply'
-                        }}
-                    >
-                        <svg viewBox="0 0 100 100" className="coordinates">
-                            <text x="0.75" y="3.5" fontSize="2.8" style={{ fill: `${darkMode? '#1c2f2f':'#739552'}`}}>8</text><text x="0.75" y="15.75" fontSize="2.8" style={{ fill: '#EBECD0' }}>7</text><text x="0.75" y="28.25" fontSize="2.8" style={{ fill: `${darkMode? '#1c2f2f':'#739552'}`}}>6</text><text x="0.75" y="40.75" fontSize="2.8" style={{ fill: '#EBECD0' }}>5</text><text x="0.75" y="53.25" fontSize="2.8" style={{ fill: `${darkMode? '#1c2f2f':'#739552'}`}}>4</text><text x="0.75" y="65.75" fontSize="2.8" style={{ fill: '#EBECD0' }}>3</text><text x="0.75" y="78.25" fontSize="2.8" style={{ fill: `${darkMode? '#1c2f2f':'#739552'}`}}>2</text><text x="0.75" y="90.75" fontSize="2.8" style={{ fill: '#EBECD0' }}>1</text><text x="10" y="99" fontSize="2.8" style={{ fill: '#EBECD0' }}>a</text><text x="22.5" y="99" fontSize="2.8" style={{ fill: `${darkMode? '#1c2f2f':'#739552'}`}}>b</text><text x="35" y="99" fontSize="2.8" style={{ fill: '#EBECD0' }}>c</text><text x="47.5" y="99" fontSize="2.8" style={{ fill: `${darkMode? '#1c2f2f':'#739552'}`}}>d</text><text x="60" y="99" fontSize="2.8" style={{ fill: '#EBECD0' }}>e</text><text x="72.5" y="99" fontSize="2.8" style={{ fill: `${darkMode? '#1c2f2f':'#739552'}`}}>f</text><text x="85" y="99" fontSize="2.8" style={{ fill: '#EBECD0' }}>g</text><text x="97.5" y="99" fontSize="2.8" style={{ fill: `${darkMode? '#1c2f2f':'#739552'}`}}>h</text>
-                        </svg>
-                        <div className="absolute inset-0 grid-chess grid-cols-8 grid-rows-8 bg-cover bg-center z-20">
-                            {squares}
+
+            <div className="flex min-h-screen p-4 md:p-8 lg:p-12">
+                {/* Sezione giocatori a sinistra */}
+                <div className="flex flex-col justify-center gap-8 mr-8 min-w-[200px]">
+
+                    {/* Nero */}
+                    <div className="flex flex-col items-center">
+                        <img
+                            src={guestUser?.avatar || "/default-avatar.png"}
+                            alt="Nero"
+                            className={`w-14 h-14 rounded-full border-4 ${!isWhite ? 'border-yellow-400' : 'border-gray-300'}`}
+                        />
+                        <span className="mt-1 font-semibold text-gray-700">Nero</span>
+                        <span className="text-xs text-white">{guestUser?.username || guestUser?.email || gameData.guest_id}</span>
+                    </div>
+
+                    <span className="text-3xl font-bold text-white text-center">vs</span>
+
+                    {/* Bianco */}
+                    <div className="flex flex-col items-center">
+                        <img
+                            src={hostUser?.avatar || "/default-avatar.png"}
+                            alt="Bianco"
+                            className={`w-14 h-14 rounded-full border-4 ${isWhite ? 'border-yellow-400' : 'border-gray-300'}`}
+                        />
+                        <span className="mt-1 font-semibold text-gray-700">Bianco</span>
+                        <span className="text-xs text-white">{hostUser?.username || hostUser?.email || gameData.host_id}</span>
+                    </div>
+                </div>
+
+                {/* Sezione principale con scacchiera */}
+                <div className="flex-1 flex flex-col items-center justify-center relative">
+                    {role === 'spectator' && (
+                        <div className="fixed top-0 left-0 w-full bg-yellow-200 text-yellow-900 font-bold px-6 py-4 rounded-lg shadow-lg text-center z-50">
+                            Sei spettatore: non puoi muovere i pezzi.
+                        </div>
+                    )}
+
+                    {gameId && (
+                        <div className="text-center mb-4 text-sm text-gray-600 select-all">
+                            <span className="font-semibold">ID Partita:</span> {gameId}
+                        </div>
+                    )}
+
+                    {showPromotionDiv && (
+                        <PromotionModal onPromotionComplete={handlePromotionComplete} />
+                    )}
+                    {showCheckMateDiv && (
+                        <CheckMateModal onCheckMateComplete={handleCheckMateComplete} isWhite={isWhite} isChallenge={mode === 'challenge'} />
+                    )}
+                    {showTimerDiv && (check_moves ?? 0) <= 0 && (
+                        <TimerModal onTimerComplete={handleTimerComplete} isWhite={isWhite} />
+                    )}
+                    {showMovesDiv && (
+                        <MovesModal onMovesComplete={handleMovesComplete} />
+                    )}
+                    {(check_moves ?? 0) <= 0 && <ChessTimer isWhite={isWhite} initialTime={time} role={role} />}
+                    {(check_moves ?? 0) > 0 && <ChessMoves check_moves={checkMoves ?? 0} />}
+
+                    <div className="w-full max-w-[95vh] lg:max-w-[85vh] xl:max-w-[86vh] mx-auto -translate-x-36">
+                        {/* Scacchiera */}
+                        <div
+                            className={`relative w-full aspect-square border-8 md:border-12 lg:border-16 shadow-xl border-solid ${darkMode ? 'border-slate-800' : 'border-orange-900'} bg-white bg-cover bg-no-repeat rounded-lg z-0`}
+                            style={{
+                                backgroundImage: `url(${darkMode ? 'https://images.chesscomfiles.com/chess-themes/boards/glass/200.png' : 'https://assets-themes.chess.com/image/9rdwe/200.png'})`,
+                                backgroundBlendMode: 'multiply'
+                            }}
+                        >
+                            <svg viewBox="0 0 100 100" className="coordinates">
+                                <text x="0.75" y="3.5" fontSize="2.8" style={{ fill: `${darkMode ? '#1c2f2f' : '#739552'}` }}>8</text><text x="0.75" y="15.75" fontSize="2.8" style={{ fill: '#EBECD0' }}>7</text><text x="0.75" y="28.25" fontSize="2.8" style={{ fill: `${darkMode ? '#1c2f2f' : '#739552'}` }}>6</text><text x="0.75" y="40.75" fontSize="2.8" style={{ fill: '#EBECD0' }}>5</text><text x="0.75" y="53.25" fontSize="2.8" style={{ fill: `${darkMode ? '#1c2f2f' : '#739552'}` }}>4</text><text x="0.75" y="65.75" fontSize="2.8" style={{ fill: '#EBECD0' }}>3</text><text x="0.75" y="78.25" fontSize="2.8" style={{ fill: `${darkMode ? '#1c2f2f' : '#739552'}` }}>2</text><text x="0.75" y="90.75" fontSize="2.8" style={{ fill: '#EBECD0' }}>1</text><text x="10" y="99" fontSize="2.8" style={{ fill: '#EBECD0' }}>a</text><text x="22.5" y="99" fontSize="2.8" style={{ fill: `${darkMode ? '#1c2f2f' : '#739552'}` }}>b</text><text x="35" y="99" fontSize="2.8" style={{ fill: '#EBECD0' }}>c</text><text x="47.5" y="99" fontSize="2.8" style={{ fill: `${darkMode ? '#1c2f2f' : '#739552'}` }}>d</text><text x="60" y="99" fontSize="2.8" style={{ fill: '#EBECD0' }}>e</text><text x="72.5" y="99" fontSize="2.8" style={{ fill: `${darkMode ? '#1c2f2f' : '#739552'}` }}>f</text><text x="85" y="99" fontSize="2.8" style={{ fill: '#EBECD0' }}>g</text><text x="97.5" y="99" fontSize="2.8" style={{ fill: `${darkMode ? '#1c2f2f' : '#739552'}` }}>h</text>
+                            </svg>
+                            <div className="absolute inset-0 grid-chess grid-cols-8 grid-rows-8 bg-cover bg-center z-20">
+                                {squares}
+                            </div>
                         </div>
                     </div>
                 </div>

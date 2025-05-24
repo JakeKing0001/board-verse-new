@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "install:drivers": "playwright install chromium firefox webkit"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.0",
@@ -33,6 +34,7 @@
     "ws": "^8.18.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.52.0",
     "@types/bcrypt": "^5.0.2",
     "@types/bootstrap": "^5.2.10",
     "@types/node": "^20",

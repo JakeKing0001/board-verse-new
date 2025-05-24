@@ -4,7 +4,7 @@ import { usePieceContext } from './PieceContext';
 // import RenderModel from './RenderModel';
 // import { Pawn } from './models/Pawn';
 
-export default function App({ mode, time, fen_challenge, check_moves }: { mode: string, time: number, fen_challenge: string, check_moves: number }) {
+export default function App({ mode, time, fen_challenge, check_moves, gameData }: { mode: string, time: number, fen_challenge: string, check_moves: number, gameData?: any }) {
 
     const { darkMode} = usePieceContext();
 
@@ -21,7 +21,7 @@ export default function App({ mode, time, fen_challenge, check_moves }: { mode: 
                 </RenderModel> */}
             </div>
             <div className="relative z-10">
-                <ChessBoard mode={mode} time={time} fen_challenge={fen_challenge} check_moves={check_moves} />
+                <ChessBoard mode={mode} time={time} fen_challenge={fen_challenge} check_moves={check_moves} gameData={gameData} />
             </div>
         </div>
     );

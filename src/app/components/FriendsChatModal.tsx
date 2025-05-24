@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { getMessages, setMessages } from "../../../services/messages";
 import { Search, ChevronLeft, Send, Paperclip } from "lucide-react";
 import { usePieceContext } from "./PieceContext";
+import { supabase } from "../../../lib/supabase";
 
 type Message = { id: number; text: string; time: string; sender: "me" | "them" };
 type User = {
@@ -19,6 +20,91 @@ export default function FriendsChatModal({ show, onClose, darkMode, t = {}, }: {
   const [newMessage, setNewMessage] = useState("");
   const { user, friends, allUsers } = usePieceContext();
   const [users, setUsers] = useState<User[]>([]);
+
+  const activeChatRef = React.useRef<User | null>(null);
+  useEffect(() => {
+    activeChatRef.current = activeChat;
+  }, [activeChat]);
+
+  // sottoscrizione “split” in entrata e in uscita
+  useEffect(() => {
+    if (!user) return;
+
+    const handleInsert = ({ new: msg }: { new: any }) => {
+      // determina l’interlocutore
+      const otherId = msg.sender_id === user.id ? msg.receiver_id : msg.sender_id;
+
+      // estrai il testo
+      const text = typeof msg.text === 'string'
+        ? msg.text
+        : msg.text.content || JSON.stringify(msg.text);
+
+      const newMsg: Message = {
+        id: msg.id,
+        text,
+        time: new Date(msg.sent_at).toLocaleTimeString(),
+        sender: msg.sender_id === user.id ? 'me' : 'them',
+      };
+
+      // aggiorna solo la chat aperta
+      setUsers(prev => {
+        const updatedList = prev.map(u =>
+          u.id === otherId
+            ? {
+              ...u,
+              lastMessage: newMsg.text,
+              time: newMsg.time,
+              unread:
+                activeChatRef.current?.id === otherId
+                  ? 0
+                  : u.unread + (newMsg.sender === 'them' ? 1 : 0),
+              messages: [...u.messages, newMsg],
+            }
+            : u
+        );
+
+        // Se la chat aperta è proprio quella di otherId, sostituisci activeChat
+        if (activeChatRef.current?.id === otherId) {
+          const updatedChat = updatedList.find(u => u.id === otherId)!;
+          setActiveChat(updatedChat);
+        }
+
+        return updatedList;
+      });
+    };
+
+    const channel = supabase
+      .channel('realtime-messages')
+      // messaggi in arrivo
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'messages', filter: `receiver_id=eq.${user.id}` },
+        handleInsert
+      )
+      // messaggi in uscita
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'messages', filter: `sender_id=eq.${user.id}` },
+        handleInsert
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
+  useEffect(() => {
+    if (!activeChat) return;
+
+    const interval = setInterval(() => {
+      refreshChatMessages(activeChat.id);
+    }, 1050);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [activeChat]);
 
   useEffect(() => {
     const fetchMessages = async () => {
@@ -104,7 +190,49 @@ export default function FriendsChatModal({ show, onClose, darkMode, t = {}, }: {
 
   }, [user, friends, allUsers, show]);
 
+
   if (!show) return null;
+
+  const refreshChatMessages = async (userId: number) => {
+    try {
+      const allMessages = await getMessages();
+      const messagesBetween = allMessages
+        .filter(
+          (msg: any) =>
+            (msg.sender_id === user.id && msg.receiver_id === userId) ||
+            (msg.sender_id === userId && msg.receiver_id === user.id)
+        )
+        .sort((a: any, b: any) => new Date(a.sent_at).getTime() - new Date(b.sent_at).getTime());
+
+      const mappedMessages: Message[] = messagesBetween.flatMap((msg: any) => {
+        if (Array.isArray(msg.text)) {
+          return msg.text.map((m: any) => ({
+            id: m.id,
+            text: m.text,
+            time: m.time ? new Date(m.time).toLocaleTimeString() : "",
+            sender: m.sender_id === user.id ? "me" : "them",
+          }));
+        } else {
+          return [{
+            id: msg.id,
+            text: typeof msg.text === "string"
+              ? msg.text
+              : (msg.text && (msg.text.content || msg.text.message || JSON.stringify(msg.text))) || "",
+            time: msg.sent_at ? new Date(msg.sent_at).toLocaleTimeString() : "",
+            sender: msg.sender_id === user.id ? "me" : "them",
+          }];
+        }
+      });
+
+      setActiveChat(prev =>
+        prev && prev.id === userId
+          ? { ...prev, messages: mappedMessages }
+          : prev
+      );
+    } catch (error) {
+      console.error("Error refreshing chat messages:", error);
+    }
+  };
 
   const handleOpenChat = (userId: number) => {
     const user = users.find(u => u.id === userId);
@@ -117,6 +245,8 @@ export default function FriendsChatModal({ show, onClose, darkMode, t = {}, }: {
         )
       );
     }
+
+    refreshChatMessages(userId);
   };
 
   const handleBackToList = () => {
@@ -127,52 +257,42 @@ export default function FriendsChatModal({ show, onClose, darkMode, t = {}, }: {
     e.preventDefault();
     if (!newMessage.trim() || !activeChat) return;
 
-    // Add new message to chat
-    const updatedUsers = users.map(user => {
-      if (user.id === activeChat?.id) {
-        const newMsg = {
-          id: user.messages.length + 1,
-          text: newMessage,
-          sender: "me" as const,
-          time: "Ora"
-        };
-        return {
-          ...user,
-          messages: [...user.messages, newMsg],
+    const newMsg = {
+      id: Date.now(),
+      text: newMessage,
+      sender: "me" as const,
+      time: new Date().toLocaleTimeString()
+    };
+
+    setActiveChat(prev =>
+      prev
+        ? {
+          ...prev,
           lastMessage: newMessage,
-          time: "Ora"
-        };
-      }
-      return user;
-    });
+          time: newMsg.time,
+          messages: [...prev.messages, newMsg]
+        }
+        : null
+    );
+    setUsers(users =>
+      users.map(user =>
+        user.id === activeChat.id
+          ? {
+            ...user,
+            messages: [...user.messages, newMsg],
+            lastMessage: newMessage,
+            time: newMsg.time
+          }
+          : user
+      )
+    );
+    setNewMessage("");
 
     await setMessages({
       senderID: user.id,
       receiverID: activeChat.id,
       text: { text: newMessage }
     });
-
-    setUsers(updatedUsers);
-    setNewMessage("");
-    // Update active chat with the new messages
-    setActiveChat(prev =>
-      prev
-        ? {
-          ...prev,
-          lastMessage: newMessage,
-          time: "Ora",
-          messages: [
-            ...prev.messages,
-            {
-              id: prev.messages.length + 1,
-              text: newMessage,
-              sender: "me" as const,
-              time: "Ora"
-            }
-          ]
-        }
-        : null
-    );
   };
 
   return (

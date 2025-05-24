@@ -5,6 +5,19 @@ import NavBar from "./NavBar";
 import { useEffect, useState } from "react";
 import { usePieceContext } from "./PieceContext";
 import toast from "react-hot-toast";
+import { supabase } from "../../../lib/supabase";
+import { useRouter } from "next/navigation";
+
+interface GameSummary {
+  id: string;
+  name: string;
+  host_id: number;
+  guest_id: number;
+  status: string;
+  is_private: boolean;
+  time: number; // Tempo in secondi
+  created_at: string;
+}
 
 const OnlinePage = () => {
   const { isLoggedIn, user, t, darkMode } = usePieceContext();
@@ -16,31 +29,66 @@ const OnlinePage = () => {
   const [maxPlayers, setMaxPlayers] = useState(4);
   const [gameTime, setGameTime] = useState(10);
   const [isPrivate, setIsPrivate] = useState(false);
-  const [recentGames, setRecentGames] = useState<{ id: string; name: string; players: number; status: string; time: string }[]>([]);
+  const [recentGames, setRecentGames] = useState<GameSummary[]>([]);
+  const [mode, setMode] = useState<'playing' | 'spectating' | null>(null);
   const [days, setDays] = useState('0');
   const [hours, setHours] = useState('0');
   const [minutes, setMinutes] = useState('10');
   const [seconds, setSeconds] = useState('0');
 
-  useEffect(() => {
-    const fetchRecentGames = () => {
-      const games = [
-        { id: generateUUID(), name: 'Partita 1', players: 3, status: 'In attesa', time: '2 ore' },
-        { id: generateUUID(), name: 'Partita 2', players: 5, status: 'In corso', time: '1 ora' },
-        { id: generateUUID(), name: 'Partita 3', players: 2, status: 'Completa', time: '30 min' },
-      ];
-      setRecentGames(games);
-    };
+  const router = useRouter();
 
-    fetchRecentGames();
+  useEffect(() => {
+    supabase
+      .from("games")
+      .select("id,name,host_id,guest_id,status,is_private,time,created_at")
+      .order("created_at", { ascending: false })
+      .then(({ data }) => setRecentGames(data || []));
   }, []);
+
+  useEffect(() => {
+  const channel = supabase
+    .channel("realtime-games-list")
+    .on(
+      "postgres_changes",
+      { event: "INSERT", schema: "public", table: "games" },
+      (payload) => {
+        setRecentGames((prev) => {
+          // 1) Se già presente, non la aggiungiamo
+          if (prev.some(g => g.id === payload.new.id)) {
+            return prev;
+          }
+          // 2) Altrimenti la prepended normalmente
+          return [payload.new as GameSummary, ...prev];
+        });
+      }
+    )
+    .on(
+      "postgres_changes",
+      { event: "UPDATE", schema: "public", table: "games" },
+      (payload) => {
+        setRecentGames((prev) =>
+          prev.map(g =>
+            g.id === payload.new.id
+              ? (payload.new as GameSummary)
+              : g
+          )
+        );
+      }
+    )
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
+}, []);
 
   useEffect(() => {
     setGameTime(parseInt(days) * 24 * 60 + parseInt(hours) * 60 + parseInt(minutes) * 60 + parseInt(seconds));
   }, [days, hours, minutes, seconds]);
 
   const generateUUID = () => {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
       const r = Math.random() * 16 | 0;
       const v = c === 'x' ? r : (r & 0x3 | 0x8);
       return v.toString(16);
@@ -67,27 +115,57 @@ const OnlinePage = () => {
     setShowModal(true);
   };
 
-  const handleJoinGame = () => {
-    if (modalTab === 'id' && !gameId.trim()) {
-      toast.error("Inserisci un ID valido!");
+  const handleJoinGame = async (g: GameSummary) => {
+    if (!user) return toast.error(t.mustBeLogged);
+    if (g.status === "waiting" && g.host_id !== user.id) {
+      // Unirsi come guest
+      const { data, error } = await supabase
+        .from("games")
+        .update({ guest_id: user.id, status: "playing" })
+        .eq("id", g.id)
+        .select()
+        .single();
+      if (error) {
+        toast.error("Errore nel join della partita!");
+        return;
+      }
+      router.push(`/chessboard?mode=online&gameId=${g.id}&time=${g.time}`);
+    }
+  };
+
+  const handleStartGame = async () => {
+    if (!gameName.trim()) {
+      toast.error("Inserisci un nome per la partita!");
       return;
     }
 
-    setShowModal(false);
-    toast.success(modalTab === 'search'
-      ? "Ricerca partita in corso..."
-      : `Ricerca partita con ID: ${gameId} in corso...`);
-  };
+    if (!user) {
+      toast.error("Devi essere loggato per creare una partita!");
+      return;
+    }
 
-  const handleStartGame = () => {
-    if (!gameName.trim()) {
-      toast.error("Inserisci un nome per la partita!");
+    const newGame = {
+      name: gameName,
+      host_id: user.id,
+      guest_id: null,
+      status: "waiting",
+      is_private: isPrivate,
+      time: gameTime,
+      created_at: new Date().toISOString(),
+    }
+
+    const { data, error } = await supabase.from("games").insert([newGame]).select().single();
+
+    if (error) {
+      toast.error("Errore nella creazione della partita!");
       return;
     }
 
     setShowModal(false);
     toast.success(`Creazione partita "${gameName}" in corso...`);
     // Qui andrebbe la logica per creare effettivamente la partita
+    setRecentGames((prev) => [data, ...prev]);
+    router.push(`/chessboard?mode=online&gameId=${data.id}&time=${gameTime}`);
   };
 
   const getStatusColor = (status: string) => {
@@ -170,12 +248,13 @@ const OnlinePage = () => {
                     <div className="flex-grow">
                       <h3 className="font-bold text-lg">{game.name}</h3>
                       <div className="flex flex-wrap gap-x-6 text-sm mt-1">
-                        <span>{t.players || "Giocatori"}: {game.players}</span>
+                        <span>{t.players || "Giocatori"}: {game.host_id}</span>
                         <span className={getStatusColor(game.status)}>{game.status}</span>
-                        <span className="opacity-75">{game.time}</span>
+                        <span className="opacity-75">{game.created_at}</span>
                       </div>
                     </div>
                     <button
+                      onClick={() => handleJoinGame(game)}
                       className={`px-4 py-2 rounded-full text-white text-sm font-medium ${darkMode ? 'bg-blue-600 hover:bg-blue-500' : 'bg-green-600 hover:bg-green-500'} transition-colors`}
                     >
                       {t.joinGame || "Partecipa"}
@@ -248,7 +327,14 @@ const OnlinePage = () => {
 
                 <div className="mt-8 flex justify-end">
                   <button
-                    onClick={handleJoinGame}
+                    onClick={async () => {
+                      const game = recentGames.find(game => game.id === gameId);
+                      if (game) {
+                        await handleJoinGame(game);
+                      } else {
+                        toast.error(t.gameNotFound || "Partita non trovata!");
+                      }
+                    }}
                     className={`px-6 py-2 rounded-full font-medium text-white ${darkMode ? 'bg-blue-600 hover:bg-blue-500' : 'bg-green-600 hover:bg-green-500'} transition-colors`}
                   >
                     {t.joinGame || "Partecipa"}

@@ -90,19 +90,19 @@ export const PieceProvider = ({ children }: { children: ReactNode }) => {
         setIsLoggedIn(storedLogin);
     }, []);
 
-    useEffect(() => {
-        // Salva il login corrente in base a rememberMe
-        if (isLoggedIn) {
-            if (localStorage.getItem('rememberMe') === "true") {
-                localStorage.setItem('isLoggedIn', isLoggedIn);
-            } else {
-                sessionStorage.setItem('isLoggedIn', isLoggedIn);
-            }
-        } else {
-            localStorage.removeItem('isLoggedIn');
-            sessionStorage.removeItem('isLoggedIn');
-        }
-    }, [isLoggedIn]);
+    // useEffect(() => {
+    //     // Salva il login corrente in base a rememberMe
+    //     if (isLoggedIn) {
+    //         if (localStorage.getItem('rememberMe') === "true") {
+    //             localStorage.setItem('isLoggedIn', isLoggedIn);
+    //         } else {
+    //             sessionStorage.setItem('isLoggedIn', isLoggedIn);
+    //         }
+    //     } else {
+    //         localStorage.removeItem('isLoggedIn');
+    //         sessionStorage.removeItem('isLoggedIn');
+    //     }
+    // }, [isLoggedIn]);
 
     useEffect(() => {
         // Fetch generale dell'utente e dei suoi dati associati
