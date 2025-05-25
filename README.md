@@ -1,54 +1,55 @@
+Perfetto, preparerò un README per la tua repository "JakeKing0001/board-verse-new" che includa un grafo interattivo generato con gitdiagram. Mi occuperò di identificare i componenti principali del progetto, descriverne le funzionalità e strutturarlo per facilitare la comprensione dell'architettura.
+
+Ti aggiornerò a breve con la bozza del README.
+
+
 # Boardverse
 
-## Project Overview
-
-**Boardverse** is a web platform dedicated to board games, initially focusing on **chess**, designed to connect players of all levels in a unified digital space. The project aims to provide an engaging environment for playing chess online, solving puzzles, and interacting with friends and chess enthusiasts worldwide. Future expansions will include additional board games such as Checkers.
+Boardverse is a web platform dedicated to board games (initially focusing on **chess**), designed to connect players of all skill levels in a unified digital space.  It lets users play chess online, solve puzzles, and interact with friends or other enthusiasts worldwide.  Future expansions are planned (e.g. adding games like Checkers).
 
 ## Key Features
 
-* **Multiple Gameplay Modes**:
+* **Multiple gameplay modes:** Player vs. AI (using the Stockfish chess engine), local multiplayer on one device, online PvP matches (private or public lobbies), and chess puzzles.
+* **User profiles & stats:** Each player has a profile tracking games played, wins, and other performance metrics.
+* **Authentication & security:** Secure user registration and login, with password hashing via bcryptjs.
+* **Social interaction:** Friend system and real-time chat; players can invite friends directly into private matches.
+* **Real-time updates:** Game moves, chat messages, and notifications are synchronized in real time via Supabase.
+* **Modern, accessible UI:** Responsive design, multi-language support (English, Italian, Spanish, French, German), dark/light themes, and integrated 3D animations using Three.js.
+* **Technologies:** Frontend built with **Next.js** (React, TypeScript, Tailwind CSS, Three.js); backend/database via **Supabase** (PostgreSQL, Authentication, Realtime); AI integration using the Stockfish Chess Engine API; UI components from Headless UI and icon libraries.
 
-  * **Player vs AI**: Play against Stockfish-powered AI.
-  * **Local Multiplayer**: Two-player mode on a single device.
-  * **Online PvP**: Real-time online matches with private and public lobbies.
-  * **Chess Puzzles**: Solve predefined chess problems.
+## Architecture
 
-* **User Profile and Statistics**: Track games played, wins, and other performance metrics.
+The repository follows a standard Next.js structure. The `src/` directory contains most of the application code:
 
-* **Authentication and User Management**: Secure registration and login with password hashing via bcryptjs.
+* `src/app/` – Next.js pages and API route handlers.
+* `src/components/` – Reusable React UI components.
+* `src/lib/` – Supabase client setup and utilities.
+* `src/services/` – Client-side service functions (e.g. API calls).
+* `src/public/` – Static assets (images, 3D models, etc.).
 
-* **Social Interaction**:
+At the project root, configuration files and manifest are included (e.g. `package.json`, `next.config.ts`, `tailwind.config.ts`, `tsconfig.json`).
 
-  * Friend system and real-time chat functionality.
-  * Invite friends directly to private matches.
+Below is a high-level architecture diagram of Boardverse. It shows the main components (nodes) and data flows between them, using **GitDiagram** syntax:
 
-* **Real-time Updates**: Real-time synchronization of moves, chats, and notifications via Supabase.
+```gitdiagram
+# Nodes
+Client:User's Browser
+NextApp:Boardverse Frontend (Next.js + React)
+Supabase:Supabase (Auth, Realtime)
+Database:PostgreSQL (Supabase DB)
+Stockfish:Stockfish Chess AI
+# Flows
+Client --> NextApp
+NextApp --> Supabase
+NextApp --> Stockfish
+Supabase --> Database
+```
 
-* **Modern, Accessible UI**:
+In this diagram, the **Client** (user’s browser) communicates with the Next.js-based frontend. The frontend interacts with **Supabase** services for authentication, database storage, and real-time updates, and it also queries the **Stockfish** chess engine for AI moves. Supabase manages the PostgreSQL database (via the **Database** node), storing game state, user data, chat messages, etc. Real-time game state and chat synchronization are handled by Supabase’s realtime features.
 
-  * Responsive design.
-  * Multi-language support (English, Italian, Spanish, French, German).
-  * Dark and light theme options.
-  * Integrated 3D animations with Three.js.
+## Installation
 
-## Technologies Used
-
-* **Frontend**: Next.js, React, Tailwind CSS, TypeScript, Three.js
-* **Backend & Database**: Supabase (PostgreSQL, Authentication, Realtime)
-* **AI Integration**: Stockfish Chess Engine API
-* **UI Components**: Headless UI, Heroicons, Lucide Icons, Bootstrap Icons
-* **Security**: bcryptjs for secure password handling
-
-## Installation Guide
-
-Follow these steps to set up Boardverse locally:
-
-### Prerequisites
-
-* Node.js (v18+ recommended)
-* npm/yarn/pnpm
-
-### Setup Instructions
+To run Boardverse locally, first ensure you have Node.js v18+ and a package manager (npm, Yarn, or pnpm) installed. Then execute:
 
 ```bash
 git clone https://github.com/JakeKing0001/board-verse-new.git
@@ -56,69 +57,39 @@ cd board-verse-new
 npm install
 ```
 
-### Environment Configuration (optional)
-
-Create a `.env.local` file if connecting to a custom Supabase instance:
+Optionally, create a `.env.local` file in the project root to configure a custom Supabase backend. For example:
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anonymous-key
 ```
 
-### Running the Application
+Start the development server with:
 
 ```bash
 npm run dev
 ```
 
-Visit [http://localhost:3000](http://localhost:3000)
+By default, the app will be available at [http://localhost:3000](http://localhost:3000).
 
-### Production Build
+## Contributing
 
-```bash
-npm run build
-npm run start
-```
+Contributions are welcome! Please follow these steps (as outlined in the repository) to contribute:
 
-## Project Structure
-
-```
-board-verse-new/
-├── src/
-│   ├── app/                  # Pages and API routes
-│   ├── components/           # Reusable React components
-│   ├── lib/                  # Supabase client setup
-│   ├── public/               # Static files and models
-│   ├── services/             # Client-side service functions
-├── package.json              # Dependencies and scripts
-├── next.config.ts            # Next.js configuration
-├── tailwind.config.ts        # Tailwind CSS configuration
-├── tsconfig.json             # TypeScript configuration
-└── README.md                 # Documentation
-```
-
-## Contribution Guidelines
-
-Contributions are welcome! Follow these steps:
-
-1. Fork the repository.
-2. Create a new branch (`feature/your-feature`, `fix/your-bug`).
-3. Commit clear and concise changes.
-4. Submit a Pull Request detailing your changes.
-
-Ensure your code passes ESLint (`npm run lint`) and follows existing code conventions.
+* **Fork** the repository on GitHub.
+* **Create a new branch** for your feature or bugfix (e.g. `feature/my-feature`).
+* **Commit** your changes with clear messages and **push** to your fork, then **open a Pull Request** against the main repository.
+* **Run lint** (`npm run lint`) and ensure your code follows the existing conventions.
 
 ## License
 
-Currently, Boardverse is "All Rights Reserved". For usage inquiries, contact the repository maintainer directly. (Consider adding an open-source license like MIT or GPL in the future.)
+Boardverse is currently distributed as **“All Rights Reserved”**. For usage inquiries or licensing questions, please contact the repository maintainer.
 
-## Contacts
+## Useful Links
 
-* **Maintainer:** [JakeKing0001](https://github.com/JakeKing0001)
-* **Issues & Discussions:** [GitHub Issues](https://github.com/JakeKing0001/board-verse-new/issues)
-* **Supabase Documentation:** [Supabase Docs](https://supabase.com/docs)
-* **Next.js Documentation:** [Next.js Docs](https://nextjs.org/docs)
+* Maintainer: [JakeKing0001](https://github.com/JakeKing0001)
+* Issue Tracker: [Boardverse-New GitHub Issues](https://github.com/JakeKing0001/board-verse-new/issues)
+* Supabase Documentation: [supabase.com/docs](https://supabase.com/docs)
+* Next.js Documentation: [nextjs.org/docs](https://nextjs.org/docs)
 
----
-
-*Thank you for contributing to Boardverse!*
+**Enjoy playing!**
