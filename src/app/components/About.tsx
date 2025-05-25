@@ -13,60 +13,24 @@ const AboutPage = () => {
   const teamMembers = [
     {
       id: 1,
-      name: "Alessandro Rossi",
-      role: t.grandmaster || "Grandmaster",
-      avatar: "/images/team/alessandro.jpg",
-      bio: t.alessandroBio || "International Grandmaster with over 20 years of competitive chess experience. Founded ChessMaestro to share his passion for the game."
-    },
-    {
-      id: 2,
-      name: "Martina Bianchi",
-      role: t.chessCoach || "Chess Coach",
-      avatar: "/images/team/martina.jpg",
-      bio: t.martinaBio || "FIDE Master and certified chess coach specializing in teaching beginners and intermediate players. Creator of our learning curriculum."
-    },
-    {
-      id: 3,
-      name: "Luca Ferrari",
-      role: t.technicalDirector || "Technical Director",
-      avatar: "/images/team/luca.jpg",
-      bio: t.lucaBio || "Computer scientist and chess enthusiast who develops our advanced chess engine and ensures our platform runs smoothly."
-    },
-    {
-      id: 4,
-      name: "Giulia Romano",
-      role: t.communityManager || "Community Manager",
-      avatar: "/images/team/giulia.jpg",
-      bio: t.giuliaBio || "Chess enthusiast and social media expert who organizes our online tournaments and keeps our community engaged."
+      name: "Davide Pesino",
+      role: t.grandmaster || "Program Manager",
+      avatar: "/images/team/davide.jpg",
+      bio: t.alessandroBio || "Responsible for overall project management and development."
     }
   ];
 
   // Milestones data
   const milestones = [
     {
-      year: "2018",
-      event: t.founding || "Founding of ChessMaestro",
-      description: t.foundingDesc || "Started as a small chess club in Milano with just 20 members"
-    },
-    {
-      year: "2019",
-      event: t.onlinePlatform || "Launch of Online Platform",
-      description: t.onlinePlatformDesc || "Expanded to the digital world with our first web application"
-    },
-    {
-      year: "2021",
-      event: t.nationalTournament || "First National Tournament",
-      description: t.nationalTournamentDesc || "Hosted the first Italian online championship with over 1,000 participants"
-    },
-    {
-      year: "2023",
-      event: t.aiFeatures || "Introduction of AI Features",
-      description: t.aiFeaturesDesc || "Launched our custom chess engine and personalized training assistant"
-    },
-    {
       year: "2024",
-      event: t.international || "International Expansion",
-      description: t.internationalDesc || "Reached 100,000 users across 50 countries"
+      event: t.founding || "Founding of BoardVerse",
+      description: t.foundingDesc || "The BoardVerse project was founded by only Davide Pesino."
+    },
+    {
+      year: "2025",
+      event: t.launch || "Launch of BoardVerse",
+      description: t.launchDesc || "The BoardVerse project was launched with a focus on chess."
     }
   ];
 
@@ -89,7 +53,7 @@ const AboutPage = () => {
         {/* Main content */}
         <div className="z-10 w-full max-w-5xl px-4 flex flex-col items-center pb-20">
           <h1 className="text-5xl font-bold mb-8 tracking-tight">
-            {t.aboutUs || "About ChessMaestro"}
+            {t.aboutUs || "About BoardVerse"}
           </h1>
 
           {/* Chess pieces icon */}
@@ -144,7 +108,7 @@ const AboutPage = () => {
                     {t.chessJourney || "Our Chess Journey"}
                   </h2>
                   <p className="mb-4 text-lg">
-                    {t.storyIntro || "ChessMaestro was born from a deep passion for the royal game. What started as a small chess club in Milano has evolved into one of Italy's leading online chess platforms."}
+                    {t.storyIntro || "BoardVerse was born from a deep passion for the royal game. What started as a small chess club in Milano has evolved into one of Italy's leading online chess platforms."}
                   </p>
                   <p className="mb-4 text-lg">
                     {t.storyBody || "Our founders, a group of chess enthusiasts ranging from amateur players to grandmasters, shared a common vision: to create an inclusive space where chess lovers of all levels could learn, play, and connect."}
@@ -181,7 +145,7 @@ const AboutPage = () => {
             {activeTab === 'team' && (
               <div>
                 <h2 className={`text-2xl font-semibold mb-6 ${darkMode ? 'text-white' : 'text-green-800'}`}>
-                  {t.meetTheTeam || "Meet the Team Behind ChessMaestro"}
+                  {t.meetTheTeam || "Meet the Team Behind BoardVerse"}
                 </h2>
                 
                 <p className="mb-8 text-lg">
@@ -233,7 +197,7 @@ const AboutPage = () => {
                     </p>
                   </div>
                   <p className="mb-4 text-lg">
-                    {t.missionIntro || "At ChessMaestro, we believe that chess is more than just a game—it's a tool for developing critical thinking, patience, and strategic planning."}
+                    {t.missionIntro || "At BoardVerse, we believe that chess is more than just a game—it's a tool for developing critical thinking, patience, and strategic planning."}
                   </p>
                   <p className="text-lg">
                     {t.missionBody || "We're committed to making chess accessible to everyone, from beginners taking their first steps to advanced players seeking new challenges."}
@@ -297,7 +261,7 @@ const AboutPage = () => {
           <div className={`w-full max-w-4xl mt-10 p-8 rounded-3xl ${darkMode ? 'bg-slate-800/80' : 'bg-white/40'} backdrop-blur-md border ${darkMode ? 'border-slate-700' : 'border-white/50'} text-center`}>
             <h2 className="text-2xl font-bold mb-4">{t.joinCommunity || "Join Our Chess Community Today"}</h2>
             <p className="mb-6 max-w-2xl mx-auto">
-              {t.joinText || "Whether you're just learning the rules or you're an experienced player looking for new challenges, there's a place for you at ChessMaestro."}
+              {t.joinText || "Whether you're just learning the rules or you're an experienced player looking for new challenges, there's a place for you at BoardVerse."}
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <Link 
