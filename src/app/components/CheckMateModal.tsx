@@ -152,7 +152,13 @@ const CheckMateModal: React.FC<CheckMateModalProps> = ({ onCheckMateComplete, is
 
                     {/* Try Again button */}
                     <button
-                        onClick={() => { isChallenge? onCheckMateComplete('retry') : window.location.reload() }}
+                        onClick={() => { 
+                            if (isChallenge) {
+                                onCheckMateComplete('retry');
+                            } else {
+                                window.location.reload();
+                            }
+                        }}
                         className={`mt-8 px-8 py-3 ${buttonBgColor} rounded-full 
                         ${buttonTextColor} font-bold text-lg transform transition-all duration-300 
                         hover:scale-105 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-${isWhite ? 'gray-200' : 'gray-700'}`}

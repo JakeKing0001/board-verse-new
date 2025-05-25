@@ -193,7 +193,7 @@ const AboutPage = () => {
                   </h2>
                   <div className={`p-6 rounded-xl ${darkMode ? 'bg-slate-700' : 'bg-white/60'} mb-6`}>
                     <p className="text-lg italic">
-                      "{t.missionStatement || "To democratize the world of chess by creating an inclusive platform where players of all levels can learn, play, and grow in their chess journey."}"
+                      &quot;{t.missionStatement || "To democratize the world of chess by creating an inclusive platform where players of all levels can learn, play, and grow in their chess journey."}&quot;
                     </p>
                   </div>
                   <p className="mb-4 text-lg">

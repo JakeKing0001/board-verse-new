@@ -12,7 +12,7 @@ const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { isLoggedIn, setIsLoggedIn, allUsers, user, setUser, language, setLanguage, t, setT, darkMode, setDarkMode } = usePieceContext();
+  const { setIsLoggedIn, allUsers, t, darkMode } = usePieceContext();
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -32,6 +32,7 @@ const LoginPage = () => {
     password?: string;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [errors, setErrors] = useState<Errors>({});
 
   useEffect(() => {
@@ -74,7 +75,11 @@ const LoginPage = () => {
           localStorage.removeItem("rememberMe"); // Altrimenti rimuovila
         }
         setIsLoggedIn(user.email); // Imposta lo stato di login a true
-        (localStorage.getItem("rememberMe") === "true") ? localStorage.setItem("isLoggedIn", user.email) : sessionStorage.setItem("isLoggedIn", user.email); // Salva lo stato di login nel localStorage
+        if (localStorage.getItem("rememberMe") === "true") {
+          localStorage.setItem("isLoggedIn", user.email);
+        } else {
+          sessionStorage.setItem("isLoggedIn", user.email);
+        } // Salva lo stato di login nel localStorage
         toast.success(`Accesso effettuato con successo!`);
         setTimeout(() => { window.location.href = "/"; }, 500); // Reindirizzamento dopo successo
       } else {

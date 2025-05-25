@@ -7,7 +7,7 @@ interface TimerModalProps {
     isWhite: boolean;
 }
 
-const TimerModal: React.FC<TimerModalProps> = ({ onTimerComplete, isWhite }) => {
+const TimerModal: React.FC<TimerModalProps> = ({ isWhite }) => {
     const [isVisible, setIsVisible] = useState(false);
     const [showConfetti, setShowConfetti] = useState(false);
 

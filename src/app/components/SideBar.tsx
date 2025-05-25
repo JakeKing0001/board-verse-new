@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import {
     HomeIcon,
@@ -7,7 +7,6 @@ import {
     InformationCircleIcon,
     Cog6ToothIcon,
 } from "@heroicons/react/24/outline";
-import { BarChartIcon } from "lucide-react";
 import { usePieceContext } from "./PieceContext";
 
 export default function SideBar() {

@@ -15,6 +15,7 @@ function ChessboardPageContent() {
   const fen_challenge = searchParams.get("fen_challenge") || "defaultFen";
   const check_moves = parseInt(searchParams.get("check_moves") || "0", 10);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [game, setGame] = useState<any>(null);
 
   useEffect(() => {

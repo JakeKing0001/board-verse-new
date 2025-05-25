@@ -15,6 +15,7 @@ type User = {
   messages: Message[];
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function FriendsChatModal({ show, onClose, darkMode, t = {}, }: { show: boolean, onClose: () => void, darkMode: boolean, t: any }) {
   const [activeChat, setActiveChat] = useState<User | null>(null);
   const [newMessage, setNewMessage] = useState("");
@@ -30,6 +31,7 @@ export default function FriendsChatModal({ show, onClose, darkMode, t = {}, }: {
   useEffect(() => {
     if (!user) return;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handleInsert = ({ new: msg }: { new: any }) => {
       // determina l’interlocutore
       const otherId = msg.sender_id === user.id ? msg.receiver_id : msg.sender_id;
@@ -113,10 +115,12 @@ export default function FriendsChatModal({ show, onClose, darkMode, t = {}, }: {
         const chatUserIds = Array.from(new Set(
           allMessages
             .filter(
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               (msg: any) =>
                 msg.sender_id === user.id || msg.receiver_id === user.id
             )
             .map(
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               (msg: any) =>
                 msg.sender_id === user.id ? msg.receiver_id : msg.sender_id
             )
@@ -124,6 +128,7 @@ export default function FriendsChatModal({ show, onClose, darkMode, t = {}, }: {
 
         const mappedUsers: User[] = (chatUserIds as number[]).map((otherUserId: number) => {
           const isFriend = friends.some(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (f: any) =>
               (f.user_id === user.id && f.friend_id === otherUserId) ||
               (f.friend_id === user.id && f.user_id === otherUserId)
@@ -131,20 +136,25 @@ export default function FriendsChatModal({ show, onClose, darkMode, t = {}, }: {
 
           if (!isFriend) return null;
 
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const otherUser = allUsers.find((u: any) => u.id === otherUserId);
           if (!otherUser) return null;
 
           const messagesBetween = allMessages
             .filter(
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               (msg: any) =>
                 (msg.sender_id === user.id && msg.receiver_id === otherUserId) ||
                 (msg.sender_id === otherUserId && msg.receiver_id === user.id)
             )
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .sort((a: any, b: any) => new Date(a.sent_at).getTime() - new Date(b.sent_at).getTime());
 
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const mappedMessages: Message[] = messagesBetween.flatMap((msg: any) => {
             if (Array.isArray(msg.text)) {
               // msg.text è già un array di messaggi
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               return msg.text.map((m: any) => ({
                 id: m.id,
                 text: m.text,
@@ -172,6 +182,7 @@ export default function FriendsChatModal({ show, onClose, darkMode, t = {}, }: {
             avatar: otherUser.avatar,
             lastMessage: lastMsg ? lastMsg.text : "",
             time: lastMsg ? lastMsg.time : "",
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             unread: messagesBetween.filter((msg: any) => msg.receiver_id === user.id && msg.unread > 0).length,
             messages: mappedMessages
           };
@@ -198,12 +209,15 @@ export default function FriendsChatModal({ show, onClose, darkMode, t = {}, }: {
       const allMessages = await getMessages();
       const messagesBetween = allMessages
         .filter(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (msg: any) =>
             (msg.sender_id === user.id && msg.receiver_id === userId) ||
             (msg.sender_id === userId && msg.receiver_id === user.id)
         )
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .sort((a: any, b: any) => new Date(a.sent_at).getTime() - new Date(b.sent_at).getTime());
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const mappedMessages: Message[] = messagesBetween.flatMap((msg: any) => {
         if (Array.isArray(msg.text)) {
           return msg.text.map((m: any) => ({

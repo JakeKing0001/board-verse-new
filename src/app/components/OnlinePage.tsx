@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import NavBar from "./NavBar";
 import { useEffect, useState } from "react";
 import { usePieceContext } from "./PieceContext";
@@ -26,11 +25,9 @@ const OnlinePage = () => {
   const [modalTab, setModalTab] = useState('search'); // 'search' or 'id'
   const [gameId, setGameId] = useState('');
   const [gameName, setGameName] = useState('');
-  const [maxPlayers, setMaxPlayers] = useState(4);
   const [gameTime, setGameTime] = useState(10);
   const [isPrivate, setIsPrivate] = useState(false);
   const [recentGames, setRecentGames] = useState<GameSummary[]>([]);
-  const [mode, setMode] = useState<'playing' | 'spectating' | null>(null);
   const [days, setDays] = useState('0');
   const [hours, setHours] = useState('0');
   const [minutes, setMinutes] = useState('10');
@@ -87,15 +84,6 @@ const OnlinePage = () => {
     setGameTime(parseInt(days) * 24 * 60 + parseInt(hours) * 60 + parseInt(minutes) * 60 + parseInt(seconds));
   }, [days, hours, minutes, seconds]);
 
-  const generateUUID = () => {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-      const r = Math.random() * 16 | 0;
-      const v = c === 'x' ? r : (r & 0x3 | 0x8);
-      return v.toString(16);
-    });
-  }
-
-
   const handleCreateGame = () => {
     if (!isLoggedIn) {
       toast.error("Devi essere loggato per creare una partita!");
@@ -119,6 +107,7 @@ const OnlinePage = () => {
     if (!user) return toast.error(t.mustBeLogged);
     if (g.status === "waiting" && g.host_id !== user.id) {
       // Unirsi come guest
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { data, error } = await supabase
         .from("games")
         .update({ guest_id: user.id, status: "playing" })

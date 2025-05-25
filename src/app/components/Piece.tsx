@@ -4,7 +4,7 @@ import { showPiece } from '../pieceLogic';
 
 interface PieceProps {
     type: string;
-    id : string;
+    id: string;
 }
 
 const pieceMap: Record<string, string> = {
@@ -16,7 +16,7 @@ const pieceMap: Record<string, string> = {
     k: "k", K: "k"
 };
 
-export default function Piece({ type, id }: PieceProps) {
+export default function Piece({ type }: PieceProps) {
     const { activePiece, setActivePiece, isWhite, hoverPiece, setHoverPiece, setSelectedPiece, setsubMovesDrag } = usePieceContext();
 
     // Se non c'è pezzo, ritorna uno spazio vuoto
@@ -40,15 +40,6 @@ export default function Piece({ type, id }: PieceProps) {
     const handleClick = () => {
         setActivePiece(isActive ? null : pieceId);
     };
-
-    function handleDragStart(event: React.DragEvent, pieceId: string) {
-        event.dataTransfer.setData("text/plain", pieceId);
-        setSelectedPiece(pieceId);
-        const subMovesDrag = showPiece(pieceId, isWhite, null);
-        
-        setsubMovesDrag(subMovesDrag.toString());
-    }
-
 
     /* eslint-disable @typescript-eslint/no-unused-vars */
     return (

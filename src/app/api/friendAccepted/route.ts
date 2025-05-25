@@ -23,7 +23,7 @@ export const POST = async (req: Request) => {
   }
 };
 
-export const GET = async (req: Request) => {
+export const GET = async () => {
   try {
     // Esegui la tua logica qui
     const { data, error } = await supabase

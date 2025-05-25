@@ -9,7 +9,7 @@ import { usePieceContext } from '../components/PieceContext';
 
 export default function TablePage() {
 
-    const { setMode, t, darkMode, mode } = usePieceContext();
+    const { setMode, t, darkMode } = usePieceContext();
 
     return (
         <div className="h-screen overflow-hidden">

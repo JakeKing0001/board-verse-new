@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import NavBar from "./NavBar";
 import { useState } from "react";
 import { usePieceContext } from "./PieceContext";
@@ -80,14 +79,7 @@ const FriendsPage = () => {
           friendID: friendID
         });
 
-        
-        // Remove the friend request from backend
-        const requestToDelete = Array.isArray(requests)
-        ? requests.find(
-          (req: any) =>
-            req.sender_id === userRequest.id && req.receiver_id === user.id
-        )
-        : null;
+        // Delete request
         console.log(userRequest.id)
         if (userRequest && userRequest.id) {
           await deleteRequests({ id: userRequest.id });

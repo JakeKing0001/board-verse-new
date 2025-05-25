@@ -24,7 +24,7 @@ export const POST = async (req: Request) => {
   }
 };
 
-export const GET = async (req: Request) => {
+export const GET = async () => {
   try {
     // Esegui la tua logica qui, ad esempio, recupera i dati da Supabase
     const { data, error } = await supabase

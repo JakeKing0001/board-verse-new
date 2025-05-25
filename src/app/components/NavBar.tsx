@@ -1,8 +1,8 @@
 import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
-import { Bars3Icon, XMarkIcon, BellIcon, ChatBubbleBottomCenterTextIcon } from '@heroicons/react/24/outline'
+import { Bars3Icon, XMarkIcon, ChatBubbleBottomCenterTextIcon } from '@heroicons/react/24/outline'
 import Image from 'next/image'
 import { usePieceContext } from './PieceContext'
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import FriendsChatModal from "./FriendsChatModal";
 import Link from 'next/link'
 

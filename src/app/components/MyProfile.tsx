@@ -7,14 +7,6 @@ import { useRouter } from 'next/navigation';
 
 export default function ProfilePage() {
 
-  interface User {
-    avatar?: string;
-    username?: string;
-    full_name?: string;
-    location?: string;
-    bio?: string;
-  }
-
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('info');
 

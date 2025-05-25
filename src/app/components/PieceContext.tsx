@@ -32,23 +32,37 @@ const PieceContext = createContext<{
     setsubMovesDrag: (moves: string) => void;
     isLoggedIn: string; // Stato di login dell'utente
     setIsLoggedIn: (value: string) => void; // Funzione per aggiornare lo stato di login
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     user: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     setUser: (user: any) => void;
     language: string;
     setLanguage: (language: string) => void;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     t: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     setT: (translation: any) => void;
     darkMode: boolean;
     setDarkMode: (value: boolean) => void;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     challenges: any[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     setChallenges: (challenges: any[]) => void;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     completedChallenges: any[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     setCompletedChallenges: (completedChallenges: any[]) => void;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     requests: any[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     setRequests_: (requests: any[]) => void;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     friends: any[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     setFriends_: (friends: any[]) => void;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     allUsers: any[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     setAllUsers: (users: any[]) => void;
 } | null>(null);
 
@@ -72,14 +86,20 @@ export const PieceProvider = ({ children }: { children: ReactNode }) => {
 
     const [subMovesDrag, setsubMovesDrag] = useState<string>('');
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [user, setUser] = useState<any>(null); // Stato dell'utente
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [allUsers, setAllUsers] = useState<any[]>([]); // Stato per memorizzare tutti gli utenti
     const [language, setLanguage] = useState<string>('en'); // Stato della lingua
     const [t, setT] = useState(en); // Traduzione corrente
     const [darkMode, setDarkMode] = useState(false); // Stato della modalità scura
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [challenges, setChallenges] = useState<any[]>([]); // Stato per memorizzare le sfide
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [completedChallenges, setCompletedChallenges] = useState<any[]>([]); // Stato per memorizzare le sfide completate
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [requests, setRequests_] = useState<any[]>([]); // Stato per memorizzare le richieste di amicizia
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [friends, setFriends_] = useState<any[]>([]); // Stato per memorizzare gli amici
 
     const activeClass = 'scale-[1.15] bg-[#ffff33] opacity-50 rounded-full';
@@ -89,20 +109,6 @@ export const PieceProvider = ({ children }: { children: ReactNode }) => {
         const storedLogin = localStorage.getItem('isLoggedIn') || sessionStorage.getItem('isLoggedIn') || '';
         setIsLoggedIn(storedLogin);
     }, []);
-
-    // useEffect(() => {
-    //     // Salva il login corrente in base a rememberMe
-    //     if (isLoggedIn) {
-    //         if (localStorage.getItem('rememberMe') === "true") {
-    //             localStorage.setItem('isLoggedIn', isLoggedIn);
-    //         } else {
-    //             sessionStorage.setItem('isLoggedIn', isLoggedIn);
-    //         }
-    //     } else {
-    //         localStorage.removeItem('isLoggedIn');
-    //         sessionStorage.removeItem('isLoggedIn');
-    //     }
-    // }, [isLoggedIn]);
 
     useEffect(() => {
         // Fetch generale dell'utente e dei suoi dati associati
@@ -116,6 +122,7 @@ export const PieceProvider = ({ children }: { children: ReactNode }) => {
             setAllUsers(users);
             console.log("All users:", allUsers)
 
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const foundUser = users.find((u: any) => u.email === isLoggedIn);
             if (!foundUser) return;
 
@@ -140,6 +147,7 @@ export const PieceProvider = ({ children }: { children: ReactNode }) => {
 
             // Sfide completate
             const completed = await getChallengeComplete();
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const userCompleted = completed.filter((c: any) => c.user_id === foundUser.id);
             setCompletedChallenges(userCompleted);
 
@@ -171,10 +179,14 @@ export const PieceProvider = ({ children }: { children: ReactNode }) => {
         fetchChallenges();
     }, []);
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     function formatFriendRequests(friendRequests: any[], user: any, users: any[], t: any) {
         return friendRequests
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .filter((req: any) => req.receiver_id === user.id)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .map((req: any) => {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const sender = users.find((u: any) => u.id === req.sender_id);
                 if (!sender) return undefined;
 
@@ -201,13 +213,17 @@ export const PieceProvider = ({ children }: { children: ReactNode }) => {
             .filter((x): x is NonNullable<typeof x> => !!x);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     function formatFriendsList(friends: any[], userId: number, users: any[]) {
         return friends
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .filter((friend: any) =>
                 friend.user_id === userId || friend.friend_id === userId
             )
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .map((friend: any) => {
                 const friendUserId = friend.user_id === userId ? friend.friend_id : friend.user_id;
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const friendUser = users.find((u: any) => u.id === friendUserId);
                 if (!friendUser) return undefined;
                 return {

@@ -5,8 +5,8 @@ import Link from 'next/link';
 
 
 export default function Challenge() {
-    const [error, setError] = useState<string | null>(null); // Stato per gestire eventuali errori
-    const [isLoading, setIsLoading] = useState(false);
+    const [error] = useState<string | null>(null); // Stato per gestire eventuali errori
+    const [isLoading] = useState(false);
 
     const { challenges, completedChallenges, t, darkMode } = usePieceContext();
 

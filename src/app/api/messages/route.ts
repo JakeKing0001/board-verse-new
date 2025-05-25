@@ -6,7 +6,7 @@ export const POST = async (req: Request) => {
         const { senderID, receiverID, text } = await req.json();
 
         // Cerca se esiste già una conversazione tra questi due utenti
-        const { data: existing, error: selectError } = await supabase
+        const { data: existing} = await supabase
             .from('messages')
             .select('*')
             .or(`and(sender_id.eq.${senderID},receiver_id.eq.${receiverID}),and(sender_id.eq.${receiverID},receiver_id.eq.${senderID})`)
@@ -55,12 +55,14 @@ export const POST = async (req: Request) => {
 
             return NextResponse.json({ message: 'Message sent successfully' });
         }
+    
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
         return NextResponse.json({ error: 'An error occurred' }, { status: 500 });
     }
 };
 
-export const GET = async (req: Request) => {
+export const GET = async () => {
     try {
         const { data, error } = await supabase
             .from('messages')

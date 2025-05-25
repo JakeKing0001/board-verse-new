@@ -12,7 +12,7 @@ export default function ProfileSettings() {
   const [activeTab, setActiveTab] = useState('personal');
   const [avatar, setAvatar] = useState('default_avatar.png'); // Path to default avatar image
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
-  const { isLoggedIn, user, setUser, language, setLanguage, t, setT, darkMode, setDarkMode } = usePieceContext();
+  const { user, t, darkMode } = usePieceContext();
 
   interface ProfileData {
     name: string;
@@ -36,8 +36,6 @@ export default function ProfileSettings() {
     color_blind_mode: boolean;
     text_size: string;
   }
-
-  const fetchedUser = user;
 
   useEffect(() => {
     if (user) {

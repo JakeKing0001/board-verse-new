@@ -21,6 +21,7 @@ if (typeof window !== 'undefined') {
     Node.prototype.removeChild = function <T extends Node>(child: T): T {
         try {
             return nativeRemoveChild.call(this, child) as T;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
             if (err.name === 'NotFoundError') {
                 // qui semplicemente ignoro l'errore
@@ -36,8 +37,10 @@ const letters = ["a", "b", "c", "d", "e", "f", "g", "h"];
 const numbers = [8, 7, 6, 5, 4, 3, 2, 1];
 const squaress: JSX.Element[] = [];
 let fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'; let empty = 0; let enPassant = '';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 let actualMove: string;
 let done = false;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 let subMoves: NodeListOf<HTMLDivElement>, moves: HTMLDivElement[];
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 let bestmove: string;
@@ -65,14 +68,14 @@ function parseFEN(fen: string): string[][] {
         }
         board.push(boardRow);
     }
-
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return board;
 }
 
 export default function ChessBoard({ mode, time, fen_challenge, check_moves, gameData }: { mode: string, time: number, fen_challenge?: string, check_moves?: number, gameData?: any }) {
 
-    const wsRef = React.useRef<WebSocket | null>(null);
     const [isInCheck, setIsInCheck] = useState(false);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [movesList, setMovesList] = useState<any[]>([]);
     const searchParams = useSearchParams();
     const gameId = searchParams.get('gameId') || '';
@@ -80,9 +83,6 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
 
     const hostUser = allUsers.find((u) => u.id === gameData?.host_id);
     const guestUser = allUsers.find((u) => u.id === gameData?.guest_id);
-
-    const [whiteTime, setWhiteTimeState] = useState(time); // tempo iniziale per il bianco
-    const [blackTime, setBlackTimeState] = useState(time);
 
     useEffect(() => {
         const style = document.getElementById("check-border-style");
@@ -155,7 +155,7 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
     }, [isEnPassant]);
 
     const initialFEN = (fen_challenge && mode === 'challenge') ? fen_challenge : fen;
-    const [fenState, setFenState] = useState(initialFEN);
+    const [fenState] = useState(initialFEN);
     const [board, setBoard] = useState<string[][]>(parseFEN(initialFEN));
     const [isWhite, setIsWhite] = useState(initialFEN.split(" ")[1] === "w");
     const [showPromotionDiv, setShowPromotionDiv] = useState(false);
@@ -326,12 +326,6 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
                 const scaredPieces = document.querySelectorAll('.scared-king');
                 scaredPieces.forEach(piece => {
                     piece.classList.remove('scared-king');
-                });
-
-                // Remove sweat drops
-                const sweatDrops = document.querySelectorAll('.sweat-drop');
-                sweatDrops.forEach(drop => {
-                    // drop.remove();
                 });
             }
         }
@@ -528,30 +522,9 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
 
     let promoted = '';
 
-    async function updateWhiteTime(time: number) {
-        if (!gameId) return;
-        await supabase
-            .from('games')
-            .update({ white_time_remaining: time })
-            .eq('id', gameId);
-    }
-
-    async function updateBlackTime(time: number) {
-        if (!gameId) return;
-        await supabase
-            .from('games')
-            .update({ black_time_remaining: time })
-            .eq('id', gameId);
-    }
-
-
-
     function getLastMove(firstPosition: string, lastPosition: string) {
         setLastMove(`${firstPosition}${lastPosition}`);
     }
-
-    // if (!gameData || !user) return <div>Loading...</div>;
-
 
     function createFEN(): string {
 
@@ -806,7 +779,6 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
                                 const capturedRank = isWhite            // se è bianco, il pedone avversario era un passo più sotto
                                     ? String(Number(rank) + 1)
                                     : String(Number(rank) - 1);
-                                const capturedSquare = file + capturedRank;
 
                                 // aggiorna lo stato della scacchiera
                                 setBoard(prevBoard => {
@@ -823,9 +795,6 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
                     enableOtherMoves();
                     fen = createFEN();
                     actualMove = selectedPiece + square;
-                    // console.log(actualMove);
-                    // console.log(fen);
-                    // sendMove(actualMove);
                     const moveData = {
                         game_id: gameId,
                         from: selectedPiece,
@@ -867,6 +836,7 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
                                     let challengeIdToSet = challenges[0]?.id;
                                     // Cerca l'id della challenge corrispondente al fen_challenge
                                     if (fen_challenge && Array.isArray(challenges)) {
+                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                         const foundChallenge = challenges.find((ch: any) => ch.fen === fen_challenge);
                                         if (foundChallenge) {
                                             challengeIdToSet = foundChallenge.id;
@@ -918,16 +888,9 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
         }
     }
 
-    function handleDrop(event: React.DragEvent, targetSquareId: string) {
-        const pieceId = event.dataTransfer.getData("text/plain");
-        const subMovesArray = subMovesDrag.split(",");
-        alert(subMovesArray)
-        movePiece(pieceId, targetSquareId);
-        setSelectedPiece(null);
-    }
-
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     function applyMovesToBoard(initialFEN: string, moves: any[]): string[][] {
-        let board = parseFEN(initialFEN);
+        const board = parseFEN(initialFEN);
         moves.forEach(move => {
             // Applica la mossa: move.from_sq -> move.to_sq
             // Trova le coordinate da from_sq e to_sq (es: "e2" -> [6,4])
@@ -950,8 +913,8 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
         const rowIndexes = role === 'guest' ? [...Array(8).keys()].reverse() : [...Array(8).keys()];
         const colIndexes = role === 'guest' ? [...Array(8).keys()].reverse() : [...Array(8).keys()];
 
-        for (let i of rowIndexes) {
-            for (let j of colIndexes) {
+        for (const i of rowIndexes) {
+            for (const j of colIndexes) {
                 const squareId = `${letters[j]}${numbers[i]}`;
                 squares.push(
                     <div
@@ -961,10 +924,6 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
                         onClick={() => {
                             handleSquareClick(squareId);
                         }}
-                    // onDragOver={(e) => {
-                    //     e.preventDefault();
-                    // }}
-                    // onDrop={(e) => handleDrop(e, `${letters[j]}${numbers[i]}`)}
                     >
                         {board[i][j] && <Piece type={board[i][j]} id={`${letters[j]}${numbers[i]}`} />}
                     </div>
@@ -1063,7 +1022,7 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
                         <div
                             className={`relative w-full aspect-square border-8 md:border-12 lg:border-16 shadow-xl border-solid ${darkMode ? 'border-slate-800' : 'border-orange-900'} bg-white bg-cover bg-no-repeat rounded-lg z-0`}
                             style={{
-                                backgroundImage: `url(${darkMode ? 'https://images.chesscomfiles.com/chess-themes/boards/glass/200.png' : 'https://assets-themes.chess.com/image/9rdwe/200.png'})`,
+                                backgroundImage: `url(${darkMode ? 'https://imgs.chesscomfiles.com/chess-themes/boards/glass/200.png' : 'https://assets-themes.chess.com/img/9rdwe/200.png'})`,
                                 backgroundBlendMode: 'multiply'
                             }}
                         >

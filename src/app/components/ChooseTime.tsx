@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import { Clock, Edit3, X } from 'lucide-react';
 import { usePieceContext } from './PieceContext';
-import { useRouter } from 'next/navigation';
 import NavBar from './NavBar';
-import Link from 'next/link';
 
 const CustomTimeForm = ({ onClose, onSubmit, setTime }: { onClose: () => void, onSubmit: (totalSeconds: number) => void, setTime: (value: number) => void }) => {
     const [days, setDays] = useState('');
@@ -120,9 +118,7 @@ const CustomTimeForm = ({ onClose, onSubmit, setTime }: { onClose: () => void, o
 export default function ChooseTime() {
     const [activeTime, setActiveTime] = useState('');
     const [showCustomForm, setShowCustomForm] = useState(false);
-    const router = useRouter();
     const { t, darkMode, setTime, mode} = usePieceContext();
-    // console.log(context);
 
     const categories = [
         { id: 'quick', label: `${t.quick}` },
@@ -169,9 +165,6 @@ export default function ChooseTime() {
         }
         setActiveTime(value);
         setTime(totalSeconds);
-        // console.log(`Custom time set: ${totalSeconds} seconds`);
-
-        // router.push(`/chessboard?mode=${mode}&time=${totalSeconds}`);
     };
 
     return (
@@ -206,7 +199,6 @@ export default function ChooseTime() {
                                                         const seconds = convertToSeconds(option.value);
                                                         setTime(seconds);
                                                         setActiveTime(option.value);
-                                                        // console.log(`Button time set: ${seconds} seconds`);
                                                     }}
                                                     className={`p-4 rounded-xl font-medium transition-all duration-200 ${activeTime === option.value
                                                         ? `${darkMode ? 'bg-slate-500 text-white' : 'bg-green-500 text-white'} shadow-lg scale-105`
