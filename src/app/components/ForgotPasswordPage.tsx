@@ -4,6 +4,21 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import NavBar from "./NavBar";
 
+/**
+ * ForgotPasswordPage component renders a password recovery form.
+ *
+ * This page allows users to enter their email address to receive a password reset link.
+ * It features animated background elements, a styled form, loading state, and a confirmation message upon submission.
+ *
+ * Features:
+ * - Animated and decorative background for enhanced user experience.
+ * - Email input form with validation and loading indicator.
+ * - Displays a confirmation message after the reset link is "sent".
+ * - Navigation links to return to the login page.
+ *
+ * @component
+ * @returns {JSX.Element} The rendered ForgotPasswordPage component.
+ */
 const ForgotPasswordPage = () => {
   const [email, setEmail] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);

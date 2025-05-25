@@ -5,6 +5,19 @@ interface MovesModalProps {
     onMovesComplete: (piece: string) => void;
 }
 
+/**
+ * A modal component that displays a checkmate (loss) message to the user.
+ *
+ * This modal appears with a fade-in and scale animation when mounted, showing a prominent
+ * "You Lose" message, a description, and a button to play again. When the button is clicked,
+ * the modal fades out and the page reloads after a short delay.
+ *
+ * @component
+ * @param {MovesModalProps} props - The props for the modal component.
+ * @param {(result: string) => void} props.onMovesComplete - Callback invoked when the user completes the moves (e.g., clicks "Play Again").
+ *
+ * @returns {JSX.Element} The rendered checkmate modal.
+ */
 const CheckMateModal: React.FC<MovesModalProps> = ({ onMovesComplete }) => {
     const [isVisible, setIsVisible] = useState(false);
 

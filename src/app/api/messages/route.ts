@@ -1,6 +1,20 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '../../../../lib/supabase'; // Assicurati di importare la tua configurazione Supabase
+import { supabase } from '../../../../lib/supabase';
 
+/**
+ * Handles the POST request to send a message between two users.
+ * 
+ * This function checks if a conversation already exists between the sender and receiver.
+ * - If a conversation exists, it appends the new message to the existing conversation.
+ * - If no conversation exists, it creates a new conversation with the initial message.
+ * 
+ * The message is stored as an object containing an id, text, timestamp, sender_id, and receiver_id.
+ * 
+ * @param req - The incoming HTTP request containing senderID, receiverID, and text in the JSON body.
+ * @returns A JSON response indicating success or failure, with appropriate HTTP status codes.
+ * 
+ * @async
+ */
 export const POST = async (req: Request) => {
     try {
         const { senderID, receiverID, text } = await req.json();
@@ -14,7 +28,7 @@ export const POST = async (req: Request) => {
             .single();
 
         const newMessage = {
-            id: Date.now(), // o un altro id unico
+            id: Date.now(), //id unico
             text: text.text,
             time: new Date().toISOString(),
             sender_id: senderID,
@@ -62,6 +76,16 @@ export const POST = async (req: Request) => {
     }
 };
 
+/**
+ * Handles GET requests to fetch all messages from the 'messages' table in Supabase.
+ * 
+ * - Retrieves all messages, ordered by the 'sent_at' timestamp in ascending order.
+ * - Returns the messages as a JSON response.
+ * - If a Supabase error occurs, returns a JSON error response with status 400.
+ * - If an unexpected error occurs, returns a generic JSON error response with status 500.
+ *
+ * @returns {Promise<Response>} A promise that resolves to a Next.js JSON response containing the messages or an error message.
+ */
 export const GET = async () => {
     try {
         const { data, error } = await supabase

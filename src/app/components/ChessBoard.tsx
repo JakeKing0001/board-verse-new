@@ -72,6 +72,20 @@ function parseFEN(fen: string): string[][] {
     return board;
 }
 
+/**
+ * Renders the main ChessBoard component, supporting multiple game modes (online, AI, challenge).
+ * Handles board state, move logic, check/checkmate detection, promotion, castling, and UI effects.
+ * Integrates with Supabase for real-time online play and move synchronization.
+ * 
+ * @param props - Component props
+ * @param props.mode - The game mode ('online', 'ai', 'challenge', etc.)
+ * @param props.time - Initial time for the chess timer (in seconds)
+ * @param props.fen_challenge - Optional FEN string for challenge mode starting position
+ * @param props.check_moves - Optional number of moves to check in challenge mode
+ * @param props.gameData - Optional game data object (used in online mode)
+ * 
+ * @returns The rendered ChessBoard component with all interactive chess features and modals.
+*/
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function ChessBoard({ mode, time, fen_challenge, check_moves, gameData }: { mode: string, time: number, fen_challenge?: string, check_moves?: number, gameData?: any }) {
 

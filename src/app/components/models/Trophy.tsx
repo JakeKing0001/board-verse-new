@@ -18,6 +18,15 @@ type GLTFResult = GLTF & {
   }
 }
 
+/**
+ * Renders a 3D trophy model using react-three-fiber and @react-three/drei's useGLTF hook.
+ *
+ * The trophy consists of two meshes (gold and grey) loaded from a GLTF file.
+ * The group containing the meshes is continuously rotated on the Y-axis for a spinning effect.
+ *
+ * @param props - Props for the group element, extending JSX.IntrinsicElements['group'].
+ * @returns A React component rendering the trophy model as a spinning 3D object.
+ */
 export function Trophy(props: JSX.IntrinsicElements['group']) {
   const groupRef = useRef<THREE.Group>(null);
   const { nodes, materials } = useGLTF('/models/trophy-transformed.glb') as GLTFResult

@@ -1,6 +1,17 @@
 import React from 'react';
 import { usePieceContext } from './PieceContext';
 
+/**
+ * Displays the current number of chess moves in a styled floating widget.
+ *
+ * @param check_moves - The number of chess moves to display.
+ * @returns A fixed-positioned React component showing the move count and a label, styled according to the current theme.
+ *
+ * @remarks
+ * - Uses `usePieceContext` to access translation and dark mode state.
+ * - The component is visually emphasized with blur, shadow, and border effects.
+ * - The label text is internationalized via the `t.chess_moves` property.
+ */
 export default function ChessMoves({ check_moves }: { check_moves: number }) {
 
   const { t, darkMode } = usePieceContext();

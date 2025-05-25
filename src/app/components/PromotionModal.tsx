@@ -6,6 +6,16 @@ interface PromotionModalProps {
   onPromotionComplete: (piece: string) => void;
 }
 
+/**
+ * PromotionModal component displays a modal dialog for pawn promotion in a chess game.
+ * 
+ * It allows the user to select a piece (queen, rook, bishop, or knight) to promote a pawn to.
+ * The modal appears with a fade-in effect and adapts its appearance based on the player's color.
+ * 
+ * @param onPromotionComplete - Callback function invoked with the selected piece type ('q', 'r', 'b', or 'n') when the user makes a selection.
+ * 
+ * @returns A modal overlay with selectable chess piece options for promotion.
+ */
 const PromotionModal: React.FC<PromotionModalProps> = ({ onPromotionComplete }) => {
   const [isVisible, setIsVisible] = useState(false);
 

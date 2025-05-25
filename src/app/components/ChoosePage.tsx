@@ -7,6 +7,19 @@ import { Pawn } from '../components/models/Pawn';
 import NavBar from '../components/NavBar';
 import { usePieceContext } from '../components/PieceContext';
 
+/**
+ * Renders the main page for choosing the game mode.
+ *
+ * Displays a 3D model background with pawns and a blurred card containing selectable buttons for different game modes:
+ * - Multiplayer
+ * - AI
+ * - Online
+ * - Challenge
+ *
+ * The appearance adapts to dark mode and uses translations from context.
+ *
+ * @returns The JSX element for the choose mode page.
+ */
 export default function TablePage() {
 
     const { setMode, t, darkMode } = usePieceContext();

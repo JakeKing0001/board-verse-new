@@ -4,6 +4,26 @@ import { usePieceContext } from './PieceContext';
 import Link from 'next/link';
 
 
+/**
+ * Challenge component displays a list of chess challenges in a grid format.
+ * It handles loading and error states, and adapts its appearance based on the current dark mode setting.
+ * 
+ * Features:
+ * - Shows a navigation bar at the top.
+ * - Displays a header with the challenge title and description.
+ * - Renders a grid of challenge items, indicating completed challenges with different styles.
+ * - Handles loading and error states with appropriate UI feedback.
+ * - Uses context to access challenges, completed challenges, translations, and dark mode state.
+ * 
+ * Context Dependencies:
+ * - `challenges`: Array of available challenge objects.
+ * - `completedChallenges`: Array of completed challenge objects.
+ * - `t`: Object containing translated strings.
+ * - `darkMode`: Boolean indicating if dark mode is enabled.
+ * 
+ * @component
+ * @returns {JSX.Element} The rendered Challenge component.
+ */
 export default function Challenge() {
     const [error] = useState<string | null>(null); // Stato per gestire eventuali errori
     const [isLoading] = useState(false);

@@ -2,6 +2,18 @@ import { PieceProvider } from "./components/PieceContext";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
 
+/**
+ * Root layout component for the application.
+ *
+ * @param children - The React node(s) to be rendered within the layout.
+ * @returns The root HTML structure including meta tags, Bootstrap CSS, favicon, and context providers.
+ *
+ * @remarks
+ * - Sets up the HTML document structure with language, viewport, theme color, and favicon.
+ * - Includes Bootstrap 4 CSS from CDN for styling.
+ * - Wraps the application content with `PieceProvider` for context management.
+ * - Renders a `Toaster` component for notifications.
+ */
 export default function RootLayout({
   children,
 }: Readonly<{

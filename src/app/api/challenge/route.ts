@@ -1,12 +1,22 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '../../../../lib/supabase';
 
+/**
+ * Handles GET requests to retrieve all challenges from the 'challenges' table using Supabase.
+ *
+ * @returns {Promise<Response>} A JSON response containing the list of challenges or an error message.
+ *
+ * @throws {Error} Returns a 500 status with an error message if an unexpected error occurs.
+ *
+ * @remarks
+ * - Returns a 400 status with an error message if there is a Supabase select error.
+ * - Logs success and error messages to the console for debugging purposes.
+ */
 export const GET = async () => {
   try {
-    // Recupera tutti i dati dalla tabella 'challenges'
     const { data, error } = await supabase
-      .from('challenges') // Sostituisci con il nome della tua tabella
-      .select('*'); // Recupera tutte le colonne
+      .from('challenges')
+      .select('*');
 
     if (error) {
       console.error("Supabase select error:", error.message);

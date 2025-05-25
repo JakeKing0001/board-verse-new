@@ -9,10 +9,26 @@ interface RenderModelProps {
   gradientClassName?: string;
 }
 
-export default function RenderModel({ 
-  children, 
+/**
+ * Renders a 3D model scene using React Three Fiber's Canvas.
+ * 
+ * @param {object} props - The component props.
+ * @param {React.ReactNode} props.children - The 3D model or scene elements to render inside the canvas.
+ * @param {string} [props.className] - Additional CSS class names to apply to the canvas container.
+ * @param {string} [props.gradientClassName] - Additional CSS class names to apply to the gradient background.
+ * 
+ * @returns {JSX.Element} The rendered 3D model scene.
+ * 
+ * @example
+ * <RenderModel>
+ *   <My3DModel />
+ * </RenderModel>
+ * 
+ */
+export default function RenderModel({
+  children,
   className,
-  gradientClassName = "" 
+  gradientClassName = ""
 }: RenderModelProps) {
 
   return (

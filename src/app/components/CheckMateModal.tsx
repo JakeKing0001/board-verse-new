@@ -9,6 +9,19 @@ interface CheckMateModalProps {
     isChallenge: boolean;
 }
 
+/**
+ * Modal component displayed when a checkmate occurs in the chess game.
+ * Shows a congratulatory message, animated confetti, and a trophy icon.
+ * The appearance and colors adapt based on the winner (white or black) and challenge mode.
+ *
+ * @component
+ * @param {CheckMateModalProps} props - The props for the CheckMateModal component.
+ * @param {(action: 'retry' | 'close') => void} props.onCheckMateComplete - Callback invoked when the user interacts with the modal (retry or close).
+ * @param {boolean} props.isWhite - Indicates if the white player is the winner.
+ * @param {boolean} props.isChallenge - Indicates if the modal is shown in challenge mode (affects button behavior).
+ *
+ * @returns {JSX.Element} The rendered CheckMateModal component.
+ */
 const CheckMateModal: React.FC<CheckMateModalProps> = ({ onCheckMateComplete, isWhite, isChallenge }) => {
     const [isVisible, setIsVisible] = useState(false);
     const [showConfetti, setShowConfetti] = useState(false);

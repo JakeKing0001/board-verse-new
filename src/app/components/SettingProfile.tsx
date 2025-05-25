@@ -6,6 +6,32 @@ import { usePieceContext } from './PieceContext';
 import { settingsUser } from '../../../services/auth';
 import toast from 'react-hot-toast';
 
+/**
+ * ProfileSettings component provides a user interface for managing and updating user profile settings.
+ * 
+ * This component allows users to:
+ * - View and edit personal information (name, username, bio, location, birthdate, avatar).
+ * - Configure notification preferences (email, app, newsletter, game invites, friend requests).
+ * - Adjust privacy settings (profile visibility, online status, play history, friend requests).
+ * - Set application preferences (language, theme, color blind mode, text size).
+ * 
+ * The component uses tabs to organize settings into logical sections and provides a form for updating user data.
+ * It handles avatar uploads, input changes, and form submission with loading and success feedback.
+ * 
+ * @component
+ * @returns {JSX.Element} The rendered profile settings page.
+ * 
+ * @remarks
+ * - Requires user context from `usePieceContext`.
+ * - Uses Tailwind CSS for styling and supports dark mode.
+ * - Calls `settingsUser` to persist changes and displays toast notifications on success.
+ * - Avatar upload is handled locally for demonstration; in production, integrate with backend.
+ * 
+ * @example
+ * 
+ * <ProfileSettings />
+ * 
+ */
 export default function ProfileSettings() {
   const [isLoading, setIsLoading] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);

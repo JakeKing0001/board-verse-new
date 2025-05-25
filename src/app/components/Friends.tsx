@@ -9,6 +9,42 @@ import { deleteRequests } from "../../../services/friends";
 import { setFriends } from "../../../services/friends";
 import { deleteFriends } from "../../../services/friends";
 
+/**
+ * FriendsPage component provides a user interface for managing friends and friend requests.
+ *
+ * Features:
+ * - Displays a list of current friends with options to invite or remove them.
+ * - Shows incoming friend requests with options to accept or decline.
+ * - Allows searching for users by username and sending friend requests.
+ * - Supports dark and light themes.
+ * - Utilizes context for user, friends, requests, and localization.
+ * - Includes animated background and responsive design.
+ *
+ * State:
+ * - `showModal`: Controls visibility of the "Add Friend" modal.
+ * - `searchQuery`: Stores the current search input for finding users.
+ * - `searchResults`: Holds the results of the user search.
+ * - `activeTab`: Determines whether the "Friends" or "Requests" tab is active.
+ *
+ * Context:
+ * - Uses `usePieceContext` for authentication, user data, friends, requests, and translations.
+ *
+ * Methods:
+ * - `handleSearch`: Searches users by username and updates search results.
+ * - `sendFriendRequest`: Sends a friend request to a selected user.
+ * - `acceptFriendRequest`: Accepts an incoming friend request and updates friends list.
+ * - `declineFriendRequest`: Declines an incoming friend request.
+ * - `removeFriend`: Removes a user from the friends list.
+ * - `handleAddFriend`: Opens the "Add Friend" modal.
+ * - `getStatusColor`: Returns a color class based on a friend's online status.
+ *
+ * UI:
+ * - Renders a navigation bar, animated background, and main content area.
+ * - Provides tabs for switching between friends and requests.
+ * - Displays modals for adding friends and searching users.
+ *
+ * @component
+ */
 const FriendsPage = () => {
   const { isLoggedIn, allUsers, user, t, darkMode, friends, setFriends_, requests, setRequests_ } = usePieceContext();
   const [showModal, setShowModal] = useState(false);

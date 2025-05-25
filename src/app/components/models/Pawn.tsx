@@ -13,6 +13,19 @@ type GLTFResult = GLTF & {
   }
 }
 
+/**
+ * Renders a 3D pawn model with animated movement and interactive hover effects.
+ *
+ * The pawn's movement parameters (amplitude, frequency, rotation speed) are randomized and
+ * partially based on its initial position, creating unique and dynamic animations for each instance.
+ * The pawn floats, vibrates, and rotates in 3D space, with increased movement amplitude near the board edges.
+ * When hovered, the pawn scales up to provide visual feedback.
+ *
+ * @param props - Component props.
+ * @param props.position - Optional initial position of the pawn as a tuple [x, y, z].
+ *
+ * @returns A React component rendering the animated pawn model.
+ */
 export function Pawn(props: { position?: [number, number, number] }) {
   const { nodes, materials } = useGLTF('models/scene-transformed.glb') as GLTFResult
 

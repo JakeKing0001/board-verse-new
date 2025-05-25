@@ -1,8 +1,23 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '../../../../lib/supabase'; // Assicurati di importare la tua configurazione Supabase
+import { supabase } from '../../../../lib/supabase';
 import bcrypt from 'bcryptjs';
 import { getUsers } from '../../../../services/login';
 
+/**
+ * Handles user registration via POST request.
+ *
+ * This function receives user registration data (name, email, password, username) from the request body,
+ * hashes the password using bcrypt, checks for existing users with the same email or username,
+ * and inserts the new user into the Supabase 'users' table if validations pass.
+ *
+ * @param req - The incoming HTTP request containing user registration data in JSON format.
+ * @returns A JSON response indicating success or failure, with appropriate HTTP status codes:
+ * - 200: User registered successfully.
+ * - 400: Email or username already in use, or database insertion error.
+ * - 500: Unexpected server error.
+ *
+ * @async
+ */
 export const POST = async (req: Request) => {
   try {
     const { name, email, password, username } = await req.json();
@@ -24,23 +39,10 @@ export const POST = async (req: Request) => {
       return NextResponse.json({ error: 'This username is already in use' }, { status: 400 });
     }
 
-    // Registrazione dell'utente tramite Supabase
-    // const { data, error } = await supabase.auth.signUp({
-    //   email,
-    //   password,
-    // });
-
-    // if (error) {
-    //   console.error("Supabase signUp error:", error.message);
-    //   return NextResponse.json({ error: error.message }, { status: 400 });
-    // }
-
-    // console.log("Supabase signUp success:", data);
-
     // Inserimento dei dettagli dell'utente nel database
     const { error: insertError } = await supabase
-      .from('users') // Sostituisci con il nome della tua tabella
-      .insert([{ full_name: name, email, password: hashedPassword, username: username }]); // Assicurati che il nome della colonna corrisponda al tuo schema
+      .from('users')
+      .insert([{ full_name: name, email, password: hashedPassword, username: username }]);
 
     if (insertError) {
       console.error("Supabase insertError:", insertError.message);

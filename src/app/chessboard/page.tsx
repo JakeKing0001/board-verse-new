@@ -7,6 +7,18 @@ import App from "../components/App";
 import { supabase } from "../../../lib/supabase";
 
 
+/**
+ * Renders the main content for the chessboard page, handling different game modes and loading states.
+ *
+ * This component:
+ * - Reads query parameters from the URL to determine the game mode, game ID, time, FEN challenge, and check moves.
+ * - For online games, fetches the game data from Supabase and subscribes to real-time updates for the game.
+ * - Polls for a guest player to join if the game is waiting for an opponent.
+ * - Displays appropriate loading or waiting messages based on the game state.
+ * - Renders the main `App` component with the relevant props once the game is ready.
+ *
+ * @returns {JSX.Element} The rendered chessboard page content, including loading and waiting states.
+ */
 function ChessboardPageContent() {
   const searchParams = useSearchParams();
   const mode = searchParams.get("mode") || "defaultMode";

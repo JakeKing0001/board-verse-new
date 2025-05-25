@@ -1,6 +1,17 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '../../../../lib/supabase'; // Assicurati di importare la tua configurazione Supabase
+import { supabase } from '../../../../lib/supabase';
 
+/**
+ * Handles the POST request to accept a friend by inserting a new friendship record into the database.
+ *
+ * Expects a JSON body containing `userID` and `friendID`.
+ * Logs the received data for debugging purposes.
+ * Attempts to insert a new row into the `friendships` table using Supabase.
+ * Returns a JSON response indicating success or failure.
+ *
+ * @param req - The incoming HTTP request containing the user and friend IDs in the body.
+ * @returns A JSON response with a success message or an error message and appropriate HTTP status code.
+ */
 export const POST = async (req: Request) => {
   try {
     const { userID, friendID } = await req.json();
@@ -8,8 +19,8 @@ export const POST = async (req: Request) => {
 
     // Inserimento dei dettagli dell'utente nel database
     const { error: insertError } = await supabase
-      .from('friendships') // Sostituisci con il nome della tua tabella
-      .insert([{ user_id: userID, friend_id: friendID }]); // Assicurati che il nome della colonna corrisponda al tuo schema
+      .from('friendships')
+      .insert([{ user_id: userID, friend_id: friendID }]);
 
     if (insertError) {
       console.error("Supabase insertError:", insertError.message);
@@ -23,18 +34,27 @@ export const POST = async (req: Request) => {
   }
 };
 
+/**
+ * Handles GET requests to retrieve all friendships from the 'friendships' table.
+ *
+ * Executes a Supabase query to select the `id`, `user_id`, and `friend_id` fields.
+ * Returns the data as a JSON response if successful.
+ * If a Supabase error occurs, returns a JSON response with the error message and a 400 status code.
+ * If an unexpected error occurs, returns a generic error message with a 500 status code.
+ *
+ * @returns {Promise<Response>} A JSON response containing the friendships data or an error message.
+ */
 export const GET = async () => {
   try {
     // Esegui la tua logica qui
     const { data, error } = await supabase
       .from('friendships')
-      .select('id, user_id, friend_id'); // Sostituisci con le colonne che desideri recuperare
+      .select('id, user_id, friend_id');
 
     if (error) {
       console.error("Supabase error:", error.message);
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
-    // Ad esempio, puoi restituire un messaggio di successo
     return NextResponse.json(data);
   } catch (err) {
     console.error("Unexpected error:", err);
@@ -42,6 +62,18 @@ export const GET = async () => {
   }
 };
 
+/**
+ * Handles the DELETE request to remove a friendship between two users.
+ *
+ * Expects a JSON body containing `user_id` and `friend_id`.
+ * Deletes the corresponding record from the 'friendships' table in Supabase.
+ *
+ * @param req - The incoming HTTP request containing the user and friend IDs in the body.
+ * @returns A JSON response indicating success or failure.
+ *
+ * @throws Returns a 400 status with an error message if the Supabase delete operation fails.
+ * @throws Returns a 500 status with a generic error message if an unexpected error occurs.
+ */
 export const DELETE = async (req: Request) => {
   try {
     const { user_id, friend_id } = await req.json();

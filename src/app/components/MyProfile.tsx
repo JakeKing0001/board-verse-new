@@ -5,6 +5,20 @@ import NavBar from './NavBar';
 import { usePieceContext } from './PieceContext';
 import { useRouter } from 'next/navigation';
 
+/**
+ * Renders the user's profile page, displaying personal information, avatar, bio, interests, and preferences.
+ * Includes tab navigation for viewing additional information and user settings.
+ * Handles loading state and adapts styling based on dark mode.
+ *
+ * @component
+ * @returns {JSX.Element} The rendered profile page component.
+ *
+ * @remarks
+ * - Uses context to access user data, translation strings, and dark mode preference.
+ * - Displays a loading spinner while user data is being loaded.
+ * - Allows navigation between "Informazioni" and "Preferenze" tabs.
+ * - Provides mock data for user preferences and interests.
+ */
 export default function ProfilePage() {
 
   const [isLoading, setIsLoading] = useState(true);

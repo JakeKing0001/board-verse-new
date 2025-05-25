@@ -15,6 +15,27 @@ type User = {
   messages: Message[];
 };
 
+/**
+ * Modal component for chatting with friends.
+*
+* Displays a list of friends with whom the user has exchanged messages, allows searching contacts,
+* and enables real-time chat functionality with message sending and receiving.
+* Integrates with Supabase for real-time updates and message persistence.
+*
+* @param show - Whether the modal is visible.
+* @param onClose - Callback to close the modal.
+* @param darkMode - Whether dark mode is enabled.
+* @param t - Translation object for UI strings.
+*
+* @remarks
+* - Uses context to access the current user, friends, and all users.
+* - Subscribes to real-time message events for incoming and outgoing messages.
+* - Fetches and displays chat history for each friend.
+* - Supports marking messages as read and updating unread counts.
+* - Provides a chat interface with message input and sending capability.
+*
+* @returns The chat modal UI, or null if `show` is false.
+*/
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function FriendsChatModal({ show, onClose, darkMode, t = {}, }: { show: boolean, onClose: () => void, darkMode: boolean, t: any }) {
   const [activeChat, setActiveChat] = useState<User | null>(null);

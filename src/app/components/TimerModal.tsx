@@ -7,6 +7,22 @@ interface TimerModalProps {
     isWhite: boolean;
 }
 
+/**
+ * TimerModal component displays a modal dialog to announce the winner when the timer runs out in a chess game.
+ * It features animated confetti, a trophy icon, and a "Try Again" button to reload the game.
+ * The appearance (colors, gradients, confetti) adapts based on whether the white or black player wins.
+ *
+ * @param {TimerModalProps} props - The props for the TimerModal component.
+ * @param {boolean} props.isWhite - Indicates if the white player is the winner.
+ *
+ * @returns {JSX.Element} The rendered TimerModal component.
+ *
+ * @remarks
+ * - Uses context for translations via `usePieceContext`.
+ * - Includes animated confetti and border effects.
+ * - The modal is centered and styled with Tailwind CSS classes.
+ * - The "Try Again" button reloads the page.
+ */
 const TimerModal: React.FC<TimerModalProps> = ({ isWhite }) => {
     const [isVisible, setIsVisible] = useState(false);
     const [showConfetti, setShowConfetti] = useState(false);

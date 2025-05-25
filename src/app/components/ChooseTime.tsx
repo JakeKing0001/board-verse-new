@@ -115,6 +115,20 @@ const CustomTimeForm = ({ onClose, onSubmit, setTime }: { onClose: () => void, o
     );
 };
 
+/**
+ * ChooseTime component allows users to select a predefined or custom time control for a chess game.
+ * 
+ * This component displays categorized time options (quick, standard, daily) and provides a button to open a custom time form.
+ * When a time option is selected, it updates the active time and sets the game time using the context.
+ * 
+ * @component
+ * @returns {JSX.Element} The rendered ChooseTime component.
+ * 
+ * @remarks
+ * - Uses context from `usePieceContext` for translations, dark mode, and time/mode management.
+ * - Renders a NavBar, a list of time categories with selectable options, and a button to open a custom time form.
+ * - Supports both light and dark themes.
+ */
 export default function ChooseTime() {
     const [activeTime, setActiveTime] = useState('');
     const [showCustomForm, setShowCustomForm] = useState(false);

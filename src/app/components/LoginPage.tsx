@@ -8,6 +8,29 @@ import { usePieceContext } from "./PieceContext";
 import { getUsers } from "../../../services/login";
 import toast from "react-hot-toast";
 
+/**
+ * LoginPage component renders the login form and handles user authentication.
+ *
+ * Features:
+ * - Allows users to input their email and password to log in.
+ * - Supports "Remember Me" functionality to persist login state.
+ * - Provides a toggle to show/hide the password input.
+ * - Displays loading state and error messages during authentication.
+ * - Integrates with context for localization, theme (dark mode), and user state.
+ * - Uses toast notifications for success and error feedback.
+ * - Redirects to the home page upon successful login.
+ * - Includes links for password recovery and registration.
+ * - Styled with animated backgrounds and responsive design.
+ *
+ * Context Dependencies:
+ * - setIsLoggedIn: Function to update login state.
+ * - allUsers: List of all registered users.
+ * - t: Localization object for translated strings.
+ * - darkMode: Boolean indicating if dark mode is enabled.
+ *
+ * @component
+ * @returns {JSX.Element} The rendered login page component.
+ */
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

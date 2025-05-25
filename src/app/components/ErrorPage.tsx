@@ -1,6 +1,14 @@
 import React from 'react'
 import Link from 'next/link'
 
+/**
+ * Renders a user-friendly 404 error page indicating that the requested page was not found.
+ *
+ * Displays a prominent "404" status, a message explaining the error, and provides navigation options
+ * for the user to return home or contact support.
+ *
+ * @returns {JSX.Element} The rendered error page component.
+ */
 export default function ErrorPage() {
     return (
         <main className="grid min-h-full place-items-center bg-white px-6 py-24 sm:py-32 lg:px-8">

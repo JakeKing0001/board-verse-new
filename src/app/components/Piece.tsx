@@ -14,6 +14,19 @@ const pieceMap: Record<string, string> = {
     k: "k", K: "k"
 };
 
+/**
+ * Renders a chess piece image based on the given type.
+ * Handles piece selection, hover, and interaction logic using context.
+ *
+ * @param {PieceProps} props - The props for the Piece component.
+ * @param {string} props.type - The type of the chess piece (e.g., 'K', 'q', etc.).
+ * @returns {JSX.Element} The rendered chess piece or an empty space if no type is provided.
+ *
+ * @remarks
+ * - Uses context to manage active and hovered pieces.
+ * - Only allows interaction if the piece color matches the current player's color.
+ * - Fetches piece images from chess.com based on type and color.
+ */
 export default function Piece({ type }: PieceProps) {
     const { activePiece, setActivePiece, isWhite, hoverPiece, setHoverPiece } = usePieceContext();
 

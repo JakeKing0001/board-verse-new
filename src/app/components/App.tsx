@@ -2,6 +2,17 @@ import React from 'react';
 import ChessBoard from './ChessBoard';
 import { usePieceContext } from './PieceContext';
 
+/**
+ * Main application component that renders the chess board and background gradient.
+*
+* @param props - The properties for the App component.
+* @param props.mode - The game mode (e.g., "classic", "challenge").
+* @param props.time - The time control for the game in seconds.
+* @param props.fen_challenge - The FEN string representing the challenge position.
+* @param props.check_moves - The number of moves to check for the challenge.
+* @param props.gameData - Optional additional data for the game.
+* @returns The rendered App component with background and chess board.
+*/
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function App({ mode, time, fen_challenge, check_moves, gameData }: { mode: string, time: number, fen_challenge: string, check_moves: number, gameData?: any }) {
 

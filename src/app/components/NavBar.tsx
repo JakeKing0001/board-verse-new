@@ -10,6 +10,22 @@ function classNames(...classes: (string | undefined)[]) {
   return classes.filter(Boolean).join(' ')
 }
 
+/**
+ * NavBar component renders the main navigation bar for the application.
+ * 
+ * Features:
+ * - Responsive navigation links with active state highlighting.
+ * - Dark mode and light mode styling support.
+ * - Mobile menu with disclosure for smaller screens.
+ * - Friends chat modal toggle button.
+ * - User profile dropdown menu with links to profile, settings, and authentication actions.
+ * - Displays user avatar and handles login/logout state.
+ * 
+ * @param {object} props - Component props.
+ * @param {number} [props.current=0] - The index of the currently active navigation item.
+ * 
+ * @returns {JSX.Element} The rendered navigation bar component.
+ */
 export default function NavBar({ current = 0 }: { current?: number }) {
 
   const { t, darkMode, isLoggedIn, setIsLoggedIn, user} = usePieceContext();

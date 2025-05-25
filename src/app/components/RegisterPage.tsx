@@ -7,6 +7,32 @@ import { registerUser } from "../../../services/auth";
 import { usePieceContext } from "./PieceContext";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
 
+/**
+ * RegisterPage component renders a user registration form with responsive design and animated background.
+ * 
+ * Features:
+ * - Collects user information: full name, username, email, password, and password confirmation.
+ * - Validates input fields with custom error messages (using translations from context).
+ * - Shows/hides password fields with toggleable eye icons.
+ * - Displays loading spinner during registration process.
+ * - Handles responsive layout for small and large screens.
+ * - Provides animated and decorative background elements.
+ * - Redirects to the home page upon successful registration.
+ * - Displays error messages for invalid input or registration failure.
+ * - Includes a link to the login page for existing users.
+ * 
+ * Context:
+ * - Uses `usePieceContext` for translations and dark mode state.
+ * 
+ * State:
+ * - `formData`: Stores form input values.
+ * - `errors`: Stores validation error messages for each field.
+ * - `isLoading`: Indicates if the registration process is ongoing.
+ * - `isSmallScreen`: Tracks if the screen is small for responsive layout.
+ * - `showPassword` / `showConfirmPassword`: Toggles visibility of password fields.
+ * 
+ * @component
+ */
 const RegisterPage = () => {
   const [formData, setFormData] = useState({
     name: "",

@@ -66,6 +66,45 @@ const PieceContext = createContext<{
     setAllUsers: (users: any[]) => void;
 } | null>(null);
 
+/**
+ * Provides a context for managing the state of chess pieces, user information, challenges, friends, and UI preferences
+ * throughout the application. This context includes state and setters for the currently active piece, user authentication,
+ * language and theme preferences, challenges, friend requests, and more.
+ *
+ * @component
+ * @param {Object} props - The component props.
+ * @param {ReactNode} props.children - The child components that will have access to the context.
+ *
+ * @returns {JSX.Element} The context provider wrapping its children.
+ *
+ * @context
+ * - `activePiece`, `setActivePiece`: Currently active chess piece and its setter.
+ * - `activeClass`: CSS class for the active piece.
+ * - `isWhite`, `setIsWhite`: Boolean and setter indicating if the current player is white.
+ * - `hoverPiece`, `setHoverPiece`: Currently hovered piece and its setter.
+ * - `time`, `setTime`: Game time and its setter.
+ * - `mode`, `setMode`: Current game mode and its setter.
+ * - `isGameOver`, `setIsGameOver`: Game over state and its setter.
+ * - `selectedPiece`, `setSelectedPiece`: Currently selected piece and its setter.
+ * - `subMovesDrag`, `setsubMovesDrag`: Sub-moves during drag and its setter.
+ * - `isLoggedIn`, `setIsLoggedIn`: Logged-in user's email and its setter.
+ * - `user`, `setUser`: Current user object and its setter.
+ * - `allUsers`, `setAllUsers`: List of all users and its setter.
+ * - `language`, `setLanguage`: Current language and its setter.
+ * - `t`, `setT`: Current translation object and its setter.
+ * - `darkMode`, `setDarkMode`: Dark mode state and its setter.
+ * - `challenges`, `setChallenges`: List of challenges and its setter.
+ * - `completedChallenges`, `setCompletedChallenges`: List of completed challenges and its setter.
+ * - `requests`, `setRequests_`: List of friend requests and its setter.
+ * - `friends`, `setFriends_`: List of friends and its setter.
+ *
+ * @example
+ * 
+ * <PieceProvider>
+ *   <YourComponent />
+ * </PieceProvider>
+ * 
+ */
 export const PieceProvider = ({ children }: { children: ReactNode }) => {
 
     const [activePiece, setActivePiece] = useState<string | null>(null);

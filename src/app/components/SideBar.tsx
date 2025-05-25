@@ -9,6 +9,27 @@ import {
 } from "@heroicons/react/24/outline";
 import { usePieceContext } from "./PieceContext";
 
+/**
+ * SideBar component renders a responsive sidebar navigation menu for the application.
+ * 
+ * Features:
+ * - Toggleable sidebar with a hamburger button.
+ * - Displays navigation links with icons for Home, Game Types, Friends, and About pages.
+ * - Adapts styles for dark and light modes.
+ * - Shows user profile information and a link to profile settings at the bottom.
+ * - Includes an overlay for mobile devices to close the sidebar when clicking outside.
+ * 
+ * Context:
+ * - Uses `usePieceContext` to access the current user, translation strings, and dark mode state.
+ * 
+ * State:
+ * - `isOpen`: Controls the visibility of the sidebar.
+ * 
+ * Accessibility:
+ * - Sidebar and toggle button include appropriate ARIA labels.
+ * 
+ * @component
+ */
 export default function SideBar() {
     const [isOpen, setIsOpen] = useState(false);
     const { user, t, darkMode } = usePieceContext();

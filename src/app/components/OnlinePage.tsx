@@ -18,6 +18,45 @@ interface GameSummary {
   created_at: string;
 }
 
+/**
+ * OnlinePage component provides the main interface for the online multiplayer mode.
+ * 
+ * Features:
+ * - Displays recent online games and allows users to join or create new games.
+ * - Supports searching for games by list or by ID.
+ * - Allows users to configure game settings such as name, time, and privacy.
+ * - Uses Supabase for real-time updates and game management.
+ * - Handles user authentication and displays appropriate messages if not logged in.
+ * - Responsive and styled for both dark and light modes.
+ * 
+ * State:
+ * - showModal: Controls visibility of the modal dialog.
+ * - modalType: Determines the type of modal ('search', 'id', or 'create').
+ * - modalTab: Tab selection within the search modal.
+ * - gameId, gameName: Stores input values for joining/creating games.
+ * - gameTime: Total game time in seconds, calculated from days/hours/minutes/seconds.
+ * - isPrivate: Whether the game is private.
+ * - recentGames: List of recent games fetched from Supabase.
+ * - days, hours, minutes, seconds: Used to configure game time.
+ * 
+ * Effects:
+ * - Fetches and subscribes to real-time updates for the games list from Supabase.
+ * - Updates gameTime when time fields change.
+ * 
+ * Handlers:
+ * - handleCreateGame: Opens the create game modal.
+ * - handleSearchGame: Opens the search game modal.
+ * - handleJoinGame: Joins a selected game as a guest.
+ * - handleStartGame: Creates a new game and navigates to the chessboard.
+ * - validateNumber: Utility to sanitize and limit numeric input fields.
+ * 
+ * UI:
+ * - Animated background, navigation bar, and responsive layout.
+ * - Modal dialogs for searching, joining, and creating games.
+ * - List of recent games with join buttons.
+ * 
+ * @component
+ */
 const OnlinePage = () => {
   const { isLoggedIn, user, t, darkMode } = usePieceContext();
   const [showModal, setShowModal] = useState(false);

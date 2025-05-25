@@ -5,6 +5,18 @@ import NavBar from "./NavBar";
 import { usePieceContext } from "./PieceContext";
 import { useState } from "react";
 
+/**
+ * Renders the About page for the BoardVerse application, featuring animated backgrounds,
+ * a navigation bar, and tabbed sections for "Our Story", "Our Team", and "Our Mission".
+ * 
+ * - Displays key milestones, team member profiles, and the platform's mission and values.
+ * - Supports dark and light modes, with dynamic styling based on the current theme.
+ * - Uses translation context (`t`) for internationalization of all displayed text.
+ * - Includes call-to-action sections for joining the community or exploring resources.
+ * 
+ * @component
+ * @returns {JSX.Element} The rendered About page component.
+ */
 const AboutPage = () => {
   const { darkMode, t } = usePieceContext();
   const [activeTab, setActiveTab] = useState('story'); // 'story', 'team', or 'mission'

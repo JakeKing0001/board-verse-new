@@ -4,6 +4,22 @@ import { useEffect } from "react";
 import { usePieceContext } from "./PieceContext";
 import toast from "react-hot-toast";
 
+/**
+ * MainPage component renders the landing page of the application.
+ * 
+ * Features:
+ * - Displays a navigation bar at the top.
+ * - Shows an animated, visually appealing background with blurred, colored circles and decorative rings.
+ * - Presents the main title, description, and a prominent "Play" button.
+ * - The "Play" button navigates to the game mode if the user is logged in; otherwise, it shows an error toast.
+ * - Adapts styles based on the current dark mode setting.
+ * - Removes a specific style element from the document head on mount for cleanup.
+ * 
+ * Context:
+ * - Uses `usePieceContext` to access authentication status, translation function, and dark mode state.
+ * 
+ * @component
+ */
 const MainPage = () => {
   const { isLoggedIn, t, darkMode } = usePieceContext();
 
