@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import NavBar from "./NavBar";
 import { registerUser } from "../../../services/auth";
 import { usePieceContext } from "./PieceContext";
+import { EyeIcon, EyeOffIcon } from "lucide-react";
 
 const RegisterPage = () => {
   const [formData, setFormData] = useState({
@@ -16,6 +17,9 @@ const RegisterPage = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const { t, darkMode } = usePieceContext();
 
@@ -133,151 +137,191 @@ const RegisterPage = () => {
   return (
     <>
       <div className={`fixed top-0 left-0 w-full shadow-md z-50 ${darkMode ? 'bg-slate-800' : 'bg-white'}`}>
-      <NavBar current={-1} />
+        <NavBar current={-1} />
       </div>
       <div className={`inset-0 flex items-center justify-center ${darkMode ? 'bg-slate-900' : 'bg-gradient-to-br from-green-100 via-amber-50 to-green-100'} pt-24 min-h-screen`}>
-      <div className="relative flex flex-col items-center justify-center w-full px-4 md:px-0">
-        {/* Elementi di sfondo animati */}
-        <div className="absolute inset-0">
-        <div className={`absolute top-1/4 left-1/4 w-40 md:w-80 h-40 md:h-80 ${darkMode ? 'bg-slate-700' : 'bg-green-200'} rounded-full mix-blend-multiply filter blur-lg opacity-60 animate-pulse`}></div>
-        <div className={`absolute top-1/3 right-1/3 w-40 md:w-80 h-40 md:h-80 ${darkMode ? 'bg-slate-600' : 'bg-amber-200'} rounded-full mix-blend-multiply filter blur-lg opacity-60 animate-pulse delay-700`}></div>
-        <div className={`absolute bottom-1/4 left-1/3 w-40 md:w-80 h-40 md:h-80 ${darkMode ? 'bg-slate-500' : 'bg-green-300'} rounded-full mix-blend-multiply filter blur-lg opacity-60 animate-pulse delay-1000`}></div>
+        <div className="relative flex flex-col items-center justify-center w-full px-4 md:px-0">
+          {/* Elementi di sfondo animati */}
+          <div className="absolute inset-0">
+            <div className={`absolute top-1/4 left-1/4 w-40 md:w-80 h-40 md:h-80 ${darkMode ? 'bg-slate-700' : 'bg-green-200'} rounded-full mix-blend-multiply filter blur-lg opacity-60 animate-pulse`}></div>
+            <div className={`absolute top-1/3 right-1/3 w-40 md:w-80 h-40 md:h-80 ${darkMode ? 'bg-slate-600' : 'bg-amber-200'} rounded-full mix-blend-multiply filter blur-lg opacity-60 animate-pulse delay-700`}></div>
+            <div className={`absolute bottom-1/4 left-1/3 w-40 md:w-80 h-40 md:h-80 ${darkMode ? 'bg-slate-500' : 'bg-green-300'} rounded-full mix-blend-multiply filter blur-lg opacity-60 animate-pulse delay-1000`}></div>
+          </div>
+
+          {/* Container principale */}
+          <div className={`z-10 p-6 md:p-10 ${darkMode ? 'bg-slate-800 text-white' : 'bg-white/30'} backdrop-blur-md rounded-2xl shadow-xl transform hover:scale-105 transition-all duration-500 w-full max-w-md md:max-w-2xl`}>
+            <h1 className={`text-2xl md:text-3xl font-bold ${darkMode ? 'text-white' : 'text-green-800'} mb-6 tracking-tight text-center`}>
+              {t.joinBoardverse}
+            </h1>
+
+            <form onSubmit={handleSubmit} className={`${isSmallScreen ? 'space-y-4' : 'grid grid-cols-2 gap-x-6 gap-y-4'}`}>
+              {/* Nome */}
+              <div className={`space-y-1 ${isSmallScreen ? '' : 'col-span-1'}`}>
+                <label htmlFor="name" className={`block text-sm font-medium ${darkMode ? 'text-white' : 'text-green-700'}`}>
+                  {t.fullName}
+                </label>
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  className={`w-full px-4 py-3 ${darkMode ? 'bg-slate-700 text-white' : 'bg-white/50'} border ${errors.name ? 'border-red-300' : 'border-green-200'} rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all`}
+                  placeholder={t.yourName}
+                />
+                {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
+              </div>
+
+              {/* Username */}
+              <div className={`space-y-1 ${isSmallScreen ? '' : 'col-span-1'}`}>
+                <label htmlFor="username" className={`block text-sm font-medium ${darkMode ? 'text-white' : 'text-green-700'}`}>
+                  {t.username}
+                </label>
+                <input
+                  type="text"
+                  id="username"
+                  name="username"
+                  value={formData.username}
+                  onChange={handleChange}
+                  className={`w-full px-4 py-3 ${darkMode ? 'bg-slate-700 text-white' : 'bg-white/50'} border ${errors.username ? 'border-red-300' : 'border-green-200'} rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all`}
+                  placeholder={t.yourUsername}
+                />
+                {errors.username && <p className="text-red-500 text-xs mt-1">{errors.username}</p>}
+              </div>
+
+              {/* Email */}
+              <div className={`space-y-1 ${isSmallScreen ? '' : 'col-span-2'}`}>
+                <label htmlFor="email" className={`block text-sm font-medium ${darkMode ? 'text-white' : 'text-green-700'}`}>
+                  {t.email}
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  className={`w-full px-4 py-3 ${darkMode ? 'bg-slate-700 text-white' : 'bg-white/50'} border ${errors.email ? 'border-red-300' : 'border-green-200'} rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all`}
+                  placeholder={t.yourEmail}
+                />
+                {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+              </div>
+
+              {/* Password */}
+              <div className={`space-y-1 ${isSmallScreen ? '' : 'col-span-1'}`}>
+                <label htmlFor="password" className={`block text-sm font-medium ${darkMode ? 'text-white' : 'text-green-700'}`}>
+                  {t.password}
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    id="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    className={`w-full px-4 py-3 ${darkMode ? 'bg-slate-700 text-white' : 'bg-white/50'} border ${errors.password ? 'border-red-300' : 'border-green-200'} rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all pr-12`}
+                    placeholder={t.yourPassword}
+                  />
+                  <button
+                    type="button"
+                    tabIndex={-1}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-xl text-gray-500"
+                    onClick={() => setShowPassword((v) => !v)}
+                  >
+                    {showPassword ? (
+                      // Occhio aperto
+                      <EyeIcon className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0zm6 0c0 3.866-4.477 7-10 7S1 15.866 1 12s4.477-7 10-7 10 3.134 10 7z" />
+                      </EyeIcon>
+                    ) : (
+                      // Occhio barrato
+                      <EyeOffIcon className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-5.523 0-10-3.134-10-7a9.956 9.956 0 012.458-6.617m2.122-2.122A9.956 9.956 0 0112 5c5.523 0 10 3.134 10 7 0 1.657-.672 3.182-1.825 4.425M15 12a3 3 0 11-6 0 3 3 0 016 0zm-6.364 6.364L4 20m16 0l-1.636-1.636" />
+                      </EyeOffIcon>
+                    )}
+                  </button>
+                </div>
+                {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
+              </div>
+
+              {/* Conferma Password */}
+              <div className={`space-y-1 ${isSmallScreen ? '' : 'col-span-1'}`}>
+                <label htmlFor="confirmPassword" className={`block text-sm font-medium ${darkMode ? 'text-white' : 'text-green-700'}`}>
+                  {t.confirmPassword}
+                </label>
+                <div className="relative">
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    className={`w-full px-4 py-3 ${darkMode ? 'bg-slate-700 text-white' : 'bg-white/50'} border ${errors.confirmPassword ? 'border-red-300' : 'border-green-200'} rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all pr-12`}
+                    placeholder={t.confirmYourPassword}
+                  />
+                  <button
+                    type="button"
+                    tabIndex={-1}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-xl text-gray-500"
+                    onClick={() => setShowConfirmPassword((v) => !v)}
+                  >
+                    {showConfirmPassword ? (
+                      // Occhio aperto
+                      <EyeIcon className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0zm6 0c0 3.866-4.477 7-10 7S1 15.866 1 12s4.477-7 10-7 10 3.134 10 7z" />
+                      </EyeIcon>
+                    ) : (
+                      // Occhio barrato
+                      <EyeOffIcon className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-5.523 0-10-3.134-10-7a9.956 9.956 0 012.458-6.617m2.122-2.122A9.956 9.956 0 0112 5c5.523 0 10 3.134 10 7 0 1.657-.672 3.182-1.825 4.425M15 12a3 3 0 11-6 0 3 3 0 016 0zm-6.364 6.364L4 20m16 0l-1.636-1.636" />
+                      </EyeOffIcon>
+                    )}
+                  </button>
+                </div>
+                {errors.confirmPassword && <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>}
+              </div>
+
+              {/* Pulsante di invio */}
+              <div className={`pt-2 ${isSmallScreen ? '' : 'col-span-2'}`}>
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className={`group relative w-full flex justify-center py-3 px-4 border border-transparent text-lg font-medium rounded-full text-white ${darkMode ? 'bg-slate-700 hover:bg-slate-600' : 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700'} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1 active:translate-y-0`}
+                >
+                  {isLoading ? (
+                    <span className="flex items-center">
+                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      {t.registering}
+                    </span>
+                  ) : (
+                    <span className="relative">
+                      {t.register}
+                      <span className="absolute bottom-0 left-0 w-full h-px bg-white transform origin-left scale-x-0 transition-transform duration-300 group-hover:scale-x-100"></span>
+                    </span>
+                  )}
+                </button>
+              </div>
+            </form>
+
+            <div className="mt-6 text-center">
+              <p className={`text-sm ${darkMode ? 'text-white' : 'text-green-700'}`}>
+                {t.alreadyHaveAccount}{" "}
+                <Link href="/login" className={`font-medium ${darkMode ? 'text-green-400 hover:text-green-300' : 'text-green-600 hover:text-green-700'}`}>
+                  {t.login}
+                </Link>
+              </p>
+            </div>
+          </div>
+
+          {/* Anelli decorativi */}
+          <div className="absolute inset-0 -z-10">
+            <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] md:w-[500px] h-[300px] md:h-[500px] border ${darkMode ? 'border-slate-700/30' : 'border-green-200/30'} rounded-full animate-pulse`}></div>
+            <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250px] md:w-[400px] h-[250px] md:h-[400px] border ${darkMode ? 'border-slate-600/30' : 'border-amber-200/30'} rounded-full animate-pulse delay-300`}></div>
+            <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200px] md:w-[300px] h-[200px] md:h-[300px] border ${darkMode ? 'border-slate-500/30' : 'border-green-300/30'} rounded-full animate-pulse delay-500`}></div>
+          </div>
         </div>
-
-        {/* Container principale */}
-        <div className={`z-10 p-6 md:p-10 ${darkMode ? 'bg-slate-800 text-white' : 'bg-white/30'} backdrop-blur-md rounded-2xl shadow-xl transform hover:scale-105 transition-all duration-500 w-full max-w-md md:max-w-2xl`}>
-        <h1 className={`text-2xl md:text-3xl font-bold ${darkMode ? 'text-white' : 'text-green-800'} mb-6 tracking-tight text-center`}>
-          {t.joinBoardverse}
-        </h1>
-
-        <form onSubmit={handleSubmit} className={`${isSmallScreen ? 'space-y-4' : 'grid grid-cols-2 gap-x-6 gap-y-4'}`}>
-          {/* Nome */}
-          <div className={`space-y-1 ${isSmallScreen ? '' : 'col-span-1'}`}>
-          <label htmlFor="name" className={`block text-sm font-medium ${darkMode ? 'text-white' : 'text-green-700'}`}>
-            {t.fullName}
-          </label>
-          <input
-            type="text"
-            id="name"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            className={`w-full px-4 py-3 ${darkMode ? 'bg-slate-700 text-white' : 'bg-white/50'} border ${errors.name ? 'border-red-300' : 'border-green-200'} rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all`}
-            placeholder={t.yourName}
-          />
-          {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
-          </div>
-
-          {/* Username */}
-          <div className={`space-y-1 ${isSmallScreen ? '' : 'col-span-1'}`}>
-          <label htmlFor="username" className={`block text-sm font-medium ${darkMode ? 'text-white' : 'text-green-700'}`}>
-            {t.username}
-          </label>
-          <input
-            type="text"
-            id="username"
-            name="username"
-            value={formData.username}
-            onChange={handleChange}
-            className={`w-full px-4 py-3 ${darkMode ? 'bg-slate-700 text-white' : 'bg-white/50'} border ${errors.username ? 'border-red-300' : 'border-green-200'} rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all`}
-            placeholder={t.yourUsername}
-          />
-          {errors.username && <p className="text-red-500 text-xs mt-1">{errors.username}</p>}
-          </div>
-
-          {/* Email */}
-          <div className={`space-y-1 ${isSmallScreen ? '' : 'col-span-2'}`}>
-          <label htmlFor="email" className={`block text-sm font-medium ${darkMode ? 'text-white' : 'text-green-700'}`}>
-            {t.email}
-          </label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            className={`w-full px-4 py-3 ${darkMode ? 'bg-slate-700 text-white' : 'bg-white/50'} border ${errors.email ? 'border-red-300' : 'border-green-200'} rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all`}
-            placeholder={t.yourEmail}
-          />
-          {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
-          </div>
-
-          {/* Password */}
-          <div className={`space-y-1 ${isSmallScreen ? '' : 'col-span-1'}`}>
-          <label htmlFor="password" className={`block text-sm font-medium ${darkMode ? 'text-white' : 'text-green-700'}`}>
-            {t.password}
-          </label>
-          <input
-            type="password"
-            id="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            className={`w-full px-4 py-3 ${darkMode ? 'bg-slate-700 text-white' : 'bg-white/50'} border ${errors.password ? 'border-red-300' : 'border-green-200'} rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all`}
-            placeholder={t.yourPassword}
-          />
-          {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
-          </div>
-
-          {/* Conferma Password */}
-          <div className={`space-y-1 ${isSmallScreen ? '' : 'col-span-1'}`}>
-          <label htmlFor="confirmPassword" className={`block text-sm font-medium ${darkMode ? 'text-white' : 'text-green-700'}`}>
-            {t.confirmPassword}
-          </label>
-          <input
-            type="password"
-            id="confirmPassword"
-            name="confirmPassword"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            className={`w-full px-4 py-3 ${darkMode ? 'bg-slate-700 text-white' : 'bg-white/50'} border ${errors.confirmPassword ? 'border-red-300' : 'border-green-200'} rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all`}
-            placeholder={t.confirmYourPassword}
-          />
-          {errors.confirmPassword && <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>}
-          </div>
-
-          {/* Pulsante di invio */}
-          <div className={`pt-2 ${isSmallScreen ? '' : 'col-span-2'}`}>
-          <button
-            type="submit"
-            disabled={isLoading}
-            className={`group relative w-full flex justify-center py-3 px-4 border border-transparent text-lg font-medium rounded-full text-white ${darkMode ? 'bg-slate-700 hover:bg-slate-600' : 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700'} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1 active:translate-y-0`}
-          >
-            {isLoading ? (
-            <span className="flex items-center">
-              <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              {t.registering}
-            </span>
-            ) : (
-            <span className="relative">
-              {t.register}
-              <span className="absolute bottom-0 left-0 w-full h-px bg-white transform origin-left scale-x-0 transition-transform duration-300 group-hover:scale-x-100"></span>
-            </span>
-            )}
-          </button>
-          </div>
-        </form>
-
-        <div className="mt-6 text-center">
-          <p className={`text-sm ${darkMode ? 'text-white' : 'text-green-700'}`}>
-          {t.alreadyHaveAccount}{" "}
-          <Link href="/login" className={`font-medium ${darkMode ? 'text-green-400 hover:text-green-300' : 'text-green-600 hover:text-green-700'}`}>
-            {t.login}
-          </Link>
-          </p>
-        </div>
-        </div>
-
-        {/* Anelli decorativi */}
-        <div className="absolute inset-0 -z-10">
-        <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] md:w-[500px] h-[300px] md:h-[500px] border ${darkMode ? 'border-slate-700/30' : 'border-green-200/30'} rounded-full animate-pulse`}></div>
-        <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250px] md:w-[400px] h-[250px] md:h-[400px] border ${darkMode ? 'border-slate-600/30' : 'border-amber-200/30'} rounded-full animate-pulse delay-300`}></div>
-        <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200px] md:w-[300px] h-[200px] md:h-[300px] border ${darkMode ? 'border-slate-500/30' : 'border-green-300/30'} rounded-full animate-pulse delay-500`}></div>
-        </div>
-      </div>
       </div>
     </>
   );
