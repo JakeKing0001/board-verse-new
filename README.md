@@ -4,56 +4,48 @@ Boardverse is a web platform dedicated to board games (initially focusing on **c
 
 ## Key Features
 
-* **Gameplay modes**
+- **Gameplay modes**  
+  - Player vs. AI (using Stockfish chess engine)  
+  - Local multiplayer on one device  
+  - Online PvP matches (private or public lobbies)  
+  - Chess puzzles and challenges
 
-  * Player vs. AI (using Stockfish chess engine)
-  * Local multiplayer on one device
-  * Online PvP matches (private or public lobbies)
-  * Chess puzzles and challenges
-
-* **User profiles & stats**
+- **User profiles & stats**  
   Track games played, wins, losses, ratings, and other performance metrics.
 
-* **Authentication & security**
+- **Authentication & security**  
   Secure user registration and login with password hashing via `bcryptjs`.
 
-* **Social interaction**
+- **Social interaction**  
   Friend system and real-time chat; invite friends directly into private matches.
 
-* **Real-time updates**
+- **Real-time updates**  
   Game moves, chat messages, and notifications synchronized via Supabase Realtime.
 
-* **Modern UI**
+- **Modern UI**  
   Responsive design, multi-language support (EN, IT, ES, FR, DE), dark/light themes, and integrated 3D animations with Three.js.
 
-* **Tech stack**
-
-  * **Frontend:** Next.js (React, TypeScript, Tailwind CSS, Three.js)
-  * **Backend & Database:** Supabase (PostgreSQL, Auth, Realtime)
-  * **AI Engine:** Stockfish Chess Engine API
-  * **UI Libraries:** Headless UI, Heroicons
+- **Tech stack**  
+  - **Frontend:** Next.js (React, TypeScript, Tailwind CSS, Three.js)  
+  - **Backend & Database:** Supabase (PostgreSQL, Auth, Realtime)  
+  - **AI Engine:** Stockfish Chess Engine API  
+  - **UI Libraries:** Headless UI, Heroicons
 
 ## Architecture & Interactive Diagram
 
-Boardverse follows a standard Next.js project structure under `src/`. The main components and data flows are illustrated below with **gitdiagram**:
+Boardverse follows a standard Next.js project structure under `src/`. The main components and data flows are illustrated below using **Mermaid** (v11.4.1):
 
-```gitdiagram
-digraph Boardverse {
-  rankdir=LR;
-  node [shape=rectangle, style=filled, color=lightgray];
+graph LR
+    Client["User’s Browser"]
+    NextApp["Boardverse Frontend<br>(Next.js + React)"]
+    Supabase["Supabase<br>(Auth, Realtime)"]
+    Database["PostgreSQL<br>(Supabase DB)"]
+    Stockfish["Stockfish<br>Chess AI"]
 
-  Client   [label="User’s Browser"];
-  NextApp  [label="Boardverse Frontend\n(Next.js + React)"];
-  Supabase [label="Supabase\n(Auth, Realtime)"];
-  Database [label="PostgreSQL\n(Supabase DB)"];
-  Stockfish[label="Stockfish\nChess AI"];
-
-  Client   -> NextApp;
-  NextApp  -> Supabase;
-  NextApp  -> Stockfish;
-  Supabase -> Database;
-}
-```
+    Client --> NextApp
+    NextApp --> Supabase
+    NextApp --> Stockfish
+    Supabase --> Database
 
 * **Client** (user’s browser) ↔ **NextApp** (UI & API routes)
 * **NextApp** ↔ **Supabase** (authentication, database storage, real-time sync)
@@ -64,38 +56,30 @@ digraph Boardverse {
 
 1. **Clone the repository**
 
-   ```bash
-   git clone https://github.com/JakeKing0001/board-verse-new.git
-   cd board-verse-new
-   ```
+  git clone https://github.com/JakeKing0001/board-verse-new.git
+  cd board-verse-new
 
 2. **Install dependencies**
 
-   ```bash
    npm install
    # or
    yarn
    # or
    pnpm install
-   ```
 
 3. **Configure environment**
    Create a `.env.local` file in the project root:
 
-   ```env
    NEXT_PUBLIC_SUPABASE_URL=<YOUR_SUPABASE_URL>
    NEXT_PUBLIC_SUPABASE_ANON_KEY=<YOUR_SUPABASE_ANON_KEY>
-   ```
 
 4. **Run the development server**
 
-   ```bash
    npm run dev
    # or
    yarn dev
    # or
    pnpm dev
-   ```
 
    The app will be available at [http://localhost:3000](http://localhost:3000).
 
@@ -111,19 +95,16 @@ digraph Boardverse {
 
 * **Linting:**
 
-  ```bash
   npm run lint
-  ```
+
 * **Unit & Integration Tests:**
 
-  ```bash
   npm run test
-  ```
+
 * **End-to-End Tests (if available):**
 
-  ```bash
   npm run e2e
-  ```
+
 
 ## Contributing
 
