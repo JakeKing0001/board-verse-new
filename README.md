@@ -1,36 +1,124 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Boardverse
 
-## Getting Started
+## Project Overview
 
-First, run the development server:
+**Boardverse** is a web platform dedicated to board games, initially focusing on **chess**, designed to connect players of all levels in a unified digital space. The project aims to provide an engaging environment for playing chess online, solving puzzles, and interacting with friends and chess enthusiasts worldwide. Future expansions will include additional board games such as Checkers.
+
+## Key Features
+
+* **Multiple Gameplay Modes**:
+
+  * **Player vs AI**: Play against Stockfish-powered AI.
+  * **Local Multiplayer**: Two-player mode on a single device.
+  * **Online PvP**: Real-time online matches with private and public lobbies.
+  * **Chess Puzzles**: Solve predefined chess problems.
+
+* **User Profile and Statistics**: Track games played, wins, and other performance metrics.
+
+* **Authentication and User Management**: Secure registration and login with password hashing via bcryptjs.
+
+* **Social Interaction**:
+
+  * Friend system and real-time chat functionality.
+  * Invite friends directly to private matches.
+
+* **Real-time Updates**: Real-time synchronization of moves, chats, and notifications via Supabase.
+
+* **Modern, Accessible UI**:
+
+  * Responsive design.
+  * Multi-language support (English, Italian, Spanish, French, German).
+  * Dark and light theme options.
+  * Integrated 3D animations with Three.js.
+
+## Technologies Used
+
+* **Frontend**: Next.js, React, Tailwind CSS, TypeScript, Three.js
+* **Backend & Database**: Supabase (PostgreSQL, Authentication, Realtime)
+* **AI Integration**: Stockfish Chess Engine API
+* **UI Components**: Headless UI, Heroicons, Lucide Icons, Bootstrap Icons
+* **Security**: bcryptjs for secure password handling
+
+## Installation Guide
+
+Follow these steps to set up Boardverse locally:
+
+### Prerequisites
+
+* Node.js (v18+ recommended)
+* npm/yarn/pnpm
+
+### Setup Instructions
+
+```bash
+git clone https://github.com/JakeKing0001/board-verse-new.git
+cd board-verse-new
+npm install
+```
+
+### Environment Configuration (optional)
+
+Create a `.env.local` file if connecting to a custom Supabase instance:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anonymous-key
+```
+
+### Running the Application
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Visit [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Production Build
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+npm run start
+```
 
-## Learn More
+## Project Structure
 
-To learn more about Next.js, take a look at the following resources:
+```
+board-verse-new/
+├── src/
+│   ├── app/                  # Pages and API routes
+│   ├── components/           # Reusable React components
+│   ├── lib/                  # Supabase client setup
+│   ├── public/               # Static files and models
+│   ├── services/             # Client-side service functions
+├── package.json              # Dependencies and scripts
+├── next.config.ts            # Next.js configuration
+├── tailwind.config.ts        # Tailwind CSS configuration
+├── tsconfig.json             # TypeScript configuration
+└── README.md                 # Documentation
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Contribution Guidelines
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Contributions are welcome! Follow these steps:
 
-## Deploy on Vercel
+1. Fork the repository.
+2. Create a new branch (`feature/your-feature`, `fix/your-bug`).
+3. Commit clear and concise changes.
+4. Submit a Pull Request detailing your changes.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Ensure your code passes ESLint (`npm run lint`) and follows existing code conventions.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## License
+
+Currently, Boardverse is "All Rights Reserved". For usage inquiries, contact the repository maintainer directly. (Consider adding an open-source license like MIT or GPL in the future.)
+
+## Contacts
+
+* **Maintainer:** [JakeKing0001](https://github.com/JakeKing0001)
+* **Issues & Discussions:** [GitHub Issues](https://github.com/JakeKing0001/board-verse-new/issues)
+* **Supabase Documentation:** [Supabase Docs](https://supabase.com/docs)
+* **Next.js Documentation:** [Next.js Docs](https://nextjs.org/docs)
+
+---
+
+*Thank you for contributing to Boardverse!*

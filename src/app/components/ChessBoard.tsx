@@ -487,6 +487,32 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
         }
     }, [checkMoves]);
 
+    useEffect(() => {
+        // Solo in modalità challenge e se ci sono ancora mosse da fare
+        if (mode === 'challenge' && (checkMoves ?? 0) > 1) {
+            // Se NON è il turno del giocatore (ad esempio, il bianco è umano e ora tocca al nero)
+            // Supponiamo che il giocatore sia sempre il bianco in challenge, quindi se !isWhite tocca all'AI
+            if (!isWhite) {
+                // Qui chiama la tua funzione AI per far muovere l'avversario
+                fetchStockfishData(fenState, 15).then(data => {
+                    const bestmove = data?.bestmove;
+                    if (bestmove && bestmove.length >= 4) {
+                        const fromSquare = bestmove.slice(0, 2);
+                        const toSquare = bestmove.slice(2, 4);
+                        // Simula il click sulle caselle per muovere il pezzo AI
+                        if (document.getElementById(fromSquare)?.hasChildNodes()) {
+                            document.getElementById(fromSquare)?.click();
+                            setTimeout(() => {
+                                document.getElementById(toSquare)?.click();
+                                setIsWhite(true); // Torna il turno al giocatore
+                            }, 500);
+                        }
+                    }
+                });
+            }
+        }
+    }, [mode, checkMoves, isWhite, fenState]);
+
     //-----------------------------------------------------------------------------
 
     // Determine role and player status
@@ -810,7 +836,7 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
                     };
                     await supabase.from('game_moves').insert([moveData]);
                     setIsWhite(!isWhite);
-                    if (window.innerWidth < 768) {
+                    if (window.innerWidth < 768 && mode === 'multiplayer') {
                         setShouldRotate(prev => !prev);
                     } else {
                         setShouldRotate(false);
@@ -981,7 +1007,7 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
             <div className="flex min-h-screen p-4 md:p-8 lg:p-12">
                 {/* Sezione giocatori a sinistra */}
                 {mode === "online" && (
-                    <div className="flex flex-col justify-center gap-8 mr-8 min-w-[200px]">
+                    <div className="flex flex-col justify-center gap-8 md:-mr-44 -min-w-[300px] md:min-w-[100px]">
 
                         {/* Nero */}
                         <div className="flex flex-col items-center">
@@ -1012,11 +1038,11 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
                 {/* Sezione principale con scacchiera */}
                 <div className="flex-1 flex flex-col items-center justify-center relative">
 
-                    {gameId && (
+                    {/* {gameId && (
                         <div className="text-center mb-4 text-sm text-gray-600 select-all">
                             <span className="font-semibold">ID Partita:</span> {gameId}
                         </div>
-                    )}
+                    )} */}
 
                     {showPromotionDiv && (
                         <PromotionModal onPromotionComplete={handlePromotionComplete} />
@@ -1030,10 +1056,9 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
                     {showMovesDiv && (
                         <MovesModal onMovesComplete={handleMovesComplete} />
                     )}
-                    {(check_moves ?? 0) <= 0 && mode !=='ai' && <ChessTimer isWhite={isWhite} initialTime={time} role={role} />}
-                    {(check_moves ?? 0) > 0 && <ChessMoves check_moves={checkMoves ?? 0} />}
-
-                    <div className="w-full max-w-[95vh] lg:max-w-[85vh] xl:max-w-[86vh] mx-auto ">
+                    {(check_moves ?? 0) <= 0 && mode !== 'ai' && <ChessTimer isWhite={isWhite} initialTime={time} role={role} />}
+                    
+                    <div className="flex flex-col items-center w-full max-w-[95vh] lg:max-w-[85vh] xl:max-w-[86vh] mx-auto md:items-start gap-4">
                         {/* Scacchiera */}
                         <div
                             className={`relative w-full aspect-square border-8 md:border-12 lg:border-16 shadow-xl border-solid ${darkMode ? 'border-slate-800' : 'border-orange-900'} bg-white bg-cover bg-no-repeat rounded-lg z-0`}
@@ -1050,6 +1075,13 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
                             </div>
                         </div>
                     </div>
+                    {(check_moves ?? 0) > 0 && (
+                            <div
+                                className="w-full md:w-auto mt-4 md:mt-0 flex justify-center order-last md:order-none translate-y-28 translate-x-10 md:-translate-y-72 md:translate-x-[100]"
+                            >
+                                <ChessMoves check_moves={checkMoves ?? 0} />
+                            </div>
+                        )}
                 </div>
             </div>
         </>
