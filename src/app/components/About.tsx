@@ -15,7 +15,7 @@ const AboutPage = () => {
       id: 1,
       name: "Davide Pesino",
       role: t.grandmaster || "Program Manager",
-      avatar: "/images/team/davide.jpg",
+      avatar: "/Pesino Davide.jpeg",
       bio: t.alessandroBio || "Responsible for overall project management and development."
     }
   ];
