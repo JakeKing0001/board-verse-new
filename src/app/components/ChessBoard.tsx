@@ -72,6 +72,7 @@ function parseFEN(fen: string): string[][] {
     return board;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function ChessBoard({ mode, time, fen_challenge, check_moves, gameData }: { mode: string, time: number, fen_challenge?: string, check_moves?: number, gameData?: any }) {
 
     const [isInCheck, setIsInCheck] = useState(false);
@@ -79,7 +80,7 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
     const [movesList, setMovesList] = useState<any[]>([]);
     const searchParams = useSearchParams();
     const gameId = searchParams.get('gameId') || '';
-    const { isGameOver, subMovesDrag, selectedPiece, setSelectedPiece, user, allUsers, challenges, darkMode } = usePieceContext();
+    const { isGameOver, selectedPiece, setSelectedPiece, user, allUsers, challenges, darkMode } = usePieceContext();
 
     const hostUser = allUsers.find((u) => u.id === gameData?.host_id);
     const guestUser = allUsers.find((u) => u.id === gameData?.guest_id);

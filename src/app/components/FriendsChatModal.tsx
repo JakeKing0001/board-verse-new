@@ -220,6 +220,7 @@ export default function FriendsChatModal({ show, onClose, darkMode, t = {}, }: {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const mappedMessages: Message[] = messagesBetween.flatMap((msg: any) => {
         if (Array.isArray(msg.text)) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           return msg.text.map((m: any) => ({
             id: m.id,
             text: m.text,

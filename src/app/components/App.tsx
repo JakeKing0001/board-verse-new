@@ -2,7 +2,7 @@ import React from 'react';
 import ChessBoard from './ChessBoard';
 import { usePieceContext } from './PieceContext';
 
-// // eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function App({ mode, time, fen_challenge, check_moves, gameData }: { mode: string, time: number, fen_challenge: string, check_moves: number, gameData?: any }) {
 
     const { darkMode} = usePieceContext();

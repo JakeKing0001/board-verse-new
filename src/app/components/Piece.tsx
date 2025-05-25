@@ -1,7 +1,5 @@
 import React from 'react';
 import { usePieceContext } from './PieceContext';
-import { showPiece } from '../pieceLogic';
-
 interface PieceProps {
     type: string;
     id: string;
@@ -17,7 +15,7 @@ const pieceMap: Record<string, string> = {
 };
 
 export default function Piece({ type }: PieceProps) {
-    const { activePiece, setActivePiece, isWhite, hoverPiece, setHoverPiece, setSelectedPiece, setsubMovesDrag } = usePieceContext();
+    const { activePiece, setActivePiece, isWhite, hoverPiece, setHoverPiece } = usePieceContext();
 
     // Se non c'è pezzo, ritorna uno spazio vuoto
     if (!type) {
