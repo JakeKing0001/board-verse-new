@@ -37,16 +37,16 @@ Boardverse is a web platform dedicated to board games (initially focusing on **c
 Below is an interactive flowchart of the main layers, components, and their interactions. Copy this block into your README and ensure your GitHub runner supports Mermaid.
 
 flowchart TD
-    %% Layers
-    subgraph "Frontend Layer"
-        direction TB
-        Browser["Browser"]:::client
+%% Layers
+subgraph Frontend["Frontend Layer"]
+direction TB
+Browser["🌐 Browser"]:::client
 
-        subgraph "Next.js Frontend"
+        subgraph NextJS["Next.js Frontend"]
             direction TB
-            Pages["Pages (src/app)"]:::client
-            Components["Components (src/app/components)"]:::client
-            Services["Services (services/*)"]:::client
+            Pages["📄 Pages (src/app)"]:::client
+            Components["🧩 Components (src/app/components)"]:::client
+            Services["⚙️ Services (services/*)"]:::client
 
             Browser -->|"renders"| Pages
             Pages -->|"uses"| Components
@@ -54,110 +54,82 @@ flowchart TD
         end
     end
 
-    subgraph "Backend Layer"
+    subgraph Backend["Backend Layer"]
         direction TB
-        subgraph "API Routes"
+        subgraph APIs["API Routes"]
             direction TB
-            AuthAPI["/api/login, /api/register, /api/settings"]:::backend
-            FriendAPI["/api/friend, /api/friendAccepted"]:::backend
-            ChallengeAPI["/api/challenge, /api/challengeComplete"]:::backend
-            MessageAPI["/api/messages"]:::backend
+            AuthAPI["🔐 /api/login, /api/register, /api/settings"]:::backend
+            FriendAPI["👥 /api/friend, /api/friendAccepted"]:::backend
+            ChallengeAPI["⚔️ /api/challenge, /api/challengeComplete"]:::backend
+            MessageAPI["💬 /api/messages"]:::backend
         end
 
-        supabase["Supabase\n(Auth, DB, Storage)"]:::external
+        supabase["🗄️ Supabase\n(Auth, DB, Storage)"]:::external
     end
 
-    subgraph "Static Assets CDN"
+    subgraph Assets["Static Assets CDN"]
         direction TB
-        Models["3D Models\n(public/models/*.glb)"]:::static
-        Locales["Locale Files\n(public/locales/*.json)"]:::static
-        Fonts["Fonts\n(public/fonts/*.json)"]:::static
+        Models["🎯 3D Models\n(public/models/*.glb)"]:::static
+        Locales["🌍 Locale Files\n(public/locales/*.json)"]:::static
+        Fonts["🔤 Fonts\n(public/fonts/*.json)"]:::static
     end
 
     %% Interactions
     Services -->|"HTTP Calls"| AuthAPI
-    Services -->|""| FriendAPI
-    Services -->|""| ChallengeAPI
-    Services -->|""| MessageAPI
+    Services -->|"API Requests"| FriendAPI
+    Services -->|"Challenge Data"| ChallengeAPI
+    Services -->|"Chat Messages"| MessageAPI
 
     AuthAPI -->|"uses lib/supabase.js"| supabase
     FriendAPI -->|"uses lib/supabase.js"| supabase
     ChallengeAPI -->|"uses lib/supabase.js"| supabase
     MessageAPI -->|"uses lib/supabase.js"| supabase
 
-    Browser -->..|"fetches"| Models
-    Browser -->..|"fetches"| Locales
-    Browser -->..|"fetches"| Fonts
+    Browser -.->|"fetches"| Models
+    Browser -.->|"fetches"| Locales
+    Browser -.->|"fetches"| Fonts
 
-    %% Click Events
-    click Pages "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/page.tsx"
-    click Pages "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/about/page.tsx"
-    click Pages "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/login/page.tsx"
-    click Pages "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/register/page.tsx"
-    click Pages "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/forgot-password/page.tsx"
-    click Pages "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/profile/page.tsx"
-    click Pages "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/online/page.tsx"
-    click Pages "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/chooseTime/page.tsx"
-    click Pages "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/challenge/page.tsx"
-    click Pages "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/chessboard/page.tsx"
-    click Pages "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/friends/page.tsx"
-    click Pages "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/settingsProfile/page.tsx"
-    click Pages "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/statistics/page.tsx"
-    click Pages "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/not-found.tsx"
+    %% Click Events - Pages
+    click Pages "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/page.tsx" "Homepage"
+    click Pages "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/about/page.tsx" "About Page"
+    click Pages "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/login/page.tsx" "Login Page"
+    click Pages "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/register/page.tsx" "Register Page"
+    click Pages "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/profile/page.tsx" "Profile Page"
+    click Pages "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/chessboard/page.tsx" "Chess Board"
+    click Pages "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/friends/page.tsx" "Friends Page"
 
-    click Components "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/components/NavBar.tsx"
-    click Components "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/components/SideBar.tsx"
-    click Components "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/components/MainPage.tsx"
-    click Components "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/components/ErrorPage.tsx"
-    click Components "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/components/LoginPage.tsx"
-    click Components "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/components/RegisterPage.tsx"
-    click Components "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/components/ForgotPasswordPage.tsx"
-    click Components "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/components/SettingProfile.tsx"
-    click Components "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/components/MyProfile.tsx"
-    click Components "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/components/ChessBoard.tsx"
-    click Components "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/components/Piece.tsx"
-    click Components "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/components/PieceContext.tsx"
-    click Components "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/components/ChessMoves.tsx"
-    click Components "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/components/ChessTimer.tsx"
-    click Components "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/components/PromotionModal.tsx"
-    click Components "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/components/TimerModal.tsx"
-    click Components "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/components/CheckMateModal.tsx"
-    click Components "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/components/MovesModal.tsx"
-    click Components "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/components/Friends.tsx"
-    click Components "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/components/FriendsChatModal.tsx"
-    click Components "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/components/Challenge.tsx"
-    click Components "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/components/Statistics.tsx"
-    click Components "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/components/RenderModel.tsx"
-    click Components "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/components/models/Pawn.tsx"
-    click Components "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/components/models/Trophy.tsx"
-    click Components "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/components/StockFishComponent.tsx"
-    click Components "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/stockFishUtils.ts"
-    click Components "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/checkMateLogic.ts"
-    click Components "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/pieceLogic.ts"
+    %% Click Events - Components
+    click Components "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/components/ChessBoard.tsx" "Chess Board Component"
+    click Components "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/components/NavBar.tsx" "Navigation Bar"
+    click Components "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/components/Friends.tsx" "Friends Component"
+    click Components "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/components/Challenge.tsx" "Challenge Component"
 
-    click Services "https://github.com/jakeking0001/board-verse-new/blob/master/services/auth.ts"
-    click Services "https://github.com/jakeking0001/board-verse-new/blob/master/services/login.ts"
-    click Services "https://github.com/jakeking0001/board-verse-new/blob/master/services/friends.ts"
-    click Services "https://github.com/jakeking0001/board-verse-new/blob/master/services/challenge.ts"
-    click Services "https://github.com/jakeking0001/board-verse-new/blob/master/services/challengeComplete.ts"
-    click Services "https://github.com/jakeking0001/board-verse-new/blob/master/services/messages.ts"
+    %% Click Events - Services
+    click Services "https://github.com/jakeking0001/board-verse-new/blob/master/services/auth.ts" "Auth Service"
+    click Services "https://github.com/jakeking0001/board-verse-new/blob/master/services/friends.ts" "Friends Service"
+    click Services "https://github.com/jakeking0001/board-verse-new/blob/master/services/challenge.ts" "Challenge Service"
 
-    click AuthAPI "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/api/login/route.js"
-    click AuthAPI "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/api/register/route.ts"
-    click AuthAPI "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/api/settings/route.js"
-    click FriendAPI "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/api/friend/route.ts"
-    click FriendAPI "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/api/friendAccepted/route.ts"
-    click ChallengeAPI "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/api/challenge/route.ts"
-    click ChallengeAPI "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/api/challengeComplete/route.ts"
-    click MessageAPI "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/api/messages/route.ts"
+    %% Click Events - API Routes
+    click AuthAPI "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/api/login/route.js" "Login API"
+    click FriendAPI "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/api/friend/route.ts" "Friend API"
+    click ChallengeAPI "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/api/challenge/route.ts" "Challenge API"
+    click MessageAPI "https://github.com/jakeking0001/board-verse-new/blob/master/src/app/api/messages/route.ts" "Messages API"
 
-    click supabase "https://github.com/jakeking0001/board-verse-new/blob/master/lib/supabase.js"
+    %% Click Events - External Services
+    click supabase "https://github.com/jakeking0001/board-verse-new/blob/master/lib/supabase.js" "Supabase Configuration"
 
-    %% Styles
-    classDef client fill:#D0E8FF,stroke:#0366d6,color:#0366d6
-    classDef backend fill:#DFFFE0,stroke:#28a745,color:#28a745
-    classDef external fill:#FFE8A0,stroke:#DB8B00,color:#DB8B00
-    classDef static fill:#F0F0F0,stroke:#A0A0A0,color:#666666
+    %% Enhanced Styles with gradients and modern design
+    classDef client fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1,font-weight:bold
+    classDef backend fill:#e8f5e8,stroke:#388e3c,stroke-width:2px,color:#1b5e20,font-weight:bold
+    classDef external fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#e65100,font-weight:bold
+    classDef static fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c,font-weight:bold
+
+    %% Subgraph styling
+    style Frontend fill:#f8f9ff,stroke:#3f51b5,stroke-width:3px
+    style Backend fill:#f1f8e9,stroke:#4caf50,stroke-width:3px
+    style Assets fill:#fce4ec,stroke:#e91e63,stroke-width:3px
+    style NextJS fill:#e8eaf6,stroke:#3f51b5,stroke-width:2px
+    style APIs fill:#e0f2f1,stroke:#009688,stroke-width:2px
 
 ## Installation
 
@@ -169,9 +141,13 @@ flowchart TD
 2. **Install dependencies**
 
    npm install
+
    # or
+
    yarn
+
    # or
+
    pnpm install
 
 3. **Configure environment**
@@ -183,9 +159,13 @@ flowchart TD
 4. **Run the development server**
 
    npm run dev
+
    # or
+
    yarn dev
+
    # or
+
    pnpm dev
 
    The app will be available at [http://localhost:3000](http://localhost:3000).
