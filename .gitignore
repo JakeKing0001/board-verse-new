@@ -39,5 +39,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-#supabase signup
-/lib
+#Supabase keys
+lib/supabase.js
