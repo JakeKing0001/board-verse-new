@@ -18,7 +18,7 @@ export default function NavBar({ current = 0 }: { current?: number }) {
   const navigation = useMemo(() => [
     { name: t.home, href: '/', current: current === 0 },
     { name: t.gameTypes, href: 'gameMode', current: current === 1},
-    { name: t.statistics, href: 'statistics', current: current === 2},
+    // { name: t.statistics, href: 'statistics', current: current === 2},
     { name: t.friends, href: 'friends', current: current === 3},
     { name: t.about, href: 'about', current: current === 4},
   ], [t, current]);
@@ -75,15 +75,6 @@ export default function NavBar({ current = 0 }: { current?: number }) {
           </div>
 
           <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0 gap-4">
-
-            <button
-              type="button"
-              className={`relative rounded-lg ${darkMode? 'bg-slate-700/30 p-2 text-slate-200 hover:text-white hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-800':'bg-green-700/30 p-2 text-green-200 hover:text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 focus:ring-offset-green-800'} transition-all duration-200`}
-            >
-              <span className="absolute -inset-1.5" />
-              <span className="sr-only">View progress</span>
-              <BellIcon aria-hidden="true" className="size-6" />
-            </button>
 
             <div className="relative">
               <button

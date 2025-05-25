@@ -77,57 +77,55 @@ const ChessTimer: React.FC<ChessTimerProps> = ({ isWhite, initialTime, role }) =
   };
 
   return (
-    <div className="absolute w-full h-full pointer-events-none flex flex-col items-end justify-center gap-12 pr-8">
+    <div className="absolute w-full h-full pointer-events-none flex flex-col items-end justify-center gap-[27rem] sm:gap-12 pr-4 sm:pr-8">
       {role === 'guest' ? (
-      <>
-        {/* White Timer */}
-        <div className={`p-4 rounded-2xl shadow-xl transition-all duration-300 ${isWhite ? 'bg-white/90 ring-2 ring-black/20' : 'bg-white/70'
-        }`}>
-        <div className="mb-2 flex items-center gap-2">
-          <div className={`w-2 h-2 rounded-full ${isWhite ? 'bg-green-400 animate-pulse' : 'bg-gray-500'}`} />
-          <span className="text-black font-semibold">{t.white}</span>
-        </div>
-        <div className="text-black">
-          {formatTime(whiteTime)}
-        </div>
-        </div>
-        {/* Black Timer */}
-        <div className={`p-4 rounded-2xl shadow-xl transition-all duration-300 ${!isWhite ? 'bg-black/90 ring-2 ring-white/20' : 'bg-black/70'
-        }`}>
-        <div className="mb-2 flex items-center gap-2">
-          <div className={`w-2 h-2 rounded-full ${!isWhite ? 'bg-green-400 animate-pulse' : 'bg-gray-500'}`} />
-          <span className="text-white font-semibold">{t.black}</span>
-        </div>
-        <div className="text-white">
-          {formatTime(blackTime)}
-        </div>
-        </div>
-      </>
+        <>
+          {/* White Timer */}
+          <div className={`p-4 rounded-2xl shadow-xl transition-all duration-300 ${isWhite ? 'bg-white/90 ring-2 ring-black/20' : 'bg-white/70'
+            }`}>
+            <div className="mb-2 flex items-center gap-2">
+              <div className={`w-2 h-2 rounded-full ${isWhite ? 'bg-green-400 animate-pulse' : 'bg-gray-500'}`} />
+              <span className="text-black font-semibold">{t.white}</span>
+            </div>
+            <div className="text-black">
+              {formatTime(whiteTime)}
+            </div>
+          </div>
+          {/* Black Timer */}
+          <div className={`p-4 rounded-2xl shadow-xl transition-all duration-300 ${!isWhite ? 'bg-black/90 ring-2 ring-white/20' : 'bg-black/70'}`}>
+            <div className="mb-2 flex items-center gap-2 ">
+              <div className={`w-2 h-2 rounded-full ${!isWhite ? 'bg-green-400 animate-pulse' : 'bg-gray-500'}`} />
+              <span className="text-white font-semibold">{t.black}</span>
+            </div>
+            <div className="text-white">
+              {formatTime(blackTime)}
+            </div>
+          </div>
+        </>
       ) : (
-      <>
-        {/* Black Timer */}
-        <div className={`p-4 rounded-2xl shadow-xl transition-all duration-300 ${!isWhite ? 'bg-black/90 ring-2 ring-white/20' : 'bg-black/70'
-        }`}>
-        <div className="mb-2 flex items-center gap-2">
-          <div className={`w-2 h-2 rounded-full ${!isWhite ? 'bg-green-400 animate-pulse' : 'bg-gray-500'}`} />
-          <span className="text-white font-semibold">{t.black}</span>
-        </div>
-        <div className="text-white">
-          {formatTime(blackTime)}
-        </div>
-        </div>
-        {/* White Timer */}
-        <div className={`p-4 rounded-2xl shadow-xl transition-all duration-300 ${isWhite ? 'bg-white/90 ring-2 ring-black/20' : 'bg-white/70'
-        }`}>
-        <div className="mb-2 flex items-center gap-2">
-          <div className={`w-2 h-2 rounded-full ${isWhite ? 'bg-green-400 animate-pulse' : 'bg-gray-500'}`} />
-          <span className="text-black font-semibold">{t.white}</span>
-        </div>
-        <div className="text-black">
-          {formatTime(whiteTime)}
-        </div>
-        </div>
-      </>
+        <>
+          {/* Black Timer */}
+          <div className={`p-4 rounded-2xl shadow-xl transition-all duration-300 ${!isWhite ? 'bg-black/90 ring-2 ring-white/20' : 'bg-black/70'} rotate-180 sm:rotate-0`}>
+            <div className="mb-2 flex items-center gap-2">
+              <div className={`w-2 h-2 rounded-full ${!isWhite ? 'bg-green-400 animate-pulse' : 'bg-gray-500'}`} />
+              <span className="text-white font-semibold">{t.black}</span>
+            </div>
+            <div className="text-white">
+              {formatTime(blackTime)}
+            </div>
+          </div>
+          {/* White Timer */}
+          <div className={`p-4 rounded-2xl shadow-xl transition-all duration-300 ${isWhite ? 'bg-white/90 ring-2 ring-black/20' : 'bg-white/70'
+            }`}>
+            <div className="mb-2 flex items-center gap-2">
+              <div className={`w-2 h-2 rounded-full ${isWhite ? 'bg-green-400 animate-pulse' : 'bg-gray-500'}`} />
+              <span className="text-black font-semibold">{t.white}</span>
+            </div>
+            <div className="text-black">
+              {formatTime(whiteTime)}
+            </div>
+          </div>
+        </>
       )}
     </div>
   );

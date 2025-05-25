@@ -118,11 +118,10 @@ const CustomTimeForm = ({ onClose, onSubmit, setTime }: { onClose: () => void, o
 };
 
 export default function ChooseTime() {
-    const { mode } = usePieceContext();
     const [activeTime, setActiveTime] = useState('');
     const [showCustomForm, setShowCustomForm] = useState(false);
     const router = useRouter();
-    const { t, darkMode, setTime} = usePieceContext();
+    const { t, darkMode, setTime, mode} = usePieceContext();
     // console.log(context);
 
     const categories = [
@@ -172,7 +171,7 @@ export default function ChooseTime() {
         setTime(totalSeconds);
         // console.log(`Custom time set: ${totalSeconds} seconds`);
 
-        router.push(`/chessboard?mode=${mode}&time=${totalSeconds}`);
+        // router.push(`/chessboard?mode=${mode}&time=${totalSeconds}`);
     };
 
     return (

@@ -19,7 +19,7 @@ export default function SideBar() {
         { name: `${t.gameTypes}`, icon: PuzzlePieceIcon, href: "/games" },
         { name: `${t.friends}`, icon: UserGroupIcon, href: "/friends" },
         { name: `${t.about}`, icon: InformationCircleIcon, href: "/about" },
-        { name: `${t.statistics}`, icon: BarChartIcon, href: "/statistics" },
+        // { name: `${t.statistics}`, icon: BarChartIcon, href: "/statistics" },
     ];
 
     return (

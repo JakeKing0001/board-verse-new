@@ -17,19 +17,19 @@ import { useSearchParams } from 'next/navigation';
 
 // Sopprimi silenziosamente i NotFoundError generati da React quando prova a rimuovere un nodo già rimosso
 if (typeof window !== 'undefined') {
-  const nativeRemoveChild = Node.prototype.removeChild;
-  Node.prototype.removeChild = function<T extends Node>(child: T): T {
-    try {
-      return nativeRemoveChild.call(this, child) as T;
-    } catch (err: any) {
-      if (err.name === 'NotFoundError') {
-        // qui semplicemente ignoro l'errore
-        return child;
-      }
-      // per qualsiasi altro errore, rilancio
-      throw err;
-    }
-  };
+    const nativeRemoveChild = Node.prototype.removeChild;
+    Node.prototype.removeChild = function <T extends Node>(child: T): T {
+        try {
+            return nativeRemoveChild.call(this, child) as T;
+        } catch (err: any) {
+            if (err.name === 'NotFoundError') {
+                // qui semplicemente ignoro l'errore
+                return child;
+            }
+            // per qualsiasi altro errore, rilancio
+            throw err;
+        }
+    };
 }
 
 const letters = ["a", "b", "c", "d", "e", "f", "g", "h"];
@@ -165,6 +165,8 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
     const [showTimerDiv, setTimerDiv] = useState(false);
     const [showMovesDiv, setShowMovesDiv] = useState(false);
     const [checkMoves, setCheckMoves] = useState<number | undefined>(check_moves);
+
+    const [shouldRotate, setShouldRotate] = useState(false);
 
     useEffect(() => {
         if (isGameOver !== '') {
@@ -487,13 +489,16 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
 
     //-----------------------------------------------------------------------------
 
-    if (!user || !gameData) {
-        return <div>Caricamento partita...</div>;
-    }
+    // Determine role and player status
+    let isHost = false, isGuest = false, role: 'host' | 'guest' | 'spectator' = 'spectator';
 
-    const isHost = user.id === gameData.host_id;
-    const isGuest = user.id === gameData.guest_id;
-    const role = isHost ? 'host' : isGuest ? 'guest' : 'spectator';
+    if (mode === 'online' && (!user || !gameData)) {
+        return <div>Caricamento partita...</div>;
+    } else if (mode === 'online') {
+        isHost = user.id === gameData.host_id;
+        isGuest = user.id === gameData.guest_id;
+        role = isHost ? 'host' : isGuest ? 'guest' : 'spectator';
+    }
 
     let promoted = '';
 
@@ -519,7 +524,7 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
         setLastMove(`${firstPosition}${lastPosition}`);
     }
 
-    if (!gameData || !user) return <div>Loading...</div>;
+    // if (!gameData || !user) return <div>Loading...</div>;
 
 
     function createFEN(): string {
@@ -805,6 +810,11 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
                     };
                     await supabase.from('game_moves').insert([moveData]);
                     setIsWhite(!isWhite);
+                    if (window.innerWidth < 768) {
+                        setShouldRotate(prev => !prev);
+                    } else {
+                        setShouldRotate(false);
+                    }
                     console.log("Turno del: " + ((!isWhite) ? "bianco" : "nero"));
                     if ((checkMoves ?? -1) > 0) {
                         setCheckMoves((prev) => Math.max((prev ?? 0) - 1, 0)); // Decrementa ma si ferma a zero
@@ -921,7 +931,7 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
                     <div
                         key={squareId}
                         id={squareId}
-                        className={`relative aspect-square w-full flex items-center justify-center transition-effect --grid-area: ${letters[j]}${numbers[i]}`}
+                        className={`relative aspect-square w-full flex items-center justify-center transition-effect --grid-area: ${letters[j]}${numbers[i]} ${shouldRotate ? 'rotate-180' : ''}`}
                         onClick={() => {
                             handleSquareClick(squareId);
                         }}
@@ -970,40 +980,37 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
 
             <div className="flex min-h-screen p-4 md:p-8 lg:p-12">
                 {/* Sezione giocatori a sinistra */}
-                <div className="flex flex-col justify-center gap-8 mr-8 min-w-[200px]">
+                {mode === "online" && (
+                    <div className="flex flex-col justify-center gap-8 mr-8 min-w-[200px]">
 
-                    {/* Nero */}
-                    <div className="flex flex-col items-center">
-                        <img
-                            src={guestUser?.avatar || "/default-avatar.png"}
-                            alt="Nero"
-                            className={`w-14 h-14 rounded-full border-4 ${!isWhite ? 'border-yellow-400' : 'border-gray-300'}`}
-                        />
-                        <span className="mt-1 font-semibold text-gray-700">Nero</span>
-                        <span className="text-xs text-white">{guestUser?.username || guestUser?.email || gameData.guest_id}</span>
+                        {/* Nero */}
+                        <div className="flex flex-col items-center">
+                            <img
+                                src={guestUser?.avatar || "/default-avatar.png"}
+                                alt="Nero"
+                                className={`w-14 h-14 rounded-full border-4 ${!isWhite ? 'border-yellow-400' : 'border-gray-300'}`}
+                            />
+                            <span className="mt-1 font-semibold text-gray-700">Nero</span>
+                            <span className="text-xs text-white">{guestUser?.username || guestUser?.email || gameData.guest_id}</span>
+                        </div>
+
+                        <span className="text-3xl font-bold text-white text-center">vs</span>
+
+                        {/* Bianco */}
+                        <div className="flex flex-col items-center">
+                            <img
+                                src={hostUser?.avatar || "/default-avatar.png"}
+                                alt="Bianco"
+                                className={`w-14 h-14 rounded-full border-4 ${isWhite ? 'border-yellow-400' : 'border-gray-300'}`}
+                            />
+                            <span className="mt-1 font-semibold text-gray-700">Bianco</span>
+                            <span className="text-xs text-white">{hostUser?.username || hostUser?.email || gameData.host_id}</span>
+                        </div>
                     </div>
-
-                    <span className="text-3xl font-bold text-white text-center">vs</span>
-
-                    {/* Bianco */}
-                    <div className="flex flex-col items-center">
-                        <img
-                            src={hostUser?.avatar || "/default-avatar.png"}
-                            alt="Bianco"
-                            className={`w-14 h-14 rounded-full border-4 ${isWhite ? 'border-yellow-400' : 'border-gray-300'}`}
-                        />
-                        <span className="mt-1 font-semibold text-gray-700">Bianco</span>
-                        <span className="text-xs text-white">{hostUser?.username || hostUser?.email || gameData.host_id}</span>
-                    </div>
-                </div>
+                )}
 
                 {/* Sezione principale con scacchiera */}
                 <div className="flex-1 flex flex-col items-center justify-center relative">
-                    {role === 'spectator' && (
-                        <div className="fixed top-0 left-0 w-full bg-yellow-200 text-yellow-900 font-bold px-6 py-4 rounded-lg shadow-lg text-center z-50">
-                            Sei spettatore: non puoi muovere i pezzi.
-                        </div>
-                    )}
 
                     {gameId && (
                         <div className="text-center mb-4 text-sm text-gray-600 select-all">
@@ -1023,10 +1030,10 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
                     {showMovesDiv && (
                         <MovesModal onMovesComplete={handleMovesComplete} />
                     )}
-                    {(check_moves ?? 0) <= 0 && <ChessTimer isWhite={isWhite} initialTime={time} role={role} />}
+                    {(check_moves ?? 0) <= 0 && mode !=='ai' && <ChessTimer isWhite={isWhite} initialTime={time} role={role} />}
                     {(check_moves ?? 0) > 0 && <ChessMoves check_moves={checkMoves ?? 0} />}
 
-                    <div className="w-full max-w-[95vh] lg:max-w-[85vh] xl:max-w-[86vh] mx-auto -translate-x-36">
+                    <div className="w-full max-w-[95vh] lg:max-w-[85vh] xl:max-w-[86vh] mx-auto ">
                         {/* Scacchiera */}
                         <div
                             className={`relative w-full aspect-square border-8 md:border-12 lg:border-16 shadow-xl border-solid ${darkMode ? 'border-slate-800' : 'border-orange-900'} bg-white bg-cover bg-no-repeat rounded-lg z-0`}
