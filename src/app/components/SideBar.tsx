@@ -70,7 +70,7 @@ export default function SideBar() {
 
             {/* Sidebar */}
             <aside
-                className={`fixed top-0 left-0 z-40 h-screen transition-transform duration-300 ease-in-out bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 shadow-lg
+                className={`fixed top-0 left-0 z-40 h-screen transition-transform duration-300 ease-in-out ${darkMode? 'bg-gray-800 border-gray-700':'bg-gray-50 border-gray-200'} border-r shadow-lg
                 ${isOpen ? "translate-x-0" : "-translate-x-full"}
                 w-64`}
                 aria-label="Sidebar"

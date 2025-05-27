@@ -974,7 +974,7 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
                     {showMovesDiv && (
                         <MovesModal onMovesComplete={handleMovesComplete} />
                     )}
-                    {(check_moves ?? 0) <= 0 && mode !== 'ai' && <ChessTimer isWhite={isWhite} initialTime={time} role={role} />}
+                    {(check_moves ?? 0) <= 0 && <ChessTimer isWhite={isWhite} initialTime={time} role={role} />}
                     
                     <div className="flex flex-col items-center w-full max-w-[95vh] lg:max-w-[85vh] xl:max-w-[86vh] mx-auto md:items-start gap-4">
                         {/* Scacchiera */}
