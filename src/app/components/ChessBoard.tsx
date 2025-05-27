@@ -258,16 +258,6 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
                 animation: scared-king 0.5s infinite;
                 filter: drop-shadow(0 0 3px red);
             }
-            
-            .sweat-drop {
-                position: absolute;
-                width: 5px;
-                height: 8px;
-                background: rgba(120, 180, 255, 0.8);
-                border-radius: 50%;
-                filter: drop-shadow(0 0 1px skyblue);
-                z-index: 100;
-            }
         `;
             document.head.appendChild(style);
         }
@@ -309,26 +299,6 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
                             if (srcAttr && srcAttr.includes(`${kingColor}k`)) {
                                 // Add scared animation to the king
                                 piece.classList.add('scared-king');
-
-                                // Add sweat droplets to the king
-                                if (!square.querySelector('.sweat-drop-left')) {
-                                    const sweatLeft = document.createElement('div');
-                                    sweatLeft.className = 'sweat-drop sweat-drop-left';
-                                    sweatLeft.style.top = '25%';
-                                    sweatLeft.style.left = '25%';
-                                    sweatLeft.style.animation = 'scared-king 0.5s infinite, heartbeat 1s infinite';
-
-                                    const sweatRight = document.createElement('div');
-                                    sweatRight.className = 'sweat-drop sweat-drop-right';
-                                    sweatRight.style.top = '25%';
-                                    sweatRight.style.right = '25%';
-                                    sweatRight.style.animation = 'scared-king 0.5s infinite, heartbeat 1s infinite';
-                                    sweatRight.style.animationDelay = '0.2s';
-
-                                    square.appendChild(sweatLeft);
-                                    square.appendChild(sweatRight);
-                                }
-
                                 break;
                             }
                         }
@@ -495,32 +465,6 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
             setShowMovesDiv(true);
         }
     }, [checkMoves]);
-
-    useEffect(() => {
-        // Solo in modalità challenge e se ci sono ancora mosse da fare
-        if (mode === 'challenge' && (checkMoves ?? 0) > 1) {
-            // Se NON è il turno del giocatore (ad esempio, il bianco è umano e ora tocca al nero)
-            // Supponiamo che il giocatore sia sempre il bianco in challenge, quindi se !isWhite tocca all'AI
-            if (!isWhite) {
-                // Qui chiama la tua funzione AI per far muovere l'avversario
-                fetchStockfishData(fenState, 15).then(data => {
-                    const bestmove = data?.bestmove;
-                    if (bestmove && bestmove.length >= 4) {
-                        const fromSquare = bestmove.slice(0, 2);
-                        const toSquare = bestmove.slice(2, 4);
-                        // Simula il click sulle caselle per muovere il pezzo AI
-                        if (document.getElementById(fromSquare)?.hasChildNodes()) {
-                            document.getElementById(fromSquare)?.click();
-                            setTimeout(() => {
-                                document.getElementById(toSquare)?.click();
-                                setIsWhite(true); // Torna il turno al giocatore
-                            }, 500);
-                        }
-                    }
-                });
-            }
-        }
-    }, [mode, checkMoves, isWhite, fenState]);
 
     //-----------------------------------------------------------------------------
 
