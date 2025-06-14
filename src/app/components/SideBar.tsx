@@ -36,7 +36,7 @@ export default function SideBar() {
 
     const menuItems = [
         { name: `${t.home}`, icon: HomeIcon, href: "/" },
-        { name: `${t.gameTypes}`, icon: PuzzlePieceIcon, href: "/games" },
+        { name: `${t.gameTypes}`, icon: PuzzlePieceIcon, href: "/gameMode" },
         { name: `${t.friends}`, icon: UserGroupIcon, href: "/friends" },
         { name: `${t.about}`, icon: InformationCircleIcon, href: "/about" },
         // { name: `${t.statistics}`, icon: BarChartIcon, href: "/statistics" },

@@ -4,7 +4,7 @@ import { movePiece, showPiece, getEnpassant, getWhiteCastling, getBlackCastling,
 import { usePieceContext } from './PieceContext';
 import PromotionModal from './PromotionModal';
 import CheckMateModal from './CheckMateModal';
-import { getCheck } from '../checkMateLogic';
+import { getCheck, getCheckmate } from '../checkMateLogic';
 import { fetchStockfishData } from '../stockFishUtils';
 import ChessTimer from './ChessTimer';
 import TimerModal from './TimerModal';
@@ -179,7 +179,7 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
     const [showCheckMateDiv, setShowCheckMateDiv] = useState(false);
     const [showTimerDiv, setTimerDiv] = useState(false);
     const [showMovesDiv, setShowMovesDiv] = useState(false);
-    const [checkMoves, setCheckMoves] = useState<number | undefined>(check_moves);
+    const [checkMoves, setCheckMoves] = useState<number>(check_moves ?? 0);
 
     const [shouldRotate, setShouldRotate] = useState(false);
 
@@ -396,24 +396,9 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
 
         //4) check & checkmate
         //    chi ha la mossa è nextIsWhite? vero=bianco, falso=nero
-        if (getCheck(nextIsWhite)) {
-            let legal = 0;
-            // scorro la matrice per trovare tutti i pezzi del colore a mossa
-            newBoard.forEach((row, i) =>
-                row.forEach((cell, j) => {
-                    if (cell) {
-                        const isOwn = nextIsWhite
-                            ? cell === cell.toUpperCase()
-                            : cell === cell.toLowerCase();
-                        if (isOwn) {
-                            const sq = `${letters[j]}${numbers[i]}`;
-                            legal += showPiece(sq, nextIsWhite, lastMove).length;
-                        }
-                    }
-                })
-            );
-            if (legal === 0) {
-                setShowCheckMateDiv(true);
+        if (getCheck(fenState)) {
+            if(getCheckmate(fenState)) {
+                setShowCheckMateDiv(isWhite);
             }
         }
 
@@ -461,7 +446,9 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
         const urlParams = new URLSearchParams(window.location.search);
         const hasCheckMovesInUrl = urlParams.has('check_moves');
 
-        if (checkMoves !== undefined && checkMoves === 0 && hasCheckMovesInUrl && mode === 'challenge' && !isInCheck) {
+        console.log('checkMoves:', checkMoves, 'hasCheckMovesInUrl:', hasCheckMovesInUrl, 'mode:', mode, 'isInCheck:', isInCheck);
+
+        if (checkMoves === 0 && mode === 'challenge' && !isInCheck) {
             setShowMovesDiv(true);
         }
     }, [checkMoves]);
@@ -618,7 +605,7 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
     function isKingInCheckDuringCastling(isWhite: boolean, kingPath: string[]): boolean {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         for (const _ of kingPath) {
-            if (getCheck(isWhite)) {
+            if (getCheck(fenState)) {
                 return true;
             }
         }
@@ -702,7 +689,7 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
             return;
         }
 
-        if (mode === 'ai' && isWhite || true) {
+        if (mode !== 'ai' && isWhite || true) {
             // console.log(document.getElementById(square)?.classList.contains('bg-purple-400/75'));
             // console.log(getWhiteCastling(), getBlackCastling());
 
@@ -774,21 +761,11 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
                         setCheckMoves((prev) => Math.max((prev ?? 0) - 1, 0)); // Decrementa ma si ferma a zero
                     }
                     // Check if the opponent is in check after the move
-                    const opponentInCheck = getCheck(!isWhite);
+                    const opponentInCheck = getCheck(fenState);
                     setIsInCheck(opponentInCheck);
 
                     if (opponentInCheck) {
-                        let legalMoves = 0;
-                        squares.forEach((square) => {
-                            const div = document.getElementById(square.props.id) as HTMLElement;
-                            if (div) {
-                                if (div.children[0]?.getAttribute('src')?.includes(`https://www.chess.com/chess-themes/pieces/neo/150/${!isWhite ? 'w' : 'b'}`)) {
-                                    const movesForPiece = Array.from(showPiece(square.props.id, !isWhite, lastMove));
-                                    legalMoves += movesForPiece.length;
-                                }
-                            }
-                        })
-                        if (legalMoves === 0) {
+                        if (getCheckmate(fenState)) {
                             setShowCheckMateDiv(true);
                             if (mode === 'challenge') {
                                 try {
@@ -825,7 +802,7 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
                 console.log("Turno del: " + ((isWhite) ? "bianco" : "nero"));
 
                 // Check if current player is in check
-                const currentPlayerInCheck = getCheck(isWhite);
+                const currentPlayerInCheck = getCheck(fenState);
                 setIsInCheck(currentPlayerInCheck);
 
                 if (document.getElementById(square)?.hasChildNodes() && document.getElementById(square)?.children[0]?.getAttribute('src')?.includes(`https://www.chess.com/chess-themes/pieces/neo/150/${isWhite ? 'w' : 'b'}`)) {
@@ -976,7 +953,7 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
                     )}
                     {(check_moves ?? 0) <= 0 && <ChessTimer isWhite={isWhite} initialTime={time} role={role} />}
                     
-                    <div className="flex flex-col items-center w-full max-w-[95vh] lg:max-w-[85vh] xl:max-w-[86vh] mx-auto md:items-start gap-4">
+                    <div className="flex flex-col items-center w-full max-w-[95vh] lg:max-w-[85vh] md:max-h-[85vh] xl:max-w-[86vh] mx-auto md:items-start lg:-translate-x-32 gap-4">
                         {/* Scacchiera */}
                         <div
                             className={`relative w-full aspect-square border-8 md:border-12 lg:border-16 shadow-xl border-solid ${darkMode ? 'border-slate-800' : 'border-orange-900'} bg-white bg-cover bg-no-repeat rounded-lg z-0`}
