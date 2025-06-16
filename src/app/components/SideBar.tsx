@@ -85,7 +85,7 @@ export default function SideBar() {
                         <ul className="space-y-5 font-medium">
                             {menuItems.map((item, index) => (
                                 <li key={index}>
-                                    <a
+                                    <Link
                                         href={item.href}
                                         className={`flex items-center p-3 rounded-lg group transition-all duration-200 ${
                                             darkMode
@@ -95,7 +95,7 @@ export default function SideBar() {
                                     >
                                         <item.icon className={`w-5 h-5 ${darkMode ? 'text-white' : 'text-green-600'}`} />
                                         <span className="ms-3">{item.name}</span>
-                                    </a>
+                                    </Link>
                                 </li>
                             ))}
                         </ul>

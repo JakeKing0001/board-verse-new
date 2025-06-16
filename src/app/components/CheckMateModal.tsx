@@ -7,6 +7,7 @@ interface CheckMateModalProps {
     onCheckMateComplete: (piece: string) => void;
     isWhite: boolean;
     isChallenge: boolean;
+    isDraw?: boolean;
 }
 
 /**
@@ -22,7 +23,7 @@ interface CheckMateModalProps {
  *
  * @returns {JSX.Element} The rendered CheckMateModal component.
  */
-const CheckMateModal: React.FC<CheckMateModalProps> = ({ onCheckMateComplete, isWhite, isChallenge }) => {
+const CheckMateModal: React.FC<CheckMateModalProps> = ({ onCheckMateComplete, isWhite, isChallenge, isDraw = false }) => {
     const [isVisible, setIsVisible] = useState(false);
     const [showConfetti, setShowConfetti] = useState(false);
 
@@ -146,7 +147,7 @@ const CheckMateModal: React.FC<CheckMateModalProps> = ({ onCheckMateComplete, is
                             className={`text-6xl font-extrabold ${textColor} tracking-wider uppercase`}
                             style={textShadowStyle}
                         >
-                            {t.checkMateTitle}
+                            {isDraw ? t.drawTitle : t.checkMateTitle}
                         </h2>
                     </div>
 
@@ -157,9 +158,13 @@ const CheckMateModal: React.FC<CheckMateModalProps> = ({ onCheckMateComplete, is
                             bg-gradient-to-r from-transparent via-${isWhite ? 'white/40' : 'gray-800/40'} to-transparent p-4 rounded-lg`}
                             style={textShadowStyle}
                         >
-                            <span className={`font-bold ${textColor}`}>
-                                {winnerColor}
-                            </span> {t.checkMateText}
+                            {isDraw ? (
+                                <span className={`font-bold ${textColor}`}>{t.drawText}</span>
+                            ) : (
+                                <>
+                                    <span className={`font-bold ${textColor}`}>{winnerColor}</span> {t.checkMateText}
+                                </>
+                            )}
                         </p>
                     </div>
 

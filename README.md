@@ -64,7 +64,7 @@ Di seguito sono riportati i passi dettagliati per installare e avviare Boardvers
    ```
 
    *(In alternativa è possibile usare `yarn install` se si preferisce Yarn, oppure `pnpm install` se si usa pnpm – il progetto è compatibile con tutti e tre i gestori di pacchetti.)*
-4. **Configurare le Variabili d’Ambiente:** *Questo passaggio è facoltativo, in quanto la configurazione di default è già fornita.* Il progetto utilizza Supabase: l’SDK è inizializzato con una **URL** e una **chiave anonima** pubblica per il progetto Supabase dedicato. Di default questi valori sono già presenti nel file `lib/supabase.js`. Qualora si volesse collegare l’app a un proprio istanza Supabase, creare un file ambiente (ad es. `.env.local`) e impostare le variabili `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY` con i valori forniti dal proprio progetto Supabase, quindi modificare `lib/supabase.js` per leggerli da lì. In assenza di modifica, l’app utilizzerà i valori di default e tenterà di connettersi al database Supabase pubblico del progetto demo.
+4. **Configurare le Variabili d’Ambiente:** Creare un file `.env.local` nella radice del progetto e definire le variabili `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY` con i valori forniti dal proprio progetto Supabase. Il file `lib/supabase.js` le leggerà automaticamente per inizializzare il client.
 5. **Avviare il Server di Sviluppo:** Eseguire il comando:
 
    ```bash
@@ -224,13 +224,7 @@ Grazie per il tuo interesse nel contribuire a Boardverse!
 
 ## Licenza
 
-*(Da aggiornare se/quando verrà aggiunta una licenza al progetto.)*
-
-Al momento questo progetto **non ha una licenza open-source specificata**. Ciò significa che il codice sorgente è da intendersi *“All Rights Reserved”* (tutti i diritti riservati) fino a diversa decisione dell’autore. In assenza di una licenza, non è formalmente permesso riutilizzare o ridistribuire il codice senza autorizzazione.
-
-Se prevedi di utilizzare parte di questo codice in altri contesti, contatta l’autore per discutere un’eventuale concessione. In futuro, l’autore potrebbe scegliere di rilasciare Boardverse con una licenza open (ad es. MIT, GPL, ecc.) per permetterne l’uso e le contribuzioni in maniera più formale: verifica questo file README o la repository per aggiornamenti a riguardo.
-
-*(Se sei il manutentore del progetto e desideri applicare una licenza, aggiungi un file LICENSE appropriato e aggiorna questa sezione di conseguenza, indicando il tipo di licenza e un breve riassunto.)*
+Questo progetto è distribuito sotto licenza [MIT](LICENSE). Consulta il file per i dettagli.
 
 ## Contatti e riferimenti utili
 
@@ -243,7 +237,7 @@ Per qualsiasi domanda, segnalazione o richiesta di supporto relativa a Boardvers
   * Documentazione Supabase: [https://supabase.com/docs](https://supabase.com/docs) – per maggiori info su come funziona il backend (database, autenticazione, realtime) che Boardverse utilizza.
   * Guida Tailwind CSS: [https://tailwindcss.com/docs](https://tailwindcss.com/docs) – per comprendere le classi CSS utilizzate nel progetto per lo stile dell’interfaccia.
   * Repository GitHub Boardverse (questo): naturalmente, puoi esplorare il codice sorgente direttamente su GitHub per trovare dettagli implementativi; leggere i commenti nel codice (molti sono in italiano e spiegano la logica adottata) può essere utile.
-* **Demo online:** *(Se disponibile)* Se il progetto è stato deployato online (ad esempio su Vercel, dato che Next.js si integra bene), l’URL verrà indicato qui. *(Esempio: [https://boardverse.app](https://boardverse.app))*. Su tale istanza pubblica puoi registrarti e provare l’app senza doverla eseguire in locale.
+* **Demo online:** *(Se disponibile)* Se il progetto è stato deployato online (ad esempio su Vercel, dato che Next.js si integra bene), l’URL verrà indicato qui. *(Esempio: [https://www.boardverse.org](https://www.boardverse.org))*. Su tale istanza pubblica puoi registrarti e provare l’app senza doverla eseguire in locale.
 * **Comunità e Supporto:** Non esiste ancora un forum o gruppo dedicato a Boardverse, ma eventuali discussioni avvengono tramite la sezione GitHub Issues/Discussions. In futuro, se la base di utenti cresce, potremmo considerare canali Discord, subreddit o altri mezzi per la community di giocatori e sviluppatori.
 
 **Riferimenti aggiuntivi:** Il concept di Boardverse è ispirato a popolari piattaforme di scacchi online come Lichess e Chess.com (per le funzionalità di gioco e social) e alla versatilità di piattaforme di gioco da tavolo online. Anche se il codice è originale, riconosciamo queste piattaforme come fonte di idee e best practice nell’ambito degli scacchi online.

@@ -2,10 +2,8 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import bcrypt from "bcryptjs";
 import NavBar from "./NavBar";
 import { usePieceContext } from "./PieceContext";
-import { getUsers } from "../../../services/login";
 import toast from "react-hot-toast";
 
 /**
@@ -35,7 +33,7 @@ const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { setIsLoggedIn, allUsers, t, darkMode } = usePieceContext();
+  const { setIsLoggedIn, t, darkMode } = usePieceContext();
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -78,42 +76,37 @@ const LoginPage = () => {
     setIsLoading(true);
 
     try {
-      const users = allUsers && allUsers.length > 0 ? allUsers : await getUsers();
-
-      const user = users.find((user: { email: string; password: string }) => user.email === email);
-
-      if (user) {
-        const isPasswordValid = await bcrypt.compareSync(password, user.password);
-        if (!isPasswordValid) {
-          throw new Error("Invalid password");
-        }
-      }
-
-      if (user) {
-        console.log("Utente trovato:", user);
+      const response = await fetch("/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+      if (!response.ok) {
         const rememberMeCheckbox = document.getElementById("remember-me") as HTMLInputElement;
         if (rememberMeCheckbox?.checked) {
-          localStorage.setItem("rememberMe", "true"); // Salva l'email nel localStorage se l'utente ha selezionato "Ricordami"
+          localStorage.setItem('rememberMe', 'true');
         } else {
-          localStorage.removeItem("rememberMe"); // Altrimenti rimuovila
+          localStorage.removeItem('rememberMe');
         }
-        setIsLoggedIn(user.email); // Imposta lo stato di login a true
-        if (localStorage.getItem("rememberMe") === "true") {
-          localStorage.setItem("isLoggedIn", user.email);
+        setIsLoggedIn(email);
+        if (localStorage.getItem('rememberMe') === 'true') {
+          localStorage.setItem('isLoggedIn', email);
         } else {
-          sessionStorage.setItem("isLoggedIn", user.email);
-        } // Salva lo stato di login nel localStorage
+          sessionStorage.setItem('isLoggedIn', email);
+        }
         toast.success(t.loginSuccess);
-        setTimeout(() => { window.location.href = "/"; }, 500); // Reindirizzamento dopo successo
+        setTimeout(() => { window.location.href = '/'; }, 500);
       } else {
         // console.error("Credenziali non valide.");
         toast.error(t.invalidCredentials);
-        setErrors((prev) => ({ ...prev, email: "Email o password non valide" }));
+        setErrors((prev) => ({ ...prev, email: 'Email o password non valide' }));
       }
 
     } catch (error) {
-      console.error("Errore nella registrazione:", error);
-      setErrors(prev => ({ ...prev, email: "Registrazione fallita" }));
+      console.error('Errore nel login:', error);
+      setErrors(prev => ({ ...prev, email: 'Login fallito' }));
     } finally {
       setIsLoading(false);
     }

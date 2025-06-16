@@ -198,6 +198,8 @@
     "loginSuccess": "Connexion réussie !",
     "invalidCredentials": "Identifiants invalides.",
     "forgotPasswordTitle": "Récupérer le mot de passe",
+    "drawTitle": "Match nul !",
+    "drawText": "La partie s'est terminée par un match nul.",
     "forgotPasswordDesc": "Entrez votre email et nous vous enverrons un lien pour réinitialiser le mot de passe.",
     "sendRecoveryLink": "Envoyer le lien de récupération",
     "sending": "Envoi en cours...",

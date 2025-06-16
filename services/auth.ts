@@ -90,3 +90,26 @@ export const settingsUser = async (formData: {
 
   return response.json();
 };
+
+/**
+ * Sends a password reset email to the provided address.
+ *
+ * @param email - The user's email address.
+ * @returns A promise that resolves when the request completes.
+ */
+export const requestPasswordReset = async (email: string) => {
+  const response = await fetch(`/api/forgot-password`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email }),
+  });
+
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
+    throw new Error(data.error || `Error: ${response.status} - ${response.statusText}`);
+  }
+
+  return response.json();
+};

@@ -1,4 +1,5 @@
 import { getCheck } from './checkMateLogic';
+import { Chess } from 'chess.js';
 
 let enPassant: boolean | null = null;
 let castlingWhite = true; let castlingBlack = true;
@@ -192,13 +193,22 @@ function showPossibleMove(letter: string, number: string, letterNumber: number, 
     const fromSquare = letter + number;
     const toSquare = String.fromCharCode(letter.charCodeAt(0) + letterNumber) + (parseInt(number) + numberNumber);
 
+    const chess = new Chess(fen);
+    try {
+        chess.move({ from: fromSquare, to: toSquare });
+    } catch {
+        return false;
+    }
+
+    const newFen = chess.fen();
+    const checkFen = newFen.replace(/ (w|b) /, ` ${isWhite ? 'w' : 'b'} `);
+
     if (target?.hasChildNodes()) {
         if (target?.children[0]?.getAttribute('src')?.includes(`${stringInclusion}${isWhite ? 'b' : 'w'}`) &&
         !document.getElementById(letter + number)?.children[0]?.getAttribute('src')?.includes(`${stringInclusion}${isWhite ? 'wp' : 'bp'}`)) {
             targetPiece = target.children[0];
             movePiece(fromSquare, toSquare);
-            console.log(getCheck(fen));
-            if(getCheck(fen) === false) {
+            if(!getCheck(checkFen)) {
                 movePiece(toSquare, fromSquare);
                 target.appendChild(targetPiece);
                 return target?.classList.add('bg-red-400/75', 'rounded-full'), false;
@@ -213,8 +223,7 @@ function showPossibleMove(letter: string, number: string, letterNumber: number, 
     } else {
         if(target !== null) {
             movePiece(letter + number, String.fromCharCode(letter.charCodeAt(0) + letterNumber) + (parseInt(number) + numberNumber));
-            console.log(getCheck(fen));
-            if(getCheck(fen) === false) {
+            if(!getCheck(checkFen)) {
                 movePiece(toSquare, fromSquare);
                 return target?.classList.add('bg-gray-400/75', 'scale-[0.50]', 'rounded-full'), true;
             } else {

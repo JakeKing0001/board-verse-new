@@ -4,7 +4,7 @@ import { movePiece, showPiece, getEnpassant, getWhiteCastling, getBlackCastling,
 import { usePieceContext } from './PieceContext';
 import PromotionModal from './PromotionModal';
 import CheckMateModal from './CheckMateModal';
-import { getCheck, getCheckmate } from '../checkMateLogic';
+import { getCheck, getCheckmate, getDraw, getStalemate, getThreefoldRepetition, getInsufficientMaterial } from '../checkMateLogic';
 import { fetchStockfishData } from '../stockFishUtils';
 import ChessTimer from './ChessTimer';
 import TimerModal from './TimerModal';
@@ -178,6 +178,7 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
     const [showPromotionDiv, setShowPromotionDiv] = useState(false);
     const [promotionResolved, setPromotionResolved] = useState<((value: string) => void) | null>(null);
     const [data, setData] = useState<StockfishData | null>(null);
+    const [isDrawState, setIsDrawState] = useState(false);
     const [showCheckMateDiv, setShowCheckMateDiv] = useState(false);
     const [showTimerDiv, setTimerDiv] = useState(false);
     const [showMovesDiv, setShowMovesDiv] = useState(false);
@@ -188,16 +189,37 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
 
     const [shouldRotate, setShouldRotate] = useState(false);
 
+    const fenParts = initialFEN.split(" ");
+    const castlingField = fenParts[2] || '-';
+    const [whiteKingSide, setWhiteKingSide] = useState(castlingField.includes('K'));
+    const [whiteQueenSide, setWhiteQueenSide] = useState(castlingField.includes('Q'));
+    const [blackKingSide, setBlackKingSide] = useState(castlingField.includes('k'));
+    const [blackQueenSide, setBlackQueenSide] = useState(castlingField.includes('q'));
+    const [halfmoveClock, setHalfmoveClock] = useState(parseInt(fenParts[4] || '0', 10));
+    const [fullmoveNumber, setFullmoveNumber] = useState(parseInt(fenParts[5] || '1', 10));
+
+    useEffect(() => {
+        setWhiteCastling(whiteKingSide || whiteQueenSide);
+    }, [whiteKingSide, whiteQueenSide]);
+
+    useEffect(() => {
+        setBlackCastling(blackKingSide || blackQueenSide);
+    }, [blackKingSide, blackQueenSide]);
+
     // Load CPU moves for the current challenge
-    interface Challenge { fen: string; cpu_moves?: string[] | string; number_moves?: number; }
+    interface Challenge { fen: string; cpu_moves?: string[] | string | null; number_moves?: number; }
     useEffect(() => {
         if (mode === 'challenge' && fen_challenge) {
             const challenge = challenges.find((ch: Challenge) => ch.fen === fen_challenge);
             if (challenge && challenge.cpu_moves) {
-                try {
-                    setCpuMoves(Array.isArray(challenge.cpu_moves) ? challenge.cpu_moves : JSON.parse(challenge.cpu_moves));
-                } catch (e) {
-                    console.error('Failed to parse cpu moves', e);
+                if (Array.isArray(challenge.cpu_moves)) {
+                    setCpuMoves(challenge.cpu_moves);
+                } else if (typeof challenge.cpu_moves === 'string') {
+                    try {
+                        setCpuMoves(JSON.parse(challenge.cpu_moves));
+                    } catch (e) {
+                        console.error('Failed to parse cpu moves', e);
+                    }
                 }
             }
         }
@@ -416,11 +438,21 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
         const nextIsWhite = movesList.length % 2 === 0;
         setIsWhite(nextIsWhite);
 
-        //4) check & checkmate
-        //    chi ha la mossa è nextIsWhite? vero=bianco, falso=nero
+        //4) check & checkmate and stalemate
         if (getCheck(fenState)) {
             if(getCheckmate(fenState)) {
-                setShowCheckMateDiv(isWhite);
+                setIsDrawState(false);
+                setShowCheckMateDiv(true);
+            }
+        } else {
+            if (
+                getDraw(fenState) ||
+                getStalemate(fenState) ||
+                getThreefoldRepetition(fenState) ||
+                getInsufficientMaterial(fenState)
+            ) {
+                setIsDrawState(true);
+                setShowCheckMateDiv(false);
             }
         }
 
@@ -525,7 +557,12 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
             fen += 'b ';
         }
 
-        fen += 'KQkq ';
+        let castling = '';
+        if (whiteKingSide) castling += 'K';
+        if (whiteQueenSide) castling += 'Q';
+        if (blackKingSide) castling += 'k';
+        if (blackQueenSide) castling += 'q';
+        fen += castling === '' ? '- ' : castling + ' ';
 
         if (enPassant !== '') {
             fen += `${enPassant} `;
@@ -533,7 +570,7 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
             fen += '- ';
         }
 
-        fen += '0 1';
+        fen += `${halfmoveClock} ${fullmoveNumber}`;
 
         return fen;
     }
@@ -591,7 +628,7 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
         });
     }
 
-    async function checkPromotion() {
+    async function checkPromotion(): Promise<void> {
         for (let i = 0; i < 8; i++) {
             if (isWhite) {
                 if (document.getElementById(`${letters[i]}8`)?.children[0]?.getAttribute('src')?.includes('wp')) {
@@ -625,9 +662,10 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
     }
 
     function isKingInCheckDuringCastling(isWhite: boolean, kingPath: string[]): boolean {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        for (const _ of kingPath) {
-            if (getCheck(fenState)) {
+        const chess = new Chess(fenState);
+        for (let i = 1; i < kingPath.length; i++) {
+            chess.move({ from: kingPath[i - 1], to: kingPath[i] });
+            if (chess.isCheck()) {
                 return true;
             }
         }
@@ -733,6 +771,39 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
 
                 if (!document.getElementById(square)?.hasChildNodes() ||
                     !document.getElementById(square)?.children[0]?.getAttribute('src')?.includes(`https://www.chess.com/chess-themes/pieces/neo/150/${isWhite ? 'w' : 'b'}`)) {
+                    const fromPiece = document.getElementById(selectedPiece)?.children[0]?.getAttribute('src') || '';
+                    const targetPiece = document.getElementById(square)?.children[0]?.getAttribute('src') || '';
+                    const isPawn = fromPiece.includes('wp') || fromPiece.includes('bp');
+                    const isCapture = !!targetPiece;
+
+                    if (selectedPiece === 'e1') { setWhiteKingSide(false); setWhiteQueenSide(false); }
+                    if (selectedPiece === 'h1') { setWhiteKingSide(false); }
+                    if (selectedPiece === 'a1') { setWhiteQueenSide(false); }
+                    if (selectedPiece === 'e8') { setBlackKingSide(false); setBlackQueenSide(false); }
+                    if (selectedPiece === 'h8') { setBlackKingSide(false); }
+                    if (selectedPiece === 'a8') { setBlackQueenSide(false); }
+
+                    if (square === 'a1') { setWhiteQueenSide(false); }
+                    if (square === 'h1') { setWhiteKingSide(false); }
+                    if (square === 'a8') { setBlackQueenSide(false); }
+                    if (square === 'h8') { setBlackKingSide(false); }
+
+                    if (isPawn && Math.abs(parseInt(selectedPiece[1]) - parseInt(square[1])) === 2) {
+                        const epRank = (parseInt(selectedPiece[1]) + parseInt(square[1])) / 2;
+                        enPassant = selectedPiece[0] + epRank;
+                    } else {
+                        enPassant = '';
+                    }
+
+                    if (isPawn || isCapture) {
+                        setHalfmoveClock(0);
+                    } else {
+                        setHalfmoveClock(h => h + 1);
+                    }
+
+                    if (!isWhite) {
+                        setFullmoveNumber(f => f + 1);
+                    }
                     getLastMove(selectedPiece, square);
                     movePiece(selectedPiece, square);
                     //console.log(`Moved piece from ${selectedPiece} to ${square}`);
@@ -759,7 +830,7 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
                             }
                         }
                     });
-                    checkPromotion();
+                    await checkPromotion();
                     enableOtherMoves();
                     const newFen = createFEN();
                     setFenState(newFen);
@@ -790,6 +861,7 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
 
                     if (opponentInCheck) {
                         if (getCheckmate(newFen)) {
+                            setIsDrawState(false);
                             setShowCheckMateDiv(true);
                             if (mode === 'challenge') {
                                 try {
@@ -815,6 +887,14 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
                                     console.log(error);
                                 }
                             }
+                        } else if (
+                            getDraw(newFen) ||
+                            getStalemate(newFen) ||
+                            getThreefoldRepetition(newFen) ||
+                            getInsufficientMaterial(newFen)
+                        ) {
+                            setIsDrawState(true);
+                            setShowCheckMateDiv(false);  
                         }
                     }
                     // Execute next CPU move in challenge mode
@@ -851,12 +931,7 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
                 // console.log(subChoosedMoves);
                 disableOtherMoves(subChoosedMoves);
                 //console.log(`No piece selected`);
-                squares.forEach((square) => {
-                    const div = document.getElementById(square.props.id) as HTMLElement;
-                    if (div.classList.contains('bg-blue-400/75')) {
-                        enPassant = square.props.id;
-                    }
-                })
+                // keep current en passant state
             }
         }
     }
@@ -935,6 +1010,7 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
 
     const handleCheckMateComplete = () => {
         setShowCheckMateDiv(false);
+        setIsDrawState(false);
     };
 
     const handleMovesComplete = () => {
@@ -993,7 +1069,7 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
                         <PromotionModal onPromotionComplete={handlePromotionComplete} />
                     )}
                     {showCheckMateDiv && (
-                        <CheckMateModal onCheckMateComplete={handleCheckMateComplete} isWhite={isWhite} isChallenge={mode === 'challenge'} />
+                        <CheckMateModal onCheckMateComplete={handleCheckMateComplete} isWhite={isWhite} isChallenge={mode === 'challenge'} isDraw={isDrawState} />
                     )}
                     {showTimerDiv && (check_moves ?? 0) <= 0 && (
                         <TimerModal onTimerComplete={handleTimerComplete} isWhite={isWhite} />

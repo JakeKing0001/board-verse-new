@@ -20,7 +20,7 @@ export const POST = async (req: Request) => {
     }
 
     return NextResponse.json({ message: 'Last seen updated' });
-  } catch (err) {
+  } catch {
     return NextResponse.json({ error: 'An error occurred' }, { status: 500 });
   }
 };

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Clock, Edit3, X } from 'lucide-react';
 import { usePieceContext } from './PieceContext';
 import NavBar from './NavBar';
+import Link from 'next/link';
 
 const CustomTimeForm = ({ onClose, onSubmit, setTime }: { onClose: () => void, onSubmit: (totalSeconds: number) => void, setTime: (value: number) => void }) => {
     const [days, setDays] = useState('');
@@ -206,7 +207,7 @@ export default function ChooseTime() {
                                     {timeOptions
                                         .filter((option) => option.category === category.id)
                                         .map((option) => (
-                                            <a href={`/chessboard?mode=${mode}&time=${convertToSeconds(option.value)}`} key={option.value}>
+                                            <Link href={`/chessboard?mode=${mode}&time=${convertToSeconds(option.value)}`} key={option.value}>
                                                 <button
                                                     key={option.value}
                                                     onClick={() => {
@@ -221,7 +222,7 @@ export default function ChooseTime() {
                                                 >
                                                     {option.label}
                                                 </button>
-                                            </a>
+                                            </Link>
                                         ))}
                                 </div>
                             </div>

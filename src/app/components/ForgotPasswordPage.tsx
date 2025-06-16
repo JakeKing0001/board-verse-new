@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import NavBar from "./NavBar";
 import { usePieceContext } from "./PieceContext";
+import toast from "react-hot-toast";
+import { requestPasswordReset } from "../../../services/auth";
 
 /**
  * ForgotPasswordPage component renders a password recovery form.
@@ -24,7 +26,8 @@ const ForgotPasswordPage = () => {
   const [email, setEmail] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { t, darkMode } = usePieceContext();
+  const [error, setError] = useState<string | null>(null);
+  const { t } = usePieceContext();
   
   useEffect(() => {
     const style = document.getElementById("check-border-style");
@@ -33,15 +36,22 @@ const ForgotPasswordPage = () => {
     }
   }, []);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
-    
-    // Simulazione invio email di recupero - sostituire con logica reale
-    setTimeout(() => {
-      setIsLoading(false);
+    setError(null);
+
+    try {
+      await requestPasswordReset(email);
+      toast.success(t.emailSentTitle || "Email sent!");
       setIsSubmitted(true);
-    }, 1500);
+    } catch (err: unknown) {
+      console.error("Reset password error:", err);
+      toast.error(t.errorSendingEmail || "Error sending email");
+      setError(t.errorSendingEmail || "Error sending email");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -90,7 +100,7 @@ const ForgotPasswordPage = () => {
                     disabled={isLoading}
                     className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-lg font-medium rounded-full text-white bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1 active:translate-y-0"
                   >
-                    {isLoading ? (
+                  {isLoading ? (
                       <span className="flex items-center">
                         <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -105,6 +115,9 @@ const ForgotPasswordPage = () => {
                       </span>
                     )}
                   </button>
+                  {error && (
+                    <p className="text-red-600 text-center mt-2 text-sm">{error}</p>
+                  )}
                 </form>
               </>
             ) : (

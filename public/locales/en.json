@@ -178,6 +178,8 @@
     "enterUsername": "Enter username...",
     "search": "Search",
     "searchResults": "Search Results",
+    "drawTitle": "Draw!",
+    "drawText": "The game ends in a draw.",
     "close": "Close",
     "noUsersFound": "No users found",
     "usersFound": "user found",

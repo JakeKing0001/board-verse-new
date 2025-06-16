@@ -58,6 +58,8 @@
     "statistics": "Estadísticas",
     "matchesPlayed": "Partidas jugadas",
     "wins": "Victorias",
+    "drawTitle": "¡Tablas!",
+    "drawText": "La partida terminó en tablas.",
     "reward": "Recompensas",
     "joinBoardverse": "Únete a Boardverse",
     "fullName": "Nombre completo",

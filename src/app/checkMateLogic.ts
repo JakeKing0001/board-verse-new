@@ -28,3 +28,23 @@ export function getCheckmate(fen: string): boolean {
     chess.load(fen);
     return chess.isCheckmate();
 }
+
+export function getDraw(fen: string): boolean {
+    chess.load(fen);
+    return chess.isDraw();
+}
+
+export function getStalemate(fen: string): boolean {
+    chess.load(fen);
+    return chess.isStalemate();
+}
+
+export function getInsufficientMaterial(fen: string): boolean {
+    chess.load(fen);
+    return chess.isInsufficientMaterial();
+}
+
+export function getThreefoldRepetition(fen: string): boolean {
+    chess.load(fen);
+    return chess.isThreefoldRepetition();
+}

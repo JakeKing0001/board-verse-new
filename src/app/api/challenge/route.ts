@@ -16,7 +16,7 @@ export const GET = async () => {
   try {
     const { data, error } = await supabase
       .from('challenges')
-      .select('*');
+      .select('id, fen, number_moves, created_at, cpu_moves');
 
     if (error) {
       console.error("Supabase select error:", error.message);

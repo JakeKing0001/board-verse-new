@@ -196,6 +196,8 @@
     "createGameProgress": "Spiel wird erstellt...",
     "insertGameName": "Bitte gib einen Namen für das Spiel ein!",
     "loginSuccess": "Erfolgreich eingeloggt!",
+    "drawTitle": "Unentschieden!",
+    "drawText": "Die Partie endete unentschieden.",
     "invalidCredentials": "Ungültige Anmeldedaten.",
     "forgotPasswordTitle": "Passwort wiederherstellen",
     "forgotPasswordDesc": "Gib deine E-Mail ein und wir senden dir einen Link zum Zurücksetzen des Passworts.",
