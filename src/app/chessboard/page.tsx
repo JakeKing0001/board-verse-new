@@ -1,7 +1,7 @@
 "use client";
 
 import React, { Suspense, useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { PieceProvider } from "../components/PieceContext";
 import App from "../components/App";
 import { supabase } from "../../../lib/supabase";
@@ -21,42 +21,14 @@ import { supabase } from "../../../lib/supabase";
  */
 function ChessboardPageContent() {
   const searchParams = useSearchParams();
-  const router = useRouter();
-
-  const mode = searchParams.get("mode") || undefined;
-  const gameId = searchParams.get("gameId") || undefined;
-  const timeParam = searchParams.get("time");
-  const time = timeParam ? parseInt(timeParam, 10) : NaN;
-  const fen_challenge = searchParams.get("fen_challenge") || undefined;
-  const checkMovesParam = searchParams.get("check_moves");
-  const check_moves = checkMovesParam ? parseInt(checkMovesParam, 10) : NaN;
+  const mode = searchParams.get("mode") || "defaultMode";
+  const gameId = searchParams.get("gameId") || "";
+  const time = parseInt(searchParams.get("time") || "0", 10);
+  const fen_challenge = searchParams.get("fen_challenge") || "defaultFen";
+  const check_moves = parseInt(searchParams.get("check_moves") || "0", 10);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [game, setGame] = useState<any>(null);
-
-  // Redirect to setup pages if required parameters are missing
-  useEffect(() => {
-    const allowedModes = ["multiplayer", "ai", "online", "challenge"];
-
-    if (!mode || !allowedModes.includes(mode)) {
-      router.replace("/gameMode");
-      return;
-    }
-
-    if (["multiplayer", "ai", "online"].includes(mode) && (!timeParam || isNaN(time))) {
-      router.replace("/chooseTime");
-      return;
-    }
-
-    if (mode === "online" && !gameId) {
-      router.replace("/online");
-      return;
-    }
-
-    if (mode === "challenge" && (!fen_challenge || !checkMovesParam)) {
-      router.replace("/challenge");
-    }
-  }, [mode, timeParam, time, gameId, fen_challenge, checkMovesParam, router]);
 
   useEffect(() => {
     if (mode === "online" && gameId) {
@@ -106,22 +78,7 @@ function ChessboardPageContent() {
     };
   }, [mode, gameId, game]);
 
-  const invalidParams =
-    !mode ||
-    ["multiplayer", "ai", "online", "challenge"].indexOf(mode) === -1 ||
-    (["multiplayer", "ai", "online"].includes(mode) && (!timeParam || isNaN(time))) ||
-    (mode === "online" && !gameId) ||
-    (mode === "challenge" && (!fen_challenge || !checkMovesParam));
-
-  if (invalidParams) {
-    return <div className="flex items-center justify-center h-screen">Invalid game parameters</div>;
-  }
-
-  if (
-    mode === "online" &&
-    game &&
-    (game.guest_id === null || game.guest_id === undefined)
-  ) {
+  if (mode === "online" && game && (!game.guest_id || !game.guest_id === null)) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
         <h2 className="text-2xl font-bold mb-4">In attesa di un avversario...</h2>
@@ -139,7 +96,7 @@ function ChessboardPageContent() {
     );
   }
 
-  return <App mode={mode} time={time} fen_challenge={fen_challenge ?? ""} check_moves={check_moves} gameData={game} />;
+  return <App mode={mode} time={time} fen_challenge={fen_challenge} check_moves={check_moves} gameData={game} />;
 }
 
 export default function ChessboardPage() {

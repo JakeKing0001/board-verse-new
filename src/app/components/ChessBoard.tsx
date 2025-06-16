@@ -226,6 +226,12 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
     }, [mode, fen_challenge, challenges]);
 
     useEffect(() => {
+        setFenState(initialFEN);
+        setBoard(parseFEN(initialFEN));
+        setIsWhite(initialFEN.split(" ")[1] === "w");
+    }, [mode, fen_challenge]);
+
+    useEffect(() => {
         if (isGameOver !== '') {
             setTimerDiv(true);
         }
@@ -440,7 +446,7 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
 
         //4) check & checkmate and stalemate
         if (getCheck(fenState)) {
-            if(getCheckmate(fenState)) {
+            if (getCheckmate(fenState)) {
                 setIsDrawState(false);
                 setShowCheckMateDiv(true);
             }
@@ -894,7 +900,7 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
                             getInsufficientMaterial(newFen)
                         ) {
                             setIsDrawState(true);
-                            setShowCheckMateDiv(false);  
+                            setShowCheckMateDiv(false);
                         }
                     }
                     // Execute next CPU move in challenge mode
@@ -1078,7 +1084,7 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
                         <MovesModal onMovesComplete={handleMovesComplete} />
                     )}
                     {(check_moves ?? 0) <= 0 && <ChessTimer isWhite={isWhite} initialTime={time} role={role} />}
-                    
+
                     <div className="flex flex-col items-center w-full max-w-[95vh] lg:max-w-[85vh] md:max-h-[85vh] xl:max-w-[86vh] mx-auto md:items-start lg:-translate-x-32 gap-4">
                         {/* Scacchiera */}
                         <div
@@ -1112,12 +1118,12 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
                         </div>
                     </div>
                     {(check_moves ?? 0) > 0 && (
-                            <div
-                                className="w-full md:w-auto mt-4 md:mt-0 flex justify-center order-last md:order-none translate-y-28 translate-x-10 md:-translate-y-72 md:translate-x-[100]"
-                            >
-                                <ChessMoves check_moves={checkMoves ?? 0} />
-                            </div>
-                        )}
+                        <div
+                            className="w-full md:w-auto mt-4 md:mt-0 flex justify-center order-last md:order-none translate-y-28 translate-x-10 md:-translate-y-72 md:translate-x-[100]"
+                        >
+                            <ChessMoves check_moves={checkMoves ?? 0} />
+                        </div>
+                    )}
                 </div>
             </div>
         </>
