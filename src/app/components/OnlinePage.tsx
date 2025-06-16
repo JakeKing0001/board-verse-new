@@ -125,7 +125,7 @@ const OnlinePage = () => {
 
   const handleCreateGame = () => {
     if (!isLoggedIn) {
-      toast.error("Devi essere loggato per creare una partita!");
+      toast.error(t.loginToCreateGame);
       return;
     }
     setModalType('create');
@@ -134,7 +134,7 @@ const OnlinePage = () => {
 
   const handleSearchGame = () => {
     if (!isLoggedIn) {
-      toast.error("Devi essere loggato per cercare una partita!");
+      toast.error(t.loginToSearchGame);
       return;
     }
     setModalType('search');
@@ -154,7 +154,7 @@ const OnlinePage = () => {
         .select()
         .single();
       if (error) {
-        toast.error("Errore nel join della partita!");
+        toast.error(t.gameJoinError);
         return;
       }
       router.push(`/chessboard?mode=online&gameId=${g.id}&time=${g.time}`);
@@ -163,12 +163,12 @@ const OnlinePage = () => {
 
   const handleStartGame = async () => {
     if (!gameName.trim()) {
-      toast.error("Inserisci un nome per la partita!");
+      toast.error(t.insertGameName);
       return;
     }
 
     if (!user) {
-      toast.error("Devi essere loggato per creare una partita!");
+      toast.error(t.loginToCreateGame);
       return;
     }
 
@@ -185,12 +185,12 @@ const OnlinePage = () => {
     const { data, error } = await supabase.from("games").insert([newGame]).select().single();
 
     if (error) {
-      toast.error("Errore nella creazione della partita!");
+      toast.error(t.gameCreateError);
       return;
     }
 
     setShowModal(false);
-    toast.success(`Creazione partita "${gameName}" in corso...`);
+    toast.success(`${t.createGameProgress} \"${gameName}\"`);
     // Qui andrebbe la logica per creare effettivamente la partita
     setRecentGames((prev) => [data, ...prev]);
     router.push(`/chessboard?mode=online&gameId=${data.id}&time=${gameTime}`);
@@ -347,7 +347,7 @@ const OnlinePage = () => {
                       type="text"
                       value={gameId}
                       onChange={(e) => setGameId(e.target.value)}
-                      placeholder="ES: ABC123"
+                      placeholder={t.gameIdExample}
                       className={`w-full px-4 py-3 rounded-lg focus:outline-none ${darkMode ? 'bg-slate-700 focus:ring-1 focus:ring-blue-500' : 'bg-green-50 focus:ring-1 focus:ring-green-500'}`}
                     />
                   </div>
@@ -360,7 +360,7 @@ const OnlinePage = () => {
                       if (game) {
                         await handleJoinGame(game);
                       } else {
-                        toast.error(t.gameNotFound || "Partita non trovata!");
+                        toast.error(t.gameNotFound);
                       }
                     }}
                     className={`px-6 py-2 rounded-full font-medium text-white ${darkMode ? 'bg-blue-600 hover:bg-blue-500' : 'bg-green-600 hover:bg-green-500'} transition-colors`}

@@ -14,6 +14,7 @@ import MovesModal from './MovesModal';
 import { setChallengeComplete } from '../../../services/challengeComplete';
 import { supabase } from '../../../lib/supabase';
 import { useSearchParams } from 'next/navigation';
+import { Chess } from 'chess.js';
 
 // Sopprimi silenziosamente i NotFoundError generati da React quando prova a rimuovere un nodo già rimosso
 if (typeof window !== 'undefined') {
@@ -54,6 +55,7 @@ export function getLetters() {
 }
 
 function parseFEN(fen: string): string[][] {
+    console.log("FEN:", fen, typeof fen);
     const rows = fen.split(" ")[0].split("/");
     const board: string[][] = [];
 
@@ -170,7 +172,7 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
     }, [isEnPassant]);
 
     const initialFEN = (fen_challenge && mode === 'challenge') ? fen_challenge : fen;
-    const [fenState] = useState(initialFEN);
+    const [fenState, setFenState] = useState(initialFEN);
     const [board, setBoard] = useState<string[][]>(parseFEN(initialFEN));
     const [isWhite, setIsWhite] = useState(initialFEN.split(" ")[1] === "w");
     const [showPromotionDiv, setShowPromotionDiv] = useState(false);
@@ -181,7 +183,25 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
     const [showMovesDiv, setShowMovesDiv] = useState(false);
     const [checkMoves, setCheckMoves] = useState<number>(check_moves ?? 0);
 
+    const [cpuMoves, setCpuMoves] = useState<string[]>([]);
+    const [cpuIndex, setCpuIndex] = useState(0);
+
     const [shouldRotate, setShouldRotate] = useState(false);
+
+    // Load CPU moves for the current challenge
+    interface Challenge { fen: string; cpu_moves?: string[] | string; number_moves?: number; }
+    useEffect(() => {
+        if (mode === 'challenge' && fen_challenge) {
+            const challenge = challenges.find((ch: Challenge) => ch.fen === fen_challenge);
+            if (challenge && challenge.cpu_moves) {
+                try {
+                    setCpuMoves(Array.isArray(challenge.cpu_moves) ? challenge.cpu_moves : JSON.parse(challenge.cpu_moves));
+                } catch (e) {
+                    console.error('Failed to parse cpu moves', e);
+                }
+            }
+        }
+    }, [mode, fen_challenge, challenges]);
 
     useEffect(() => {
         if (isGameOver !== '') {
@@ -389,6 +409,8 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
         // 2) Ricostruisci la board dal FEN in stato
         const newBoard = applyMovesToBoard(fenState, movesList);
         setBoard(newBoard);
+        const newFen = applyMovesToFen(initialFEN, movesList);
+        setFenState(newFen);
 
         // 3) Alterna subito il turno
         const nextIsWhite = movesList.length % 2 === 0;
@@ -405,7 +427,7 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
         // 4) (Opzionale) Se vuoi mostrare mosse possibili all’inizio del turno
         //    fallo **solo** per il pezzo selezionato, non per tutti i pezzi.
         if (selectedPiece) {
-            const moves = showPiece(selectedPiece, isWhite, lastMove);
+            const moves = showPiece(selectedPiece, isWhite, lastMove, fenState);
             disableOtherMoves(moves);
         }
     }, [movesList, mode, fenState, selectedPiece, lastMove]);
@@ -663,7 +685,7 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
                     : imgSrc.includes('/neo/150/b');
                 if (isMyPiece) {
                     setSelectedPiece(square);
-                    const possible = showPiece(square, isWhite, lastMove);
+                    const possible = showPiece(square, isWhite, lastMove, fenState);
                     disableOtherMoves(possible);
                 }
                 return;
@@ -739,13 +761,15 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
                     });
                     checkPromotion();
                     enableOtherMoves();
-                    fen = createFEN();
+                    const newFen = createFEN();
+                    setFenState(newFen);
+                    fen = newFen;
                     actualMove = selectedPiece + square;
                     const moveData = {
                         game_id: gameId,
                         from: selectedPiece,
                         to: square,
-                        fen: createFEN(),
+                        fen: newFen,
                         user_id: user?.id,
                         created_at: new Date().toISOString(),
                     };
@@ -761,11 +785,11 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
                         setCheckMoves((prev) => Math.max((prev ?? 0) - 1, 0)); // Decrementa ma si ferma a zero
                     }
                     // Check if the opponent is in check after the move
-                    const opponentInCheck = getCheck(fenState);
+                    const opponentInCheck = getCheck(newFen);
                     setIsInCheck(opponentInCheck);
 
                     if (opponentInCheck) {
-                        if (getCheckmate(fenState)) {
+                        if (getCheckmate(newFen)) {
                             setShowCheckMateDiv(true);
                             if (mode === 'challenge') {
                                 try {
@@ -773,7 +797,7 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
                                     // Cerca l'id della challenge corrispondente al fen_challenge
                                     if (fen_challenge && Array.isArray(challenges)) {
                                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                        const foundChallenge = challenges.find((ch: any) => ch.fen === fen_challenge);
+                                        const foundChallenge = challenges.find((ch: Challenge) => ch.fen === fen_challenge);
                                         if (foundChallenge) {
                                             challengeIdToSet = foundChallenge.id;
                                         }
@@ -793,6 +817,19 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
                             }
                         }
                     }
+                    // Execute next CPU move in challenge mode
+                    if (mode === 'challenge' && cpuIndex < cpuMoves.length) {
+                        const cpuMove = cpuMoves[cpuIndex];
+                        const fromSquare = cpuMove.slice(0, 2);
+                        const toSquare = cpuMove.slice(2, 4);
+                        setCpuIndex(prev => prev + 1);
+                        setTimeout(() => {
+                            document.getElementById(fromSquare)?.click();
+                            setTimeout(() => {
+                                document.getElementById(toSquare)?.click();
+                            }, 500);
+                        }, 500);
+                    }
                 } else if (document.getElementById(square)?.children[0]?.getAttribute('src')?.includes(`https://www.chess.com/chess-themes/pieces/neo/150/${isWhite ? 'w' : 'b'}`)) {
                     setSelectedPiece(null);
                 }
@@ -808,7 +845,7 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
                 if (document.getElementById(square)?.hasChildNodes() && document.getElementById(square)?.children[0]?.getAttribute('src')?.includes(`https://www.chess.com/chess-themes/pieces/neo/150/${isWhite ? 'w' : 'b'}`)) {
                     setSelectedPiece(square);
                 }
-                const subChoosedMoves = showPiece(square, isWhite, lastMove);
+                const subChoosedMoves = showPiece(square, isWhite, lastMove, fenState);
                 subMoves = subChoosedMoves;
                 // console.log(lastMove);
                 // console.log(subChoosedMoves);
@@ -840,6 +877,19 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
             board[fromRow][fromCol] = "";
         });
         return board;
+    }
+
+    // Build a new FEN applying the moves to the starting position
+    function applyMovesToFen(initialFEN: string, moves: { from_sq: string; to_sq: string }[]): string {
+        const chess = new Chess(initialFEN);
+        moves.forEach((m) => {
+            try {
+                chess.move({ from: m.from_sq, to: m.to_sq });
+            } catch (e) {
+                console.error('Invalid move while building FEN', m, e);
+            }
+        });
+        return chess.fen();
     }
 
     function createBoard() {

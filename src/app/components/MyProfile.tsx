@@ -6,7 +6,7 @@ import { usePieceContext } from './PieceContext';
 import { useRouter } from 'next/navigation';
 
 /**
- * Renders the user's profile page, displaying personal information, avatar, bio, interests, and preferences.
+ * Renders the user's profile page, displaying personal information, avatar, bio and preferences.
  * Includes tab navigation for viewing additional information and user settings.
  * Handles loading state and adapts styling based on dark mode.
  *
@@ -17,7 +17,7 @@ import { useRouter } from 'next/navigation';
  * - Uses context to access user data, translation strings, and dark mode preference.
  * - Displays a loading spinner while user data is being loaded.
  * - Allows navigation between "Informazioni" and "Preferenze" tabs.
- * - Provides mock data for user preferences and interests.
+ * - Provides mock data for user preferences.
  */
 export default function ProfilePage() {
 
@@ -47,11 +47,6 @@ export default function ProfilePage() {
     suoni: true,
     membro_da: 'Gennaio 2024'
   };
-
-  // Hobby e interessi
-  const interests = [
-    'Scacchi', 'Dama', 'Strategia', 'Puzzle', 'Lettura', 'Musica'
-  ];
 
   if (isLoading) {
     return (
@@ -97,15 +92,13 @@ export default function ProfilePage() {
                 <h2 className={`mt-4 text-2xl font-bold ${darkMode ? 'text-white' : 'text-green-800'}`}>{user?.username || 'Username'}</h2>
                 <p className="text-lg opacity-80">{user?.full_name || 'Nome Completo'}</p>
 
-                {user?.location && (
-                  <div className="flex items-center mt-2 opacity-75">
-                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                    </svg>
-                    <span>{user.location}</span>
-                  </div>
-                )}
+                <div className="flex items-center mt-2 opacity-75">
+                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                  </svg>
+                  <span>{user?.location || 'Non specificato'}</span>
+                </div>
 
                 <div className="mt-6 flex flex-col sm:flex-row gap-2">
                   <button className={`px-6 py-2 ${darkMode ? 'bg-blue-600 text-white hover:bg-blue-500' : 'bg-blue-500 text-white hover:bg-blue-600'} rounded-full transition-colors text-sm font-medium shadow-sm`}
@@ -128,27 +121,8 @@ export default function ProfilePage() {
                     Chi sono
                   </h3>
                   <p className="opacity-90 leading-relaxed">
-                    {user?.bio || 'Ciao! Sono un appassionato di giochi strategici e mi piace sfidare la mia mente con puzzle e enigmi. Quando non gioco, amo passare il tempo leggendo e ascoltando musica. Sempre pronto per una nuova sfida!'}
+                    {user?.bio || 'Non specificato'}
                   </p>
-                </div>
-
-                {/* Interessi */}
-                <div className={`${darkMode ? 'bg-slate-600' : 'bg-white/50'} p-6 rounded-xl`}>
-                  <h3 className={`text-xl font-semibold mb-3 ${darkMode ? 'text-white' : 'text-green-800'} flex items-center`}>
-                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-                    </svg>
-                    I miei interessi
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {interests.map((interest, index) => (
-                      <span key={index} className={`px-3 py-1 rounded-full text-sm ${
-                        darkMode ? 'bg-slate-500 text-white' : 'bg-green-100 text-green-800'
-                      }`}>
-                        {interest}
-                      </span>
-                    ))}
-                  </div>
                 </div>
               </div>
             </div>

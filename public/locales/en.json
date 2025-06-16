@@ -188,4 +188,23 @@
     "errorRemovingFriend": "Error removing friend",
     "friendsChat": "Friends Chat",
     "chatSoon": "Chat will be implemented soon"
+    ,"loginToPlay": "You must be logged in to start playing!"
+    ,"loginToCreateGame": "You must be logged in to create a game!"
+    ,"loginToSearchGame": "You must be logged in to search for a game!"
+    ,"gameJoinError": "Error joining the game!"
+    ,"gameCreateError": "Error creating game!"
+    ,"createGameProgress": "Creating game..."
+    ,"insertGameName": "Please enter a game name!"
+    ,"loginSuccess": "Logged in successfully!"
+    ,"invalidCredentials": "Invalid credentials."
+    ,"forgotPasswordTitle": "Recover Password"
+    ,"forgotPasswordDesc": "Enter your email and we'll send you a link to reset your password."
+    ,"sendRecoveryLink": "Send recovery link"
+    ,"sending": "Sending..."
+    ,"emailSentTitle": "Email sent!"
+    ,"emailSentDesc": "We have sent a password reset link to {email}. Check your inbox."
+    ,"backToLogin": "Back to login"
+    ,"gameNotFound": "Game not found!"
+    ,"mustBeLogged": "You must be logged in",
+    "gameIdExample": "e.g., ABC123"
 }

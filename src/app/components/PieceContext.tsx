@@ -204,6 +204,29 @@ export const PieceProvider = ({ children }: { children: ReactNode }) => {
         fetchUserData();
     }, [isLoggedIn]);
 
+    // Update last seen periodically and on unload
+    useEffect(() => {
+        if (!user) return;
+
+        const update = async () => {
+            try {
+                const { updateLastSeen } = await import('../../../services/lastSeen');
+                await updateLastSeen({ userID: user.id });
+            } catch (err) {
+                console.error('Failed to update last seen:', err);
+            }
+        };
+
+        const handleUnload = () => { void update(); };
+        window.addEventListener('beforeunload', handleUnload);
+        const interval = setInterval(update, 60000);
+
+        return () => {
+            window.removeEventListener('beforeunload', handleUnload);
+            clearInterval(interval);
+        };
+    }, [user]);
+
     useEffect(() => {
         // Sfide generali (non collegate all'utente)
         const fetchChallenges = async () => {
@@ -272,8 +295,8 @@ export const PieceProvider = ({ children }: { children: ReactNode }) => {
                     username: friendUser.username,
                     email: friendUser.email,
                     avatar: friendUser.avatar,
-                    status: friend.status,
-                    lastSeen: friend.last_seen,
+                    status: friendUser.status,
+                    lastSeen: friendUser.last_seen,
                 };
             })
             .filter((x): x is NonNullable<typeof x> => !!x);

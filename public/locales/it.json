@@ -188,4 +188,23 @@
     "errorRemovingFriend": "Errore nella rimozione dell'amico",
     "friendsChat": "Chat Amici",
     "chatSoon": "La chat sarà implementato presto"
+    ,"loginToPlay": "Devi essere loggato per iniziare a giocare!"
+    ,"loginToCreateGame": "Devi essere loggato per creare una partita!"
+    ,"loginToSearchGame": "Devi essere loggato per cercare una partita!"
+    ,"gameJoinError": "Errore nel join della partita!"
+    ,"gameCreateError": "Errore nella creazione della partita!"
+    ,"createGameProgress": "Creazione partita in corso..."
+    ,"insertGameName": "Inserisci un nome per la partita!"
+    ,"loginSuccess": "Accesso effettuato con successo!"
+    ,"invalidCredentials": "Credenziali non valide."
+    ,"forgotPasswordTitle": "Recupera Password"
+    ,"forgotPasswordDesc": "Inserisci la tua email e ti invieremo un link per reimpostare la password."
+    ,"sendRecoveryLink": "Invia link di recupero"
+    ,"sending": "Invio in corso..."
+    ,"emailSentTitle": "Email inviata!"
+    ,"emailSentDesc": "Abbiamo inviato un link per reimpostare la password a {email}. Controlla la tua casella di posta."
+    ,"backToLogin": "Torna al login"
+    ,"gameNotFound": "Partita non trovata!"
+    ,"mustBeLogged": "Devi essere loggato",
+    "gameIdExample": "es: ABC123"
 }

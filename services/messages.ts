@@ -35,16 +35,37 @@ export const setMessages = async (formData: { senderID: number; receiverID: numb
  * @throws {Error} If the network response is not ok.
  */
 export const getMessages = async () => {
-    const response = await fetch(`/api/messages`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-  
-    if (!response.ok) {
-      throw new Error(`Error: ${response.status} - ${response.statusText}`);
-    }
-  
-    return response.json();
-  };
+  const response = await fetch(`/api/messages`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Error: ${response.status} - ${response.statusText}`);
+  }
+
+  return response.json();
+};
+/**
+ * Creates an empty conversation between two users.
+ *
+ * @param formData - Object containing the IDs of the two participants.
+ * @returns A promise resolving with the API response.
+ */
+export const createConversation = async (formData: { userID: number; friendID: number }) => {
+  const response = await fetch(`/api/conversations`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(formData),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Error: ${response.status} - ${response.statusText}`);
+  }
+
+  return response.json();
+};

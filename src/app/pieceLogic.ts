@@ -183,7 +183,7 @@ function checkCastling(isWhite: boolean): number { // 0 = false, 1 = littleCastl
  * - Assumes the presence of DOM elements representing the chessboard and pieces.
  * - Relies on external functions: `movePiece` and `getCheck`.
  */
-function showPossibleMove(letter: string, number: string, letterNumber: number, numberNumber: number): void | boolean {
+function showPossibleMove(letter: string, number: string, letterNumber: number, numberNumber: number, fen: string): void | boolean {
 
     const isWhite = document.getElementById(letter + number)?.children[0]?.getAttribute('src')?.includes('https://www.chess.com/chess-themes/pieces/neo/150/w') ? true : false;
     const target = document.getElementById(String.fromCharCode(letter.charCodeAt(0) + letterNumber) + (parseInt(number) + numberNumber) + '');
@@ -197,8 +197,8 @@ function showPossibleMove(letter: string, number: string, letterNumber: number, 
         !document.getElementById(letter + number)?.children[0]?.getAttribute('src')?.includes(`${stringInclusion}${isWhite ? 'wp' : 'bp'}`)) {
             targetPiece = target.children[0];
             movePiece(fromSquare, toSquare);
-            console.log(getCheck(isWhite));
-            if(getCheck(isWhite) === false) {
+            console.log(getCheck(fen));
+            if(getCheck(fen) === false) {
                 movePiece(toSquare, fromSquare);
                 target.appendChild(targetPiece);
                 return target?.classList.add('bg-red-400/75', 'rounded-full'), false;
@@ -213,8 +213,8 @@ function showPossibleMove(letter: string, number: string, letterNumber: number, 
     } else {
         if(target !== null) {
             movePiece(letter + number, String.fromCharCode(letter.charCodeAt(0) + letterNumber) + (parseInt(number) + numberNumber));
-            console.log(getCheck(isWhite));
-            if(getCheck(isWhite) === false) {
+            console.log(getCheck(fen));
+            if(getCheck(fen) === false) {
                 movePiece(toSquare, fromSquare);
                 return target?.classList.add('bg-gray-400/75', 'scale-[0.50]', 'rounded-full'), true;
             } else {
@@ -358,7 +358,7 @@ function combineNodeLists(
  * @param lastMove - The last move made in the game, or `null` if there is none.
  * @returns A NodeList of all highlighted chessboard squares as HTMLDivElements.
  */
-export function showPiece(square: string, isWhite: boolean, lastMove: string | null): NodeListOf<HTMLDivElement> {
+export function showPiece(square: string, isWhite: boolean, lastMove: string | null, fen: string): NodeListOf<HTMLDivElement> {
 
     const div = document.getElementById(square) as HTMLDivElement;
 
@@ -368,37 +368,37 @@ export function showPiece(square: string, isWhite: boolean, lastMove: string | n
 
     if (div.children[0]?.getAttribute('src')?.includes(`https://www.chess.com/chess-themes/pieces/neo/150/${isWhite ? 'wp' : 'bp'}`)) {
 
-        pawnMove(letter, number, isWhite ? 1 : -1, lastMove);
+        pawnMove(letter, number, isWhite ? 1 : -1, lastMove, fen);
 
     }
 
     if (div.children[0]?.getAttribute('src')?.includes(`https://www.chess.com/chess-themes/pieces/neo/150/${isWhite ? 'wr' : 'br'}`)) {
 
-        rookMove(letter, number);
+        rookMove(letter, number, fen);
 
     }
 
     if (div.children[0]?.getAttribute('src')?.includes(`https://www.chess.com/chess-themes/pieces/neo/150/${isWhite ? 'wn' : 'bn'}`)) {
 
-        knightMove(letter, number);
+        knightMove(letter, number, fen);
 
     }
 
     if (div.children[0]?.getAttribute('src')?.includes(`https://www.chess.com/chess-themes/pieces/neo/150/${isWhite ? 'wb' : 'bb'}`)) {
 
-        bishopMove(letter, number);
+        bishopMove(letter, number, fen);
 
     }
 
     if (div.children[0]?.getAttribute('src')?.includes(`https://www.chess.com/chess-themes/pieces/neo/150/${isWhite ? 'wq' : 'bq'}`)) {
 
-        queenMove(letter, number);
+        queenMove(letter, number, fen);
 
     }
 
     if (div.children[0]?.getAttribute('src')?.includes(`https://www.chess.com/chess-themes/pieces/neo/150/${isWhite ? 'wk' : 'bk'}`)) {
 
-        kingMove(letter, number, isWhite);
+        kingMove(letter, number, isWhite, fen);
 
     }
 
@@ -422,7 +422,7 @@ export function showPiece(square: string, isWhite: boolean, lastMove: string | n
  * @param direction - The direction the pawn moves: 1 for white (up the board), -1 for black (down the board).
  * @param lastMove - The last move made in the game, used to determine en passant eligibility; can be null.
  */
-function pawnMove(letter: string, number: string, direction: number, lastMove: string | null): void {
+function pawnMove(letter: string, number: string, direction: number, lastMove: string | null, fen: string): void {
     const num = parseInt(number);
     const offsets = direction === 1 ? [1, 2] : [-1, -2];
     const enemy = direction === 1 ? 'b' : 'w';
@@ -435,13 +435,13 @@ function pawnMove(letter: string, number: string, direction: number, lastMove: s
     };
 
     const checkMove = (dy: number) => {
-        return showPossibleMove(letter, number, 0, dy);
+        return showPossibleMove(letter, number, 0, dy, fen);
     };
 
     checkCapture(1, offsets[0]);
     checkCapture(-1, offsets[0]);
 
-    if(!getCheck(direction === 1 ? true : false)) {
+    if(!getCheck(fen)) {
         if (checkMove(offsets[0])) {
             if ((direction === 1 && number === '2') || (direction === -1 && number === '7')) {
                 checkMove(offsets[1]);
@@ -467,28 +467,28 @@ function pawnMove(letter: string, number: string, direction: number, lastMove: s
  * @param letter - The column letter of the rook's current position (e.g., 'a' through 'h').
  * @param number - The row number of the rook's current position (e.g., '1' through '8').
  */
-function rookMove(letter: string, number: string): void {
+function rookMove(letter: string, number: string, fen: string): void {
 
     for (let i = 1; i < 8; i++) {
-        if (!showPossibleMove(letter, number, i, 0)) {
+        if (!showPossibleMove(letter, number, i, 0, fen)) {
             break;
         }
     }
 
     for (let i = 1; i < 8; i++) {
-        if (!showPossibleMove(letter, number, -i, 0)) {
+        if (!showPossibleMove(letter, number, -i, 0, fen)) {
             break;
         }
     }
 
     for (let i = 1; i < 8; i++) {
-        if (!showPossibleMove(letter, number, 0, i)) {
+        if (!showPossibleMove(letter, number, 0, i, fen)) {
             break;
         }
     }
 
     for (let i = 1; i < 8; i++) {
-        if (!showPossibleMove(letter, number, 0, -i)) {
+        if (!showPossibleMove(letter, number, 0, -i, fen)) {
             break;
         }
     }
@@ -505,7 +505,7 @@ function rookMove(letter: string, number: string): void {
  * This function uses the standard L-shaped movement rules for a knight in chess.
  * It calls `showPossibleMove` for each valid move offset.
  */
-function knightMove(letter: string, number: string): void {
+function knightMove(letter: string, number: string, fen: string): void {
     const moves = [
         [1, 2],
         [-1, 2],
@@ -518,7 +518,7 @@ function knightMove(letter: string, number: string): void {
     ];
 
     for (const [x, y] of moves) {
-        showPossibleMove(letter, number, x, y);
+        showPossibleMove(letter, number, x, y, fen);
     }
 }
 
@@ -531,28 +531,28 @@ function knightMove(letter: string, number: string): void {
  * @param letter - The column (file) of the bishop's current position, typically a letter from 'a' to 'h'.
  * @param number - The row (rank) of the bishop's current position, typically a number from '1' to '8'.
  */
-function bishopMove(letter: string, number: string): void {
+function bishopMove(letter: string, number: string, fen: string): void {
 
     for (let i = 1; i < 8; i++) {
-        if (!showPossibleMove(letter, number, i, i)) {
+        if (!showPossibleMove(letter, number, i, i, fen)) {
             break;
         }
     }
 
     for (let i = 1; i < 8; i++) {
-        if (!showPossibleMove(letter, number, -i, i)) {
+        if (!showPossibleMove(letter, number, -i, i, fen)) {
             break;
         }
     }
 
     for (let i = 1; i < 8; i++) {
-        if (!showPossibleMove(letter, number, i, -i)) {
+        if (!showPossibleMove(letter, number, i, -i, fen)) {
             break;
         }
     }
 
     for (let i = 1; i < 8; i++) {
-        if (!showPossibleMove(letter, number, -i, -i)) {
+        if (!showPossibleMove(letter, number, -i, -i, fen)) {
             break;
         }
     }
@@ -570,10 +570,10 @@ function bishopMove(letter: string, number: string): void {
  * @remarks
  * This function delegates the movement logic to `rookMove` and `bishopMove` to cover all possible queen moves.
  */
-function queenMove(letter: string, number: string): void {
+function queenMove(letter: string, number: string, fen: string): void {
 
-    rookMove(letter, number);
-    bishopMove(letter, number);
+    rookMove(letter, number, fen);
+    bishopMove(letter, number, fen);
 
 }
 
@@ -589,7 +589,7 @@ function queenMove(letter: string, number: string): void {
  * - If castling is available for the current color, the function checks castling rights and highlights the appropriate rook squares.
  * - Relies on external functions and variables: `castlingWhite`, `castlingBlack`, `checkCastling`, and `showPossibleMove`.
  */
-function kingMove(letter: string, number: string, isWhite: boolean): void {
+function kingMove(letter: string, number: string, isWhite: boolean, fen: string): void {
     const moves = [
         [0, 1],
         [0, -1],
@@ -615,6 +615,6 @@ function kingMove(letter: string, number: string, isWhite: boolean): void {
     }
 
     for (const [x, y] of moves) {
-        showPossibleMove(letter, number, x, y);
+        showPossibleMove(letter, number, x, y, fen);
     }
 }

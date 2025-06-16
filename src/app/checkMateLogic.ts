@@ -1,4 +1,3 @@
-import { getSquares, getLetters } from "./components/ChessBoard";
 import { Chess } from "chess.js";
 
 const chess = new Chess();

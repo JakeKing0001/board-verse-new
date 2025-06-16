@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import NavBar from "./NavBar";
+import { usePieceContext } from "./PieceContext";
 
 /**
  * ForgotPasswordPage component renders a password recovery form.
@@ -23,6 +24,7 @@ const ForgotPasswordPage = () => {
   const [email, setEmail] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const { t, darkMode } = usePieceContext();
   
   useEffect(() => {
     const style = document.getElementById("check-border-style");
@@ -61,10 +63,10 @@ const ForgotPasswordPage = () => {
             {!isSubmitted ? (
               <>
                 <h1 className="text-3xl font-bold text-green-800 mb-4 tracking-tight text-center">
-                  Recupera Password
+                  {t.forgotPasswordTitle || "Recupero Password"}
                 </h1>
                 <p className="text-green-700 mb-8 text-center">
-                  Inserisci la tua email e ti invieremo un link per reimpostare la password.
+                  {t.forgotPasswordDesc || "Inserisci il tuo indirizzo email per ricevere un link di recupero della password."}
                 </p>
                 
                 <form onSubmit={handleSubmit} className="space-y-6">
@@ -79,7 +81,7 @@ const ForgotPasswordPage = () => {
                       onChange={(e) => setEmail(e.target.value)}
                       required
                       className="w-full px-4 py-3 bg-white/50 border border-green-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all"
-                      placeholder="La tua email"
+                      placeholder={t.yourEmail || "Inserisci la tua email"}
                     />
                   </div>
                   
@@ -94,11 +96,11 @@ const ForgotPasswordPage = () => {
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
-                        Invio in corso...
+                        {t.sending || "Invio in corso..."}
                       </span>
                     ) : (
                       <span className="relative">
-                        Invia link di recupero
+                        {t.sendRecoveryLink || "Invia link di recupero"}
                         <span className="absolute bottom-0 left-0 w-full h-px bg-white transform origin-left scale-x-0 transition-transform duration-300 group-hover:scale-x-100"></span>
                       </span>
                     )}
@@ -114,13 +116,13 @@ const ForgotPasswordPage = () => {
                     </svg>
                   </div>
                 </div>
-                <h2 className="text-2xl font-bold text-green-800 mb-4">Email inviata!</h2>
+                <h2 className="text-2xl font-bold text-green-800 mb-4">{t.emailSentTitle || "Password reimpostata"}</h2>
                 <p className="text-green-700 mb-6">
-                  Abbiamo inviato un link per reimpostare la password a {email}. Controlla la tua casella di posta.
+                  {t.emailSentDesc.replace('{email}', email)}
                 </p>
                 <Link href="/login">
                   <button className="inline-flex items-center justify-center px-6 py-2 text-sm font-medium text-green-700 bg-green-100 rounded-full hover:bg-green-200 transition-colors">
-                    Torna al login
+                    {t.backToLogin}
                   </button>
                 </Link>
               </div>

@@ -103,11 +103,11 @@ const LoginPage = () => {
         } else {
           sessionStorage.setItem("isLoggedIn", user.email);
         } // Salva lo stato di login nel localStorage
-        toast.success(`Accesso effettuato con successo!`);
+        toast.success(t.loginSuccess);
         setTimeout(() => { window.location.href = "/"; }, 500); // Reindirizzamento dopo successo
       } else {
         // console.error("Credenziali non valide.");
-        toast.error("Credenziali non valide.");
+        toast.error(t.invalidCredentials);
         setErrors((prev) => ({ ...prev, email: "Email o password non valide" }));
       }
 
@@ -151,7 +151,7 @@ const LoginPage = () => {
             onChange={(e) => setEmail(e.target.value)}
             required
             className={`w-full px-4 py-3 ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white/50 border-green-200 text-slate-900'} rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all`}
-            placeholder="La tua email"
+            placeholder={t.yourEmail}
           />
           </div>
 
@@ -166,7 +166,7 @@ const LoginPage = () => {
               onChange={(e) => setPassword(e.target.value)}
               required
               className={`w-full px-4 py-3 pr-12 ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white/50 border-green-200 text-slate-900'} rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all`}
-              placeholder="La tua password"
+              placeholder={t.yourPassword}
             />
             <button
               type="button"

@@ -8,6 +8,7 @@ import { setRequests } from "../../../services/friends";
 import { deleteRequests } from "../../../services/friends";
 import { setFriends } from "../../../services/friends";
 import { deleteFriends } from "../../../services/friends";
+import { createConversation } from "../../../services/messages";
 
 /**
  * FriendsPage component provides a user interface for managing friends and friend requests.
@@ -114,6 +115,11 @@ const FriendsPage = () => {
           userID: user.id,
           friendID: friendID
         });
+
+        // Initialize an empty conversation between the new friends
+        if (friendID) {
+          await createConversation({ userID: user.id, friendID });
+        }
 
         // Delete request
         console.log(userRequest.id)

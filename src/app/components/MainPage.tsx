@@ -58,7 +58,7 @@ const MainPage = () => {
               <button
                 onClick={() => {
                   if (!isLoggedIn) {
-                    toast.error("Devi essere loggato per iniziare a giocare!");
+                    toast.error(t.loginToPlay);
                   }
                 }}
                 className={`group relative inline-flex items-center justify-center px-10 py-4 text-xl font-bold text-white transition-all duration-500 ease-in-out transform ${darkMode ? 'bg-slate-700 hover:bg-slate-600' : 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700'} rounded-full shadow-lg hover:shadow-xl hover:-translate-y-1 active:translate-y-0`}

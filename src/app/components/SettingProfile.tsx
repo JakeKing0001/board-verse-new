@@ -259,7 +259,7 @@ export default function ProfileSettings() {
       if (profileData) {
         await settingsUser(profileData); // Chiama la funzione di registrazione
         setSaveSuccess(true);
-        toast.success('Impostazioni salvate con successo!');
+        toast.success(t.changesSaved);
         setTimeout(() => {
           window.location.href = '/settingsProfile'; // Reindirizzamento dopo successo
         }, 500);
