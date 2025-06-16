@@ -64,16 +64,17 @@ Di seguito sono riportati i passi dettagliati per installare e avviare Boardvers
    ```
 
    *(In alternativa è possibile usare `yarn install` se si preferisce Yarn, oppure `pnpm install` se si usa pnpm – il progetto è compatibile con tutti e tre i gestori di pacchetti.)*
-4. **Configurare le Variabili d’Ambiente:** Creare un file `.env.local` nella radice del progetto e definire le variabili `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY` con i valori forniti dal proprio progetto Supabase. Il file `lib/supabase.js` le leggerà automaticamente per inizializzare il client.
-5. **Avviare il Server di Sviluppo:** Eseguire il comando:
+4. **Configurare le Variabili d’Ambiente:** Creare un file `.env.local` nella radice del progetto e definire le variabili `NEXT_PUBLIC_SUPABASE_URL` , `NEXT_PUBLIC_SUPABASE_ANON_KEY` e `JWT_SECRET`. Quest'ultima sarà utilizzata per firmare i JSON Web Token restituiti dal backend. Il file `lib/supabase.js` leggerà automaticamente le prime due variabili per inizializzare il client.
+5. **Aggiornare il database:** Eseguire lo script `supabase/migrations/20240612_add_last_seen.sql` con l'editor SQL di Supabase o tramite `psql` per aggiungere la colonna `last_seen` nella tabella `users`.
+6. **Avviare il Server di Sviluppo:** Eseguire il comando:
 
    ```bash
    npm run dev
    ```
 
    Questo avvierà l’applicazione in modalità sviluppo. Per default Next.js utilizza l’indirizzo `http://localhost:3000`. Aprire quindi il browser e navigare all’URL [http://localhost:3000](http://localhost:3000) per vedere l’app in funzione.
-6. **Visibilità locale:** Una volta caricata la pagina, dovresti vedere la homepage di Boardverse. Da qui, se non hai un account, puoi registrarne uno nuovo; altrimenti procedi con il login per accedere.
-7. **Comandi aggiuntivi:**
+7. **Visibilità locale:** Una volta caricata la pagina, dovresti vedere la homepage di Boardverse. Da qui, se non hai un account, puoi registrarne uno nuovo; altrimenti procedi con il login per accedere.
+8. **Comandi aggiuntivi:**
 
    * Per eseguire un **build di produzione** ottimizzato (ad esempio per distribuire l’app su un hosting/Vercel), usare:
 
@@ -89,7 +90,7 @@ Di seguito sono riportati i passi dettagliati per installare e avviare Boardvers
 
      per avviare il server Node con i file statici generati. In modalità produzione verranno applicate ottimizzazioni e l’app girerà in ambiente Node.js.
    * Per eseguire i **test** (qualora ne vengano aggiunti in futuro), assicurarsi di aver eseguito `npm run build` e di aver lanciato il server in background, poi utilizzare i comandi forniti da Playwright (ad esempio `npx playwright test`). Prima di eseguire i test end-to-end la prima volta, eseguire `npm run install:drivers` per installare i browser necessari a Playwright.
-8. **Problemi comuni:** Se l’app non si avvia correttamente, verificare di avere la versione di Node compatibile, che la porta 3000 non sia occupata da altri servizi e controllare il terminale per eventuali messaggi di errore (ad esempio errori di connessione a Supabase se le chiavi/API non sono corrette). In caso di errori di lint o di compilazione TypeScript, assicurarsi di avere tutte le dipendenze installate e di aver fatto eventuali migrate allo schema del database se si usa un proprio Supabase.
+9. **Problemi comuni:** Se l’app non si avvia correttamente, verificare di avere la versione di Node compatibile, che la porta 3000 non sia occupata da altri servizi e controllare il terminale per eventuali messaggi di errore (ad esempio errori di connessione a Supabase se le chiavi/API non sono corrette). In caso di errori di lint o di compilazione TypeScript, assicurarsi di avere tutte le dipendenze installate e di aver fatto eventuali migrate allo schema del database se si usa un proprio Supabase.
 
 Dopo questi passi, Boardverse dovrebbe essere funzionante in locale. Potrai creare account di test e simulare partite o usare le varie funzionalità come faresti sulla versione live.
 

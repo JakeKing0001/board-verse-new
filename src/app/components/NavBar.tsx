@@ -156,7 +156,11 @@ export default function NavBar({ current = 0 }: { current?: number }) {
                     <Link
                       href='#'
                       className={`block px-4 py-2 text-sm ${darkMode? 'text-white':'text-gray-700'} hover:bg-${darkMode ? 'slate-700' : 'green-50'} transition-colors duration-150 data-[focus]:bg-${darkMode ? 'slate-700' : 'green-50'} data-[focus]:outline-none`}
-                      onClick={() => { setIsLoggedIn(''); }}
+                      onClick={() => {
+                        setIsLoggedIn('');
+                        localStorage.removeItem('token');
+                        sessionStorage.removeItem('token');
+                      }}
                     >
                       {t.logout}
                     </Link>

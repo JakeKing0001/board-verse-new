@@ -8,20 +8,20 @@
  * @throws Will throw an error if the network response is not ok.
  */
 export const setChallengeComplete = async (formData: { userID: number; challengeID: number }) => {
-    const response = await fetch(`/api/challengeComplete`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(formData),
-    });
-  
-    if (!response.ok) {
-      throw new Error(`Error: ${response.status} - ${response.statusText}`);
-    }
-  
+  const response = await fetch(`/api/challengeComplete`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(formData),
+  });
+
+  if (response.ok) {
     return response.json();
-  };
+  }
+
+  throw new Error(`Error: ${response.status} - ${response.statusText}`);
+};
 
 /**
  * Fetches the challenge completion status from the `/api/challengeComplete` endpoint.
@@ -30,16 +30,16 @@ export const setChallengeComplete = async (formData: { userID: number; challenge
  * @throws {Error} Throws an error if the network response is not ok.
  */
 export const getChallengeComplete = async () => {
-    const response = await fetch(`/api/challengeComplete`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-  
-    if (!response.ok) {
-      throw new Error(`Error: ${response.status} - ${response.statusText}`);
-    }
-  
+  const response = await fetch(`/api/challengeComplete`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (response.ok) {
     return response.json();
-  };
+  }
+  
+  throw new Error(`Error: ${response.status} - ${response.statusText}`);
+};

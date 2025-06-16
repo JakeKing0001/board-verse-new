@@ -6,6 +6,7 @@ import { getChallenge } from '../../../services/challenge';
 import { getChallengeComplete } from '../../../services/challengeComplete';
 import { getRequests } from '../../../services/friends';
 import { getFriends } from '../../../services/friends';
+import jwt from 'jsonwebtoken';
 import en from '../../../public/locales/en.json'
 import it from '../../../public/locales/it.json'
 import es from '../../../public/locales/es.json'
@@ -30,7 +31,7 @@ const PieceContext = createContext<{
     setSelectedPiece: (piece: string | null) => void;
     subMovesDrag: string;
     setsubMovesDrag: (moves: string) => void;
-    isLoggedIn: string; // Stato di login dell'utente
+    isLoggedIn: string; // Token di login dell'utente
     setIsLoggedIn: (value: string) => void; // Funzione per aggiornare lo stato di login
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     user: any;
@@ -87,7 +88,7 @@ const PieceContext = createContext<{
  * - `isGameOver`, `setIsGameOver`: Game over state and its setter.
  * - `selectedPiece`, `setSelectedPiece`: Currently selected piece and its setter.
  * - `subMovesDrag`, `setsubMovesDrag`: Sub-moves during drag and its setter.
- * - `isLoggedIn`, `setIsLoggedIn`: Logged-in user's email and its setter.
+ * - `isLoggedIn`, `setIsLoggedIn`: Logged-in user's token and its setter.
  * - `user`, `setUser`: Current user object and its setter.
  * - `allUsers`, `setAllUsers`: List of all users and its setter.
  * - `language`, `setLanguage`: Current language and its setter.
@@ -119,7 +120,7 @@ export const PieceProvider = ({ children }: { children: ReactNode }) => {
 
     const [isGameOver, setIsGameOver] = useState<string>('');
 
-    const [isLoggedIn, setIsLoggedIn] = useState<string>(''); // Email dell'utente
+    const [isLoggedIn, setIsLoggedIn] = useState<string>(''); // Token di autenticazione dell'utente
 
     const [selectedPiece, setSelectedPiece] = useState<string | null>(null); // Stato del pezzo attivo
 
@@ -144,9 +145,9 @@ export const PieceProvider = ({ children }: { children: ReactNode }) => {
     const activeClass = 'scale-[1.15] bg-[#ffff33] opacity-50 rounded-full';
 
     useEffect(() => {
-        // Recupera login salvato
-        const storedLogin = localStorage.getItem('isLoggedIn') || sessionStorage.getItem('isLoggedIn') || '';
-        setIsLoggedIn(storedLogin);
+        // Recupera il token salvato
+        const storedToken = localStorage.getItem('token') || sessionStorage.getItem('token') || '';
+        setIsLoggedIn(storedToken);
     }, []);
 
     useEffect(() => {
@@ -157,12 +158,24 @@ export const PieceProvider = ({ children }: { children: ReactNode }) => {
                 return;
             }
 
+            let payload: { id: number; email: string } | null = null;
+            try {
+                payload = jwt.decode(isLoggedIn) as { id: number; email: string } | null;
+            } catch (err) {
+                console.error('Invalid token:', err);
+            }
+
+            if (!payload) {
+                setUser(null);
+                return;
+            }
+
             const users = await getUsers();
             setAllUsers(users);
             console.log("All users:", allUsers)
 
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const foundUser = users.find((u: any) => u.email === isLoggedIn);
+            const foundUser = users.find((u: any) => u.id === payload?.id);
             if (!foundUser) return;
 
             setUser(foundUser);

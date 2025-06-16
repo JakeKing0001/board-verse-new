@@ -18,11 +18,11 @@ export const setMessages = async (formData: { senderID: number; receiverID: numb
     body: JSON.stringify(formData),
   });
 
-  if (!response.ok) {
-    throw new Error(`Error: ${response.status} - ${response.statusText}`);
+  if (response.ok) {
+    return response.json();
   }
-
-  return response.json();
+  
+  throw new Error(`Error: ${response.status} - ${response.statusText}`);
 };
 
 /**
@@ -42,11 +42,11 @@ export const getMessages = async () => {
     },
   });
 
-  if (!response.ok) {
-    throw new Error(`Error: ${response.status} - ${response.statusText}`);
+  if (response.ok) {
+    return response.json();
   }
-
-  return response.json();
+  
+  throw new Error(`Error: ${response.status} - ${response.statusText}`);
 };
 /**
  * Creates an empty conversation between two users.
@@ -63,9 +63,9 @@ export const createConversation = async (formData: { userID: number; friendID: n
     body: JSON.stringify(formData),
   });
 
-  if (!response.ok) {
-    throw new Error(`Error: ${response.status} - ${response.statusText}`);
+  if (response.ok) {
+    return response.json();
   }
-
-  return response.json();
+  
+  throw new Error(`Error: ${response.status} - ${response.statusText}`);
 };

@@ -20,11 +20,11 @@ export const registerUser = async (formData: { name: string; email: string; pass
     body: JSON.stringify(formData),
   });
 
-  if (!response.ok) {
-    throw new Error(`Error: ${response.status} - ${response.statusText}`);
+  if (response.ok) {
+    return response.json();
   }
 
-  return response.json();
+  throw new Error(`Error: ${response.status} - ${response.statusText}`);
 };
 
 /**
@@ -84,11 +84,11 @@ export const settingsUser = async (formData: {
     body: JSON.stringify(formData),
   });
 
-  if (!response.ok) {
-    throw new Error(`Error: ${response.status} - ${response.statusText}`);
+  if (response.ok) {
+    return response.json();
   }
-
-  return response.json();
+  
+  throw new Error(`Error: ${response.status} - ${response.statusText}`);
 };
 
 /**
@@ -106,10 +106,11 @@ export const requestPasswordReset = async (email: string) => {
     body: JSON.stringify({ email }),
   });
 
-  if (!response.ok) {
+  if (response.ok) {
     const data = await response.json().catch(() => ({}));
-    throw new Error(data.error || `Error: ${response.status} - ${response.statusText}`);
+    return response.json();
   }
-
-  return response.json();
+  
+  const data = await response.json().catch(() => ({}));
+  throw new Error(data.error || `Error: ${response.status} - ${response.statusText}`);
 };

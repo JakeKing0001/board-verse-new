@@ -16,11 +16,11 @@ export const setRequests = async (formData: { senderID: number; receiverID: numb
       body: JSON.stringify(formData),
     });
   
-    if (!response.ok) {
-      throw new Error(`Error: ${response.status} - ${response.statusText}`);
+    if (response.ok) {
+      return response.json();
     }
-  
-    return response.json();
+    
+    throw new Error(`Error: ${response.status} - ${response.statusText}`);
 };
 
 /**
@@ -37,11 +37,11 @@ export const getRequests = async () => {
       },
     });
   
-    if (!response.ok) {
-      throw new Error(`Error: ${response.status} - ${response.statusText}`);
+    if (response.ok) {
+      return response.json();
     }
-  
-    return response.json();
+    
+    throw new Error(`Error: ${response.status} - ${response.statusText}`);
 }
 
 /**
@@ -60,11 +60,11 @@ export const deleteRequests = async (formData: { id: number }) => {
       body: JSON.stringify(formData),
     });
   
-    if (!response.ok) {
-      throw new Error(`Error: ${response.status} - ${response.statusText}`);
+    if (response.ok) {
+      return response.json();
     }
-  
-    return response.json();
+    
+    throw new Error(`Error: ${response.status} - ${response.statusText}`);
 };
 
 /**
@@ -85,11 +85,11 @@ export const setFriends = async (formData: { userID: number; friendID: number })
       body: JSON.stringify(formData),
     });
   
-    if (!response.ok) {
-      throw new Error(`Error: ${response.status} - ${response.statusText}`);
+    if (response.ok) {
+      return response.json();
     }
-  
-    return response.json();
+    
+    throw new Error(`Error: ${response.status} - ${response.statusText}`);
 };
 
 /**
@@ -106,11 +106,11 @@ export const getFriends = async () => {
       },
     });
   
-    if (!response.ok) {
-      throw new Error(`Error: ${response.status} - ${response.statusText}`);
+    if (response.ok) {
+      return response.json();
     }
-  
-    return response.json();
+    
+    throw new Error(`Error: ${response.status} - ${response.statusText}`);
 }
 
 /**
@@ -139,7 +139,8 @@ export const deleteFriends = async (params: { user_id?: number, friend_id?: numb
     }),
   });
   
-  if (!response.ok) {
-    throw new Error('Failed to delete friend');
+  if (response.ok) {
+    return;
   }
+  throw new Error('Failed to delete friend');
 };

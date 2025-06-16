@@ -66,8 +66,8 @@ const LoginPage = () => {
   useEffect(() => {
     const remember = localStorage.getItem("rememberMe") === "true";
     if (!remember) {
-      sessionStorage.removeItem("isLoggedIn");
-      localStorage.removeItem("isLoggedIn");
+      sessionStorage.removeItem("token");
+      localStorage.removeItem("token");
     }
   }, []);
 
@@ -83,23 +83,24 @@ const LoginPage = () => {
         },
         body: JSON.stringify({ email, password }),
       });
-      if (!response.ok) {
+      if (response.ok) {
+        const data = await response.json();
+        const token = data.token;
         const rememberMeCheckbox = document.getElementById("remember-me") as HTMLInputElement;
         if (rememberMeCheckbox?.checked) {
           localStorage.setItem('rememberMe', 'true');
         } else {
           localStorage.removeItem('rememberMe');
         }
-        setIsLoggedIn(email);
+        setIsLoggedIn(token);
         if (localStorage.getItem('rememberMe') === 'true') {
-          localStorage.setItem('isLoggedIn', email);
+          localStorage.setItem('token', token);
         } else {
-          sessionStorage.setItem('isLoggedIn', email);
+          sessionStorage.setItem('token', token);
         }
         toast.success(t.loginSuccess);
         setTimeout(() => { window.location.href = '/'; }, 500);
       } else {
-        // console.error("Credenziali non valide.");
         toast.error(t.invalidCredentials);
         setErrors((prev) => ({ ...prev, email: 'Email o password non valide' }));
       }

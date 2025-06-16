@@ -15,17 +15,17 @@ export const getChallenge = async () => {
         },
     });
 
-    if (!response.ok) {
-        throw new Error(`Error: ${response.status} - ${response.statusText}`);
+    if (response.ok) {
+        const data = await response.json();
+        console.log("Data fetched from API:", data);
+
+        // Controlla se ci sono utenti nella risposta
+        if (!data || data.length === 0) {
+            throw new Error("Nessuna challenge trovata.");
+        }
+
+        return data;
     }
 
-    const data = await response.json();
-    console.log("Data fetched from API:", data);
-
-    // Controlla se ci sono utenti nella risposta
-    if (!data || data.length === 0) {
-        throw new Error("Nessuna challenge trovata.");
-    }
-
-    return data;
+    throw new Error(`Errore: ${response.status} - ${response.statusText}`);
 };
