@@ -116,6 +116,7 @@ const LoginPage = () => {
       setErrors(prev => ({ ...prev, email: "Registrazione fallita" }));
     } finally {
       setIsLoading(false);
+      //console.log("Login attempt completed");
     }
   };
 
