@@ -106,11 +106,11 @@ export const requestPasswordReset = async (email: string) => {
     body: JSON.stringify({ email }),
   });
 
+  const data = await response.json().catch(() => ({}));
+
   if (response.ok) {
-    const data = await response.json().catch(() => ({}));
     return response.json();
   }
   
-  const data = await response.json().catch(() => ({}));
   throw new Error(data.error || `Error: ${response.status} - ${response.statusText}`);
 };

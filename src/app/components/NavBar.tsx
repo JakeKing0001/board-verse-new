@@ -2,6 +2,7 @@ import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuIt
 import { Bars3Icon, XMarkIcon, ChatBubbleBottomCenterTextIcon } from '@heroicons/react/24/outline'
 import Image from 'next/image'
 import { usePieceContext } from './PieceContext'
+import { updateLastSeen } from '../../../services/lastSeen'
 import { useState, useMemo } from 'react'
 import FriendsChatModal from "./FriendsChatModal";
 import Link from 'next/link'
@@ -156,7 +157,12 @@ export default function NavBar({ current = 0 }: { current?: number }) {
                     <Link
                       href='#'
                       className={`block px-4 py-2 text-sm ${darkMode? 'text-white':'text-gray-700'} hover:bg-${darkMode ? 'slate-700' : 'green-50'} transition-colors duration-150 data-[focus]:bg-${darkMode ? 'slate-700' : 'green-50'} data-[focus]:outline-none`}
-                      onClick={() => {
+                      onClick={async () => {
+                        try {
+                          await updateLastSeen({ userID: user.id });
+                        } catch (err) {
+                          console.error('Failed to update last seen:', err);
+                        }
                         setIsLoggedIn('');
                         localStorage.removeItem('token');
                         sessionStorage.removeItem('token');

@@ -2,7 +2,6 @@
 
 import React, { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { PieceProvider } from "../components/PieceContext";
 import App from "../components/App";
 import { supabase } from "../../../lib/supabase";
 
@@ -34,28 +33,28 @@ function ChessboardPageContent() {
     if (mode === "online" && gameId) {
       const fetchGame = async () => {
         const { data } = await supabase.from("games").select("*").eq("id", gameId).single();
-        setGame(data); 
+        setGame(data);
       };
       fetchGame();
 
       const channel = supabase
         .channel("game-listen")
         .on(
-            "postgres_changes",
-            { event: "UPDATE", schema: "public", table: "games", filter: `id=eq.${gameId}` },
-            (payload) => {
-              setGame(payload.new);
-            }
+          "postgres_changes",
+          { event: "UPDATE", schema: "public", table: "games", filter: `id=eq.${gameId}` },
+          (payload) => {
+            setGame(payload.new);
+          }
         )
         .on(
-            "postgres_changes",
-            { event: "INSERT", schema: "public", table: "games", filter: `id=eq.${gameId}` },
-            (payload) => {
-              setGame(payload.new);
-            }
+          "postgres_changes",
+          { event: "INSERT", schema: "public", table: "games", filter: `id=eq.${gameId}` },
+          (payload) => {
+            setGame(payload.new);
+          }
         )
         .subscribe();
-      
+
       return () => {
         supabase.removeChannel(channel);
       };
@@ -66,7 +65,7 @@ function ChessboardPageContent() {
     let interval: NodeJS.Timeout | undefined;
     if (mode === "online" && gameId && (!game || !game.guest_id)) {
       interval = setInterval(async () => {
-        const { data} = await supabase.from("games").select("*").eq("id", gameId).single();
+        const { data } = await supabase.from("games").select("*").eq("id", gameId).single();
         if (data && data.guest_id) {
           setGame(data);
           clearInterval(interval);
@@ -101,10 +100,8 @@ function ChessboardPageContent() {
 
 export default function ChessboardPage() {
   return (
-    <PieceProvider>
-      <Suspense fallback={<div>Loading...</div>}>
-        <ChessboardPageContent />
-      </Suspense>
-    </PieceProvider>
+    <Suspense fallback={<div>Loading...</div>}>
+      <ChessboardPageContent />
+    </Suspense>
   );
 }

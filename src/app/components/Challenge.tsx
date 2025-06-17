@@ -67,7 +67,7 @@ export default function Challenge() {
                                 <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-10 gap-3 max-w-3xl mx-auto">
                                     {challenges
                                         .sort((a, b) => a.id - b.id)
-                                        .map((challenge) => {
+                                        .map((challenge, index) => {
                                             const isCompleted = completedChallenges.some(
                                                 (completed) => completed.challenge_id === challenge.id
                                             );
@@ -85,7 +85,7 @@ export default function Challenge() {
                                                     className={`${baseClasses} ${isCompleted ? completedClasses : normalClasses}`}
                                                 >
                                                     <button>
-                                                        {challenge.id}
+                                                        {index + 1}
                                                     </button>
                                                 </Link>
                                             );
