@@ -186,6 +186,7 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
 
     const [cpuMoves, setCpuMoves] = useState<string[]>([]);
     const [cpuIndex, setCpuIndex] = useState(0);
+    const [cpuMoveInProgress, setCpuMoveInProgress] = useState(false);
 
     const [shouldRotate, setShouldRotate] = useState(false);
 
@@ -207,20 +208,26 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
     }, [blackKingSide, blackQueenSide]);
 
     // Load CPU moves for the current challenge
-    interface Challenge { fen: string; cpu_moves?: string[] | string | null; number_moves?: number; }
+    interface Challenge { id: number; fen: string; cpu_moves?: string[] | string | null; number_moves?: number; }
     useEffect(() => {
         if (mode === 'challenge' && fen_challenge) {
             const challenge = challenges.find((ch: Challenge) => ch.fen === fen_challenge);
-            if (challenge && challenge.cpu_moves) {
-                if (Array.isArray(challenge.cpu_moves)) {
-                    setCpuMoves(challenge.cpu_moves);
-                } else if (typeof challenge.cpu_moves === 'string') {
+           if (challenge) {
+                const { cpu_moves } = challenge;
+                let moves: string[] = [];
+                if (Array.isArray(cpu_moves)) {
+                    moves = cpu_moves;
+                } else if (typeof cpu_moves === 'string') {
                     try {
-                        setCpuMoves(JSON.parse(challenge.cpu_moves));
+                        const parsed = JSON.parse(cpu_moves);
+                        if (Array.isArray(parsed)) {
+                            moves = parsed.map((m) => String(m));
+                        }
                     } catch (e) {
                         console.error('Failed to parse cpu moves', e);
                     }
                 }
+                setCpuMoves(moves);
             }
         }
     }, [mode, fen_challenge, challenges]);
@@ -489,10 +496,12 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
                 // console.log(fromSquare, toSquare);
                 if (document.getElementById(fromSquare)?.hasChildNodes()) {
                     if (document.getElementById(fromSquare)?.children[0].getAttribute('src')?.includes('https://www.chess.com/chess-themes/pieces/neo/150/b')) {
+                        setCpuMoveInProgress(true);
                         document.getElementById(fromSquare)?.click();
                         setTimeout(() => {
                             document.getElementById(toSquare)?.click();
                             setIsWhite(true);
+                            setCpuMoveInProgress(false);
                         }, 500);
                         document.body.style.pointerEvents = 'none';
                         document.body.style.pointerEvents = 'auto';
@@ -503,6 +512,9 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
     }, [data, mode]);
 
     useEffect(() => {
+
+        if (cpuMoveInProgress) return;
+
         const urlParams = new URLSearchParams(window.location.search);
         const hasCheckMovesInUrl = urlParams.has('check_moves');
 
@@ -511,7 +523,7 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
         if (checkMoves === 0 && mode === 'challenge' && !isInCheck) {
             setShowMovesDiv(true);
         }
-    }, [checkMoves]);
+    }, [checkMoves, cpuMoveInProgress, mode, isInCheck]);
 
     //-----------------------------------------------------------------------------
 
@@ -858,7 +870,7 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
                         setShouldRotate(false);
                     }
                     console.log("Turno del: " + ((!isWhite) ? "bianco" : "nero"));
-                    if ((checkMoves ?? -1) > 0) {
+                    if (!cpuMoveInProgress && (checkMoves ?? -1) > 0) {
                         setCheckMoves((prev) => Math.max((prev ?? 0) - 1, 0)); // Decrementa ma si ferma a zero
                     }
                     // Check if the opponent is in check after the move
@@ -909,10 +921,12 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
                         const fromSquare = cpuMove.slice(0, 2);
                         const toSquare = cpuMove.slice(2, 4);
                         setCpuIndex(prev => prev + 1);
+                        setCpuMoveInProgress(true);
                         setTimeout(() => {
                             document.getElementById(fromSquare)?.click();
                             setTimeout(() => {
                                 document.getElementById(toSquare)?.click();
+                                setCpuMoveInProgress(false);
                             }, 500);
                         }, 500);
                     }
