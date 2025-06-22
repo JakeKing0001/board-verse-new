@@ -13,6 +13,8 @@ interface GameSummary {
   host_id: number;
   guest_id: number;
   status: string;
+  winner_id: number | null;
+  result: 'white' | 'black' | 'draw' | null;
   is_private: boolean;
   time: number; // Tempo in secondi
   created_at: string;
@@ -77,7 +79,7 @@ const OnlinePage = () => {
   useEffect(() => {
     supabase
       .from("games")
-      .select("id,name,host_id,guest_id,status,is_private,time,created_at")
+      .select("id,name,host_id,guest_id,winner_id,result,status,is_private,time,created_at")
       .order("created_at", { ascending: false })
       .then(({ data }) => setRecentGames(data || []));
   }, []);
@@ -278,12 +280,16 @@ const OnlinePage = () => {
                       <div className="flex flex-wrap gap-x-6 text-sm mt-1">
                         <span>{t.players || "Giocatori"}: {game.host_id}</span>
                         <span className={getStatusColor(game.status)}>{game.status}</span>
+                        {game.status === 'complete' && (
+                          <span>{game.result}</span>
+                        )}
                         <span className="opacity-75">{game.created_at}</span>
                       </div>
                     </div>
                     <button
                       onClick={() => handleJoinGame(game)}
-                      className={`px-4 py-2 rounded-full text-white text-sm font-medium ${darkMode ? 'bg-blue-600 hover:bg-blue-500' : 'bg-green-600 hover:bg-green-500'} transition-colors`}
+                      disabled={game.status !== 'waiting'}
+                      className={`px-4 py-2 rounded-full text-white text-sm font-medium ${darkMode ? 'bg-blue-600 hover:bg-blue-500' : 'bg-green-600 hover:bg-green-500'} transition-colors disabled:opacity-50`}
                     >
                       {t.joinGame || "Partecipa"}
                     </button>

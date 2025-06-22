@@ -1028,7 +1028,15 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
         }
     };
 
-    const handleCheckMateComplete = () => {
+    const handleCheckMateComplete = async () => {
+        if (mode === 'online' && gameData?.id) {
+            const resultValue = isDrawState ? 'draw' : (isWhite ? 'white' : 'black');
+            const winnerId = isDrawState ? null : (isWhite ? gameData.host_id : gameData.guest_id);
+            await supabase
+                .from('games')
+                .update({ status: 'complete', winner_id: winnerId, result: resultValue })
+                .eq('id', gameData.id);
+        }
         setShowCheckMateDiv(false);
         setIsDrawState(false);
     };
@@ -1037,7 +1045,15 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
         setShowMovesDiv(false);
     };
 
-    const handleTimerComplete = () => {
+    const handleTimerComplete = async () => {
+        if (mode === 'online' && gameData?.id && isGameOver) {
+            const resultValue = isGameOver as 'white' | 'black';
+            const winnerId = resultValue === 'white' ? gameData.host_id : gameData.guest_id;
+            await supabase
+                .from('games')
+                .update({ status: 'complete', winner_id: winnerId, result: resultValue })
+                .eq('id', gameData.id);
+        }
         setTimerDiv(false);
     };
 

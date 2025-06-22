@@ -22,7 +22,7 @@ export default function Statistics() {
       try {
         const data = await getStatistics(user.id);
         setStats(data);
-      } catch (err) {
+      } catch (err : any) {
         console.error('Failed to fetch statistics:', err);
       } finally {
         setIsLoading(false);
