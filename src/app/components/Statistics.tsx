@@ -29,6 +29,7 @@ export default function Statistics() {
       try {
         const data = await getStatistics(user.id);
         setStats(data);
+        // eslint-disable @typescript-eslint/no-explicit-any
       } catch (err : any) {
         console.error('Failed to fetch statistics:', err);
       } finally {

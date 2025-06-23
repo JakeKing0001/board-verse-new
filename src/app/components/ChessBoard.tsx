@@ -1,4 +1,4 @@
-import React, { useState, useEffect, JSX, useMemo } from 'react';
+import React, { useState, useEffect, JSX } from 'react';
 import Piece from './Piece';
 import { movePiece, showPiece, getEnpassant, getWhiteCastling, getBlackCastling, setWhiteCastling, setBlackCastling } from '../pieceLogic';
 import { usePieceContext } from './PieceContext';

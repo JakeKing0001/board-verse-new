@@ -40,11 +40,14 @@ export const GET = async (req: Request) => {
     const matchesPlayed = games?.length ?? 0;
     const userNumericId = Number(userId);
 
+    /* eslint-disable @typescript-eslint/no-unused-vars */
     const wins = games?.filter(g => g.winner_id === userNumericId).length ?? 0;
     const draws = games?.filter(g => g.result === 'draw').length ?? 0;
     const losses = games?.filter(
       g => g.winner_id && g.winner_id !== userNumericId && g.result !== 'draw'
     ).length ?? 0;
+    /* eslint-enable @typescript-eslint/no-unused-vars */    
+
 
     const { count: challengesCount, error: challengesError } = await supabase
       .from('challenge_completed')

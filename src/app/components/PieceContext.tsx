@@ -182,6 +182,7 @@ export const PieceProvider = ({ children }: { children: ReactNode }) => {
                 setAllUsers(users);
                 debugLog('All users:', allUsers);
 
+                // eslint-disable @typescript-eslint/no-explicit-any
                 const foundUser = users.find((u: any) => u.id === payload?.id);
                 if (!foundUser) return;
 
