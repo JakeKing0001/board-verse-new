@@ -203,6 +203,8 @@
     "forgotPasswordDesc": "Entrez votre email et nous vous enverrons un lien pour réinitialiser le mot de passe.",
     "sendRecoveryLink": "Envoyer le lien de récupération",
     "sending": "Envoi en cours...",
+    "losses": "Défaites",
+    "draws": "Nulles",
     "emailSentTitle": "Email envoyé !",
     "emailSentDesc": "Nous avons envoyé un lien de réinitialisation à {email}. Vérifiez votre boîte de réception.",
     "backToLogin": "Retour à la connexion",

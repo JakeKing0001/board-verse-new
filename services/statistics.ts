@@ -1,4 +1,12 @@
-export const getStatistics = async (userID: number) => {
+export interface UserStatistics {
+  matchesPlayed: number;
+  wins: number;
+  losses: number;
+  draws: number;
+  challengesCompleted: number;
+}
+
+export const getStatistics = async (userID: number): Promise<UserStatistics> => {
   const response = await fetch(`/api/statistics?userId=${userID}`, {
     method: 'GET',
     headers: {

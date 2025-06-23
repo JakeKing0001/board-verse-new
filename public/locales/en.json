@@ -181,6 +181,8 @@
     "drawTitle": "Draw!",
     "drawText": "The game ends in a draw.",
     "close": "Close",
+    "losses": "Losses",
+    "draws": "Draws",
     "noUsersFound": "No users found",
     "usersFound": "user found",
     "today": "Today",

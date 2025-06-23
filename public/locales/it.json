@@ -58,6 +58,8 @@
     "statistics": "Statistiche",
     "matchesPlayed": "Partite Giocate",
     "wins": "Vittorie",
+    "losses": "Sconfitte",
+    "draws": "Pareggi",
     "reward": "Ricompense",
     "joinBoardverse": "Unisciti a Boardverse",
     "fullName": "Nome e Cognome",

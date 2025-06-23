@@ -3,6 +3,7 @@ import { getMessages, setMessages } from "../../../services/messages";
 import { Search, ChevronLeft, Send, Paperclip } from "lucide-react";
 import { usePieceContext } from "./PieceContext";
 import { supabase } from "../../../lib/supabase";
+import clsx from 'clsx';
 
 type Message = { id: number; text: string; time: string; sender: "me" | "them" };
 type User = {
@@ -332,7 +333,12 @@ export default function FriendsChatModal({ show, onClose, darkMode, t = {}, }: {
   };
 
   return (
-    <div className={`fixed right-4 top-20 w-80 md:w-96 h-96 z-50 rounded-lg shadow-xl ${darkMode ? 'bg-slate-800 text-white' : 'bg-white text-gray-900'} overflow-hidden flex flex-col`}>
+    <div
+      className={clsx(
+        'fixed right-4 top-20 w-80 md:w-96 h-96 z-50 rounded-lg shadow-xl overflow-hidden flex flex-col',
+        darkMode ? 'bg-slate-800 text-white' : 'bg-white text-gray-900'
+      )}
+    >
       {!activeChat ? (
         // Chat list view
         <>
@@ -414,17 +420,29 @@ export default function FriendsChatModal({ show, onClose, darkMode, t = {}, }: {
             {activeChat.messages.map(message => (
               <div
                 key={message.id}
-                className={`max-w-xs mb-2 ${message.sender === 'me' ? 'ml-auto' : 'mr-auto'}`}
+                className={clsx(
+                  'max-w-xs mb-2',
+                  message.sender === 'me' ? 'ml-auto' : 'mr-auto'
+                )}
               >
-                <div className={`p-3 rounded-lg ${message.sender === 'me'
-                  ? 'bg-blue-500 text-white rounded-br-none'
-                  : darkMode
-                    ? 'bg-slate-700 text-white rounded-bl-none'
-                    : 'bg-white text-gray-800 rounded-bl-none'
-                  }`}>
+                <div
+                  className={clsx(
+                    'p-3 rounded-lg',
+                    message.sender === 'me'
+                      ? 'bg-blue-500 text-white rounded-br-none'
+                      : darkMode
+                        ? 'bg-slate-700 text-white rounded-bl-none'
+                        : 'bg-white text-gray-800 rounded-bl-none'
+                  )}
+                >
                   {message.text}
                 </div>
-                <div className={`text-xs mt-1 ${message.sender === 'me' ? 'text-right' : 'text-left'} text-gray-500`}>
+                <div
+                  className={clsx(
+                    'text-xs mt-1 text-gray-500',
+                    message.sender === 'me' ? 'text-right' : 'text-left'
+                  )}
+                >
                   {message.time}
                 </div>
               </div>

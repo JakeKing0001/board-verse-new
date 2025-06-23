@@ -1,6 +1,7 @@
 import { TrophyIcon } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { usePieceContext } from './PieceContext';
+import clsx from 'clsx';
 
 interface TimerModalProps {
     onTimerComplete: (piece: string) => void;
@@ -122,15 +123,29 @@ const TimerModal: React.FC<TimerModalProps> = ({ isWhite }) => {
 
     return (
         <div
-            className={`w-[600px] h-[450px] bg-gradient-to-br ${bgGradient} rounded-xl shadow-xl z-[1000] absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 transition-all duration-700 backdrop-blur-lg border ${borderColor} overflow-hidden ${isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-90'
-                }`}
+            className={clsx(
+                'w-[600px] h-[450px] bg-gradient-to-br rounded-xl shadow-xl z-[1000] absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 transition-all duration-700 backdrop-blur-lg border overflow-hidden',
+                bgGradient,
+                borderColor,
+                isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-90'
+            )}
         >
             {/* Background glow */}
-            <div className={`absolute inset-0 bg-gradient-to-br ${accentColor} opacity-20 blur-xl`}></div>
+            <div
+                className={clsx(
+                    'absolute inset-0 bg-gradient-to-br opacity-20 blur-xl',
+                    accentColor
+                )}
+            ></div>
 
             {/* Animated border */}
             <div className="absolute inset-0 rounded-xl overflow-hidden">
-                <div className={`absolute inset-0 bg-gradient-to-r ${accentColor} opacity-30 animate-spin-slow blur-sm`}></div>
+                <div
+                    className={clsx(
+                        'absolute inset-0 bg-gradient-to-r opacity-30 animate-spin-slow blur-sm',
+                        accentColor
+                    )}
+                ></div>
             </div>
 
             <Confetti />
@@ -138,13 +153,21 @@ const TimerModal: React.FC<TimerModalProps> = ({ isWhite }) => {
             <div className="absolute inset-0 flex flex-col items-center justify-center p-8">
                 <div className="text-center space-y-8 animate-fade-in z-10">
                     {/* Trophy icon */}
-                    <div className={`mx-auto w-24 h-24 mb-2 ${textColor} animate-bounce-slow`}>
+                    <div
+                        className={clsx(
+                            'mx-auto w-24 h-24 mb-2 animate-bounce-slow',
+                            textColor
+                        )}
+                    >
                         <TrophyIcon className='w-full h-full' />
                     </div>
 
                     <div className={`relative transform transition-transform duration-500`}>
                         <h2
-                            className={`text-6xl font-extrabold ${textColor} tracking-wider uppercase`}
+                            className={clsx(
+                                'text-6xl font-extrabold tracking-wider uppercase',
+                                textColor
+                            )}
                             style={textShadowStyle}
                         >
                             {t.time}
@@ -152,13 +175,20 @@ const TimerModal: React.FC<TimerModalProps> = ({ isWhite }) => {
                     </div>
 
                     <div className="relative">
-                        <div className={`absolute inset-0 bg-gradient-to-r from-transparent via-${isWhite ? 'gray-100/30' : 'gray-700/30'} to-transparent animate-shimmer`}></div>
+                        <div
+                            className={clsx(
+                                'absolute inset-0 bg-gradient-to-r from-transparent to-transparent animate-shimmer',
+                                isWhite ? 'via-gray-100/30' : 'via-gray-700/30'
+                            )}
+                        ></div>
                         <p
-                            className={`text-3xl ${textColorWithOpacity} font-semibold tracking-wide
-                            bg-gradient-to-r from-transparent via-${isWhite ? 'white/40' : 'gray-800/40'} to-transparent p-4 rounded-lg`}
-                            style={textShadowStyle}
+                            className={clsx(
+                                'text-3xl font-semibold tracking-wide bg-gradient-to-r from-transparent to-transparent p-4 rounded-lg',
+                                textColorWithOpacity,
+                                isWhite ? 'via-white/40' : 'via-gray-800/40'
+                            )}
                         >
-                            <span className={`font-bold ${textColor}`}>
+                            <span className={clsx('font-bold', textColor)}>
                                 {winnerColor}
                             </span> {t.checkMateText}
                         </p>
@@ -167,9 +197,12 @@ const TimerModal: React.FC<TimerModalProps> = ({ isWhite }) => {
                     {/* Try Again button */}
                     <button
                         onClick={() => { window.location.reload() }}
-                        className={`mt-8 px-8 py-3 ${buttonBgColor} rounded-full 
-                        ${buttonTextColor} font-bold text-lg transform transition-all duration-300 
-                        hover:scale-105 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-${isWhite ? 'gray-200' : 'gray-700'}`}
+                        className={clsx(
+                            'mt-8 px-8 py-3 rounded-full font-bold text-lg transform transition-all duration-300 hover:scale-105 hover:shadow-lg focus:outline-none focus:ring-2',
+                            buttonBgColor,
+                            buttonTextColor,
+                            isWhite ? 'focus:ring-gray-200' : 'focus:ring-gray-700'
+                        )}
                     >
                         {t.tryAgain}
                     </button>

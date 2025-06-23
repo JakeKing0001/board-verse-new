@@ -1,18 +1,25 @@
 "use client";
-import { useEffect, useState } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
+import { useEffect, useState, useMemo } from 'react';
+import {
+  ProgressChart,
+  PerformancePieChart,
+  WeeklyActivityChart,
+} from './charts/StatisticsCharts';
 import NavBar from './NavBar';
 import { usePieceContext } from './PieceContext';
-import { getStatistics } from '../../../services/statistics';
+import { getStatistics, type UserStatistics } from '../../../services/statistics';
 
-interface Stats {
-  matchesPlayed: number;
-  challengesCompleted: number;
-}
+type Stats = UserStatistics;
 
 export default function Statistics() {
   const { user, t, darkMode } = usePieceContext();
-  const [stats, setStats] = useState<Stats>({ matchesPlayed: 100, challengesCompleted: 90 });
+  const [stats, setStats] = useState<Stats>({
+    matchesPlayed: 0,
+    wins: 0,
+    losses: 0,
+    draws: 0,
+    challengesCompleted: 0,
+  });
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -31,32 +38,40 @@ export default function Statistics() {
     fetchStats();
   }, [user]);
 
-  // Mock data per i grafici - in produzione questi verrebbero dall'API
-  const progressData = [
-    { month: 'Gen', partite: 12, vittorie: 8 },
-    { month: 'Feb', partite: 19, vittorie: 13 },
-    { month: 'Mar', partite: 25, vittorie: 18 },
-    { month: 'Apr', partite: 31, vittorie: 22 },
-    { month: 'Mag', partite: 28, vittorie: 20 },
-    { month: 'Giu', partite: 35, vittorie: 28 }
-  ];
+  const progressData = useMemo(
+    () => [
+      { month: 'Gen', partite: 12, vittorie: 8 },
+      { month: 'Feb', partite: 19, vittorie: 13 },
+      { month: 'Mar', partite: 25, vittorie: 18 },
+      { month: 'Apr', partite: 31, vittorie: 22 },
+      { month: 'Mag', partite: 28, vittorie: 20 },
+      { month: 'Giu', partite: 35, vittorie: 28 },
+    ],
+    []
+  );
 
-  const performanceData = [
-    { name: 'Vittorie', value: stats.challengesCompleted || 65, color: darkMode ? '#10b981' : '#059669' },
-    { name: 'Sconfitte', value: (stats.matchesPlayed || 100) - (stats.challengesCompleted || 65), color: darkMode ? '#ef4444' : '#dc2626' },
-  ];
+  const performanceData = useMemo(
+    () => [
+      { name: 'Vittorie', value: stats.challengesCompleted || 65, color: darkMode ? '#10b981' : '#059669' },
+      { name: 'Sconfitte', value: (stats.matchesPlayed || 100) - (stats.challengesCompleted || 65), color: darkMode ? '#ef4444' : '#dc2626' },
+    ],
+    [stats, darkMode]
+  );
 
-  const weeklyData = [
-    { day: 'Lun', partite: 4 },
-    { day: 'Mar', partite: 6 },
-    { day: 'Mer', partite: 3 },
-    { day: 'Gio', partite: 8 },
-    { day: 'Ven', partite: 5 },
-    { day: 'Sab', partite: 7 },
-    { day: 'Dom', partite: 2 }
-  ];
+  const weeklyData = useMemo(
+    () => [
+      { day: 'Lun', partite: 4 },
+      { day: 'Mar', partite: 6 },
+      { day: 'Mer', partite: 3 },
+      { day: 'Gio', partite: 8 },
+      { day: 'Ven', partite: 5 },
+      { day: 'Sab', partite: 7 },
+      { day: 'Dom', partite: 2 },
+    ],
+    []
+  );
 
-  const winRate = stats.matchesPlayed > 0 ? Math.round((stats.challengesCompleted / stats.matchesPlayed) * 100) : 0;
+  const winRate = stats.matchesPlayed > 0 ? Math.round((stats.wins / stats.matchesPlayed) * 100) : 0;
 
   if (isLoading) {
     return (
@@ -112,7 +127,7 @@ export default function Statistics() {
                     {t.wins || 'Vittorie'}
                   </h3>
                   <p className={`text-3xl font-bold ${darkMode ? 'text-green-400' : 'text-green-800'}`}>
-                    {stats.challengesCompleted}
+                    {stats.wins}
                   </p>
                 </div>
                 <div className={`w-12 h-12 rounded-full flex items-center justify-center ${darkMode ? 'bg-green-500/20' : 'bg-green-100'}`}>
@@ -161,42 +176,7 @@ export default function Statistics() {
               <h3 className={`text-xl font-semibold mb-4 ${darkMode ? 'text-white' : 'text-green-800'}`}>
                 📈 Progressi Mensili
               </h3>
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={progressData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? '#374151' : '#d1d5db'} />
-                  <XAxis 
-                    dataKey="month" 
-                    stroke={darkMode ? '#9ca3af' : '#6b7280'}
-                    fontSize={12}
-                  />
-                  <YAxis 
-                    stroke={darkMode ? '#9ca3af' : '#6b7280'}
-                    fontSize={12}
-                  />
-                  <Tooltip 
-                    contentStyle={{
-                      backgroundColor: darkMode ? '#374151' : '#ffffff',
-                      border: 'none',
-                      borderRadius: '8px',
-                      color: darkMode ? '#ffffff' : '#000000'
-                    }}
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="partite" 
-                    stroke={darkMode ? '#60a5fa' : '#3b82f6'}
-                    strokeWidth={3}
-                    name="Partite"
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="vittorie" 
-                    stroke={darkMode ? '#34d399' : '#10b981'}
-                    strokeWidth={3}
-                    name="Vittorie"
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+              <ProgressChart data={progressData} darkMode={darkMode} />
             </div>
 
             {/* Performance Pie Chart */}
@@ -204,39 +184,19 @@ export default function Statistics() {
               <h3 className={`text-xl font-semibold mb-4 ${darkMode ? 'text-white' : 'text-green-800'}`}>
                 🎯 Performance Generale
               </h3>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={performanceData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={100}
-                    paddingAngle={5}
-                    dataKey="value"
-                  >
-                    {performanceData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip 
-                    contentStyle={{
-                      backgroundColor: darkMode ? '#374151' : '#ffffff',
-                      border: 'none',
-                      borderRadius: '8px',
-                      color: darkMode ? '#ffffff' : '#000000'
-                    }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
+              <PerformancePieChart data={performanceData} darkMode={darkMode} />
               <div className="flex justify-center space-x-6 mt-4">
                 <div className="flex items-center">
                   <div className="w-3 h-3 rounded-full bg-green-500 mr-2"></div>
-                  <span className="text-sm">Vittorie</span>
+                  <span className="text-sm">{t.wins || 'Vittorie'}</span>
                 </div>
                 <div className="flex items-center">
                   <div className="w-3 h-3 rounded-full bg-red-500 mr-2"></div>
-                  <span className="text-sm">Sconfitte</span>
+                  <span className="text-sm">{t.losses || 'Sconfitte'}</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-3 h-3 rounded-full bg-yellow-500 mr-2"></div>
+                  <span className="text-sm">{t.draws || 'Pareggi'}</span>
                 </div>
               </div>
             </div>
@@ -247,34 +207,7 @@ export default function Statistics() {
             <h3 className={`text-xl font-semibold mb-4 ${darkMode ? 'text-white' : 'text-green-800'}`}>
               📅 Attività Settimanale
             </h3>
-            <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={weeklyData}>
-                <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? '#374151' : '#d1d5db'} />
-                <XAxis 
-                  dataKey="day" 
-                  stroke={darkMode ? '#9ca3af' : '#6b7280'}
-                  fontSize={12}
-                />
-                <YAxis 
-                  stroke={darkMode ? '#9ca3af' : '#6b7280'}
-                  fontSize={12}
-                />
-                <Tooltip 
-                  contentStyle={{
-                    backgroundColor: darkMode ? '#374151' : '#ffffff',
-                    border: 'none',
-                    borderRadius: '8px',
-                    color: darkMode ? '#ffffff' : '#000000'
-                  }}
-                />
-                <Bar 
-                  dataKey="partite" 
-                  fill={darkMode ? '#8b5cf6' : '#7c3aed'}
-                  radius={[4, 4, 0, 0]}
-                  name="Partite"
-                />
-              </BarChart>
-            </ResponsiveContainer>
+            <WeeklyActivityChart data={weeklyData} darkMode={darkMode} />
           </div>
 
           {/* Additional Stats */}

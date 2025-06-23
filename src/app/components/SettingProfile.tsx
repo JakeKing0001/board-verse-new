@@ -5,6 +5,7 @@ import NavBar from './NavBar';
 import { usePieceContext } from './PieceContext';
 import { settingsUser } from '../../../services/auth';
 import toast from 'react-hot-toast';
+import { debugLog } from '../../../lib/debug';
 
 /**
  * ProfileSettings component provides a user interface for managing and updating user profile settings.
@@ -89,7 +90,7 @@ export default function ProfileSettings() {
       });
     }
 
-    console.log("User data set:", user);
+    debugLog('User data set:', user);
   }, [user]);
 
   useEffect(() => {

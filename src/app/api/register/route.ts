@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabase } from '../../../../lib/supabase';
 import bcrypt from 'bcryptjs';
 import { getUsers } from '../../../../services/login';
+import { debugLog } from '../../../../lib/debug';
 
 /**
  * Handles user registration via POST request.
@@ -21,7 +22,7 @@ import { getUsers } from '../../../../services/login';
 export const POST = async (req: Request) => {
   try {
     const { name, email, password, username } = await req.json();
-    console.log("Received data:", { name, email, password, username });
+    debugLog('Received data:', { name, email, password, username });
 
     // Hash della password con bcrypt
     const saltRounds = 10;

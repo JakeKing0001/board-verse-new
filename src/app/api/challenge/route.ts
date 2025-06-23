@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '../../../../lib/supabase';
+import { debugLog } from '../../../../lib/debug';
 
 /**
  * Handles GET requests to retrieve all challenges from the 'challenges' table using Supabase.
@@ -23,7 +24,7 @@ export const GET = async () => {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
-    console.log("Supabase select success:", data);
+    debugLog('Supabase select success:', data);
 
     return NextResponse.json(data); // Restituisci i dati come risposta JSON
   } catch (err) {

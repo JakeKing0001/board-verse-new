@@ -9,6 +9,7 @@ import { deleteRequests } from "../../../services/friends";
 import { setFriends } from "../../../services/friends";
 import { deleteFriends } from "../../../services/friends";
 import { createConversation } from "../../../services/messages";
+import { debugLog } from '../../../lib/debug';
 
 /**
  * FriendsPage component provides a user interface for managing friends and friend requests.
@@ -106,7 +107,7 @@ const FriendsPage = () => {
     // Se vuoi ottenere l'ID dell'utente che ha inviato la richiesta (friendID)
     // supponendo che la struttura sia { id, sender_id, receiver_id, ... }
     const friendID = userRequest ? userRequest.sender_id : undefined;
-    console.log("Friend ID:", friendID);
+    debugLog('Friend ID:', friendID);
 
     if (user && userRequest) {
       try {
@@ -122,7 +123,7 @@ const FriendsPage = () => {
         }
 
         // Delete request
-        console.log(userRequest.id)
+        debugLog(userRequest.id);
         if (userRequest && userRequest.id) {
           await deleteRequests({ id: userRequest.id });
         }

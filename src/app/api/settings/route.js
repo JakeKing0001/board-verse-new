@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '../../../../lib/supabase';
+import { debugLog } from '../../../../lib/debug';
 
 /**
  * Handles a POST request to update user settings in the database.
@@ -34,7 +35,7 @@ import { supabase } from '../../../../lib/supabase';
 export const POST = async (req) => {
   try {
     const { email, name, username, avatar, bio, location, birthdate, notifications_email, notifications_app, newsletter, game_invites, friend_requests, profile_visibility, show_online_status, show_play_history, allow_friend_requests, language, theme, color_blind_mode, text_size} = await req.json();
-    console.log("Received data:", { email, name, username, avatar, bio, location, birthdate, notifications_email, notifications_app, newsletter, game_invites, friend_requests, profile_visibility, show_online_status, show_play_history, allow_friend_requests, language, theme, color_blind_mode, text_size });
+    debugLog('Received data:', { email, name, username, avatar, bio, location, birthdate, notifications_email, notifications_app, newsletter, game_invites, friend_requests, profile_visibility, show_online_status, show_play_history, allow_friend_requests, language, theme, color_blind_mode, text_size });
 
     //Preparazione dei dati per l'inserimento nel database
     const updateData = {

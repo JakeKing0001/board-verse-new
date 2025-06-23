@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '../../../../lib/supabase';
+import { debugLog } from '../../../../lib/debug';
 
 /**
  * Handles POST requests to register the completion of a challenge by a user.
@@ -16,7 +17,7 @@ import { supabase } from '../../../../lib/supabase';
 export const POST = async (req: Request) => {
   try {
     const { userID, challengeID} = await req.json();
-    console.log("Received data:", { userID, challengeID });
+    debugLog('Received data:', { userID, challengeID });
 
 
     // Inserimento dei dettagli dell'utente nel database

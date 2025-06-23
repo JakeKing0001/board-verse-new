@@ -61,6 +61,8 @@
     "drawTitle": "¡Tablas!",
     "drawText": "La partida terminó en tablas.",
     "reward": "Recompensas",
+    "losses": "Derrotas",
+    "draws": "Empates",
     "joinBoardverse": "Únete a Boardverse",
     "fullName": "Nombre completo",
     "yourName": "Tu nombre ej.: Juan Pérez",

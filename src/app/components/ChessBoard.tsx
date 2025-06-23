@@ -1,4 +1,4 @@
-import React, { useState, useEffect, JSX } from 'react';
+import React, { useState, useEffect, JSX, useMemo } from 'react';
 import Piece from './Piece';
 import { movePiece, showPiece, getEnpassant, getWhiteCastling, getBlackCastling, setWhiteCastling, setBlackCastling } from '../pieceLogic';
 import { usePieceContext } from './PieceContext';
@@ -13,6 +13,7 @@ import ChessMoves from './ChessMoves';
 import MovesModal from './MovesModal';
 import { setChallengeComplete } from '../../../services/challengeComplete';
 import { supabase } from '../../../lib/supabase';
+import { debugLog, debugWarn } from '../../../lib/debug';
 import { useSearchParams } from 'next/navigation';
 import { Chess } from 'chess.js';
 
@@ -55,7 +56,7 @@ export function getLetters() {
 }
 
 function parseFEN(fen: string): string[][] {
-    console.log("FEN:", fen, typeof fen);
+    debugLog('FEN:', fen, typeof fen);
     const rows = fen.split(" ")[0].split("/");
     const board: string[][] = [];
 
@@ -108,14 +109,14 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
                 style.parentNode.removeChild(style);
             } catch (err) {
                 // Se lo style non è più figlio, ignoro l’errore
-                console.warn("check-border-style già rimosso:", err);
+                debugWarn('check-border-style già rimosso:', err);
             }
         }
     }, []);
 
     useEffect(() => {
         if (mode === 'online' && gameId) {
-            console.log('🚀 Inizializzo realtime per gameId:', gameId);
+            debugLog('🚀 Inizializzo realtime per gameId:', gameId);
             const channel = supabase
                 .channel('game-moves-listen')
                 .on(
@@ -128,7 +129,7 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
                     },
                     (payload) => {
                         // payload è un oggetto { old, new, ... }
-                        console.log("⏱️ real-time payload:", payload.new)
+                        debugLog('⏱️ real-time payload:', payload.new);
                         const gm = payload.new
 
                         setMovesList(prev => {
@@ -330,11 +331,11 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
                     sound.src = 'https://www.chess.com/sounds/move-check';
                     sound.volume = 0.4;
                     document.body.appendChild(sound);
-                    sound.play().catch(e => console.log("Audio play prevented:", e));
+                    sound.play().catch(e => debugLog('Audio play prevented:', e));
                 } else {
                     const sound = document.getElementById('check-sound') as HTMLAudioElement;
                     sound.currentTime = 0;
-                    sound.play().catch(e => console.log("Audio play prevented:", e));
+                    sound.play().catch(e => debugLog('Audio play prevented:', e));
                 }
 
                 // Find the king that is in check and make it look scared
@@ -489,11 +490,9 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
         if (mode === 'ai') {
             const str = data?.bestmove ? JSON.stringify(data.bestmove, null, 2) : "";
             const bestmove = str ? str.split(" ")[1] : "No best move available";
-            // console.log(bestmove);
             const fromSquare = bestmove.split('')[0] + bestmove.split('')[1];
             const toSquare = bestmove.split('')[2] + bestmove.split('')[3];
             setTimeout(() => {
-                // console.log(fromSquare, toSquare);
                 if (document.getElementById(fromSquare)?.hasChildNodes()) {
                     if (document.getElementById(fromSquare)?.children[0].getAttribute('src')?.includes('https://www.chess.com/chess-themes/pieces/neo/150/b')) {
                         setCpuMoveInProgress(true);
@@ -518,7 +517,7 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
         const urlParams = new URLSearchParams(window.location.search);
         const hasCheckMovesInUrl = urlParams.has('check_moves');
 
-        console.log('checkMoves:', checkMoves, 'hasCheckMovesInUrl:', hasCheckMovesInUrl, 'mode:', mode, 'isInCheck:', isInCheck);
+        debugLog('checkMoves:', checkMoves, 'hasCheckMovesInUrl:', hasCheckMovesInUrl, 'mode:', mode, 'isInCheck:', isInCheck);
 
         if (checkMoves === 0 && mode === 'challenge' && !isInCheck) {
             setShowMovesDiv(true);
@@ -628,8 +627,6 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
 
         const possibleMovesIDs = [...possibleMoves].map((move) => move.id);
 
-        //console.log(possibleMovesIDs);
-
         squares.forEach((square) => {
             if (!possibleMovesIDs.includes(square.props.id)) {
                 const div = document.getElementById(square.props.id) as HTMLElement;
@@ -709,7 +706,7 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
 
     async function handleSquareClick(square: string) {
 
-        console.log({
+        debugLog({
             game_id: gameId,
             from_sq: selectedPiece,
             to_sq: square,
@@ -768,8 +765,6 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
         }
 
         if (mode !== 'ai' && isWhite || true) {
-            // console.log(document.getElementById(square)?.classList.contains('bg-purple-400/75'));
-            // console.log(getWhiteCastling(), getBlackCastling());
 
             if (document.getElementById(square)?.classList.contains('bg-purple-400/75')) {
                 if (isWhite) {
@@ -824,7 +819,6 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
                     }
                     getLastMove(selectedPiece, square);
                     movePiece(selectedPiece, square);
-                    //console.log(`Moved piece from ${selectedPiece} to ${square}`);
                     setSelectedPiece(null); // Deseleziona il pezzo attivo
                     squares.forEach((square) => {
                         const div = document.getElementById(square.props.id) as HTMLElement;
@@ -869,7 +863,7 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
                     } else {
                         setShouldRotate(false);
                     }
-                    console.log("Turno del: " + ((!isWhite) ? "bianco" : "nero"));
+                    debugLog('Turno del: ' + (!isWhite ? 'bianco' : 'nero'));
                     if (!cpuMoveInProgress && (checkMoves ?? -1) > 0) {
                         setCheckMoves((prev) => Math.max((prev ?? 0) - 1, 0)); // Decrementa ma si ferma a zero
                     }
@@ -899,10 +893,10 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
                                         };
                                         await setChallengeComplete(formData);
                                     } else {
-                                        console.warn('userID or challengeID is undefined');
+                                        debugWarn('userID or challengeID is undefined');
                                     }
                                 } catch (error) {
-                                    console.log(error);
+                                    console.error(error);
                                 }
                             }
                         } else if (
@@ -936,7 +930,7 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
             } else {
                 // Altrimenti, seleziona il pezzo
                 enableOtherMoves();
-                console.log("Turno del: " + ((isWhite) ? "bianco" : "nero"));
+                debugLog('Turno del: ' + (isWhite ? 'bianco' : 'nero'));
 
                 // Check if current player is in check
                 const currentPlayerInCheck = getCheck(fenState);
@@ -947,10 +941,7 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
                 }
                 const subChoosedMoves = showPiece(square, isWhite, lastMove, fenState);
                 subMoves = subChoosedMoves;
-                // console.log(lastMove);
-                // console.log(subChoosedMoves);
                 disableOtherMoves(subChoosedMoves);
-                //console.log(`No piece selected`);
                 // keep current en passant state
             }
         }

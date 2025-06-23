@@ -6,6 +6,7 @@ import { updateLastSeen } from '../../../services/lastSeen'
 import { useState, useMemo } from 'react'
 import FriendsChatModal from "./FriendsChatModal";
 import Link from 'next/link'
+import clsx from 'clsx';
 
 function classNames(...classes: (string | undefined)[]) {
   return classes.filter(Boolean).join(' ')
@@ -41,12 +42,25 @@ export default function NavBar({ current = 0 }: { current?: number }) {
   ], [t, current]);
 
   return (
-    <Disclosure as="nav" className={`bg-gradient-to-r ${darkMode ? 'from-slate-800 to-slate-900' : 'from-green-800 to-green-900 shadow-lg'}`}>
+    <Disclosure
+      as="nav"
+      className={clsx(
+        'bg-gradient-to-r',
+        darkMode ? 'from-slate-800 to-slate-900' : 'from-green-800 to-green-900 shadow-lg'
+      )}
+    >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="relative flex h-20 items-center justify-between">
           <div className="absolute inset-y-0 left-0 flex items-center sm:hidden">
             {/* Mobile menu button*/}
-            <DisclosureButton className={`group relative inline-flex items-center justify-center rounded-lg p-2 ${darkMode ? 'text-slate-200 hover:bg-slate-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-slate-400' : 'text-green-200 hover:bg-green-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-green-400'} transition-all duration-200`}>
+            <DisclosureButton
+              className={clsx(
+                'group relative inline-flex items-center justify-center rounded-lg p-2 transition-all duration-200',
+                darkMode
+                  ? 'text-slate-200 hover:bg-slate-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-slate-400'
+                  : 'text-green-200 hover:bg-green-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-green-400'
+              )}
+            >
               <span className="absolute -inset-0.5" />
               <span className="sr-only">Open main menu</span>
               <Bars3Icon aria-hidden="true" className="block size-6 group-data-[open]:hidden" />
@@ -96,7 +110,12 @@ export default function NavBar({ current = 0 }: { current?: number }) {
             <div className="relative">
               <button
               type="button"
-              className={`relative rounded-lg ${darkMode ? 'bg-slate-700/30 p-2 text-slate-200 hover:text-white hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-800' : 'bg-green-700/30 p-2 text-green-200 hover:text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 focus:ring-offset-green-800'} transition-all duration-200`}
+              className={clsx(
+                'relative rounded-lg transition-all duration-200',
+                darkMode
+                  ? 'bg-slate-700/30 p-2 text-slate-200 hover:text-white hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-800'
+                  : 'bg-green-700/30 p-2 text-green-200 hover:text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 focus:ring-offset-green-800'
+              )}
               onClick={() => setShowChatModal((prev) => !prev)}
               >
               <span className="absolute -inset-1.5" />
@@ -117,7 +136,14 @@ export default function NavBar({ current = 0 }: { current?: number }) {
             {/* Profile dropdown */}
             <Menu as="div" className="relative ml-3">
               <div>
-                <MenuButton className={`relative flex rounded-lg ${darkMode? 'bg-slate-700/30 p-1 text-sm hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-800':'bg-green-700/30 p-1 text-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 focus:ring-offset-green-800'} transition-all duration-200`}>
+                <MenuButton
+                  className={clsx(
+                    'relative flex rounded-lg transition-all duration-200',
+                    darkMode
+                      ? 'bg-slate-700/30 p-1 text-sm hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-800'
+                      : 'bg-green-700/30 p-1 text-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 focus:ring-offset-green-800'
+                  )}
+                >
                   <span className="absolute -inset-1.5" />
                   <span className="sr-only">Open user menu</span>
                   <Image
@@ -131,13 +157,19 @@ export default function NavBar({ current = 0 }: { current?: number }) {
               </div>
               <MenuItems
                 transition
-                className={`absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-lg ${darkMode ? 'bg-slate-900' : 'bg-white'} py-1 shadow-xl ring-1 ring-black/5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in`}
+                className={clsx(
+                  'absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-lg py-1 shadow-xl ring-1 ring-black/5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in',
+                  darkMode ? 'bg-slate-900' : 'bg-white'
+                )}
               >
                 {isLoggedIn && (
                   <MenuItem>
                     <Link
                       href="/profile"
-                      className={`block px-4 py-2 text-sm ${darkMode? 'text-white':'text-gray-700'} hover:bg-${darkMode ? 'slate-700' : 'green-50'} transition-colors duration-150 data-[focus]:bg-${darkMode ? 'slate-700' : 'green-50'} data-[focus]:outline-none`}
+                      className={clsx(
+                        'block px-4 py-2 text-sm transition-colors duration-150 data-[focus]:outline-none',
+                        darkMode ? 'text-white hover:bg-slate-700 data-[focus]:bg-slate-700' : 'text-gray-700 hover:bg-green-50 data-[focus]:bg-green-50'
+                      )}
                     >
                       {t.profile}
                     </Link>
@@ -147,7 +179,10 @@ export default function NavBar({ current = 0 }: { current?: number }) {
                   <MenuItem>
                     <Link
                       href="/settingsProfile"
-                      className={`block px-4 py-2 text-sm ${darkMode? 'text-white':'text-gray-700'} hover:bg-${darkMode ? 'slate-700' : 'green-50'} transition-colors duration-150 data-[focus]:bg-${darkMode ? 'slate-700' : 'green-50'} data-[focus]:outline-none`}
+                      className={clsx(
+                        'block px-4 py-2 text-sm transition-colors duration-150 data-[focus]:outline-none',
+                        darkMode ? 'text-white hover:bg-slate-700 data-[focus]:bg-slate-700' : 'text-gray-700 hover:bg-green-50 data-[focus]:bg-green-50'
+                      )}
                     >
                       {t.settings}
                     </Link>
@@ -156,7 +191,10 @@ export default function NavBar({ current = 0 }: { current?: number }) {
                   {isLoggedIn ? (
                     <Link
                       href='#'
-                      className={`block px-4 py-2 text-sm ${darkMode? 'text-white':'text-gray-700'} hover:bg-${darkMode ? 'slate-700' : 'green-50'} transition-colors duration-150 data-[focus]:bg-${darkMode ? 'slate-700' : 'green-50'} data-[focus]:outline-none`}
+                      className={clsx(
+                        'block px-4 py-2 text-sm transition-colors duration-150 data-[focus]:outline-none',
+                        darkMode ? 'text-white hover:bg-slate-700 data-[focus]:bg-slate-700' : 'text-gray-700 hover:bg-green-50 data-[focus]:bg-green-50'
+                      )}
                       onClick={async () => {
                         try {
                           await updateLastSeen({ userID: user.id });
@@ -173,7 +211,10 @@ export default function NavBar({ current = 0 }: { current?: number }) {
                   ) : (
                     <Link
                       href='/login'
-                      className={`block px-4 py-2 text-sm ${darkMode? 'text-white':'text-gray-700'} hover:bg-${darkMode ? 'slate-700' : 'green-50'} transition-colors duration-150 data-[focus]:bg-${darkMode ? 'slate-700' : 'green-50'} data-[focus]:outline-none`}
+                      className={clsx(
+                        'block px-4 py-2 text-sm transition-colors duration-150 data-[focus]:outline-none',
+                        darkMode ? 'text-white hover:bg-slate-700 data-[focus]:bg-slate-700' : 'text-gray-700 hover:bg-green-50 data-[focus]:bg-green-50'
+                      )}
                     >
                       {t.signin}
                     </Link>

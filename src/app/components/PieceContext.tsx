@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
+import { debugLog } from '../../../lib/debug';
 import { getUsers } from '../../../services/login';
 import { getChallenge } from '../../../services/challenge';
 import { getChallengeComplete } from '../../../services/challengeComplete';
@@ -170,48 +171,54 @@ export const PieceProvider = ({ children }: { children: ReactNode }) => {
                 return;
             }
 
-            const users = await getUsers();
-            setAllUsers(users);
-            console.log("All users:", allUsers)
+            try {
+                const [users, completed, friendRequests, friends] = await Promise.all([
+                    getUsers(),
+                    getChallengeComplete(),
+                    getRequests(),
+                    getFriends(),
+                ]);
 
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const foundUser = users.find((u: any) => u.id === payload?.id);
-            if (!foundUser) return;
+                setAllUsers(users);
+                debugLog('All users:', allUsers);
 
-            setUser(foundUser);
-            console.log("Found user:", foundUser);
+                const foundUser = users.find((u: any) => u.id === payload?.id);
+                if (!foundUser) return;
 
-            // Imposta lingua
-            const userLanguage = foundUser.language || 'en';
-            setLanguage(userLanguage);
+                setUser(foundUser);
+                debugLog('Found user:', foundUser);
 
-            switch (userLanguage) {
-                case 'it': setT(it); break;
-                case 'es': setT(es); break;
-                case 'fr': setT(fr); break;
-                case 'de': setT(de); break;
-                default: setT(en);
+                // Imposta lingua
+                const userLanguage = foundUser.language || 'en';
+                setLanguage(userLanguage);
+
+                switch (userLanguage) {
+                    case 'it': setT(it); break;
+                    case 'es': setT(es); break;
+                    case 'fr': setT(fr); break;
+                    case 'de': setT(de); break;
+                    default: setT(en);
+                }
+
+                // Imposta tema
+                const userDarkMode = foundUser.theme || 'light';
+                setDarkMode(userDarkMode === 'dark');
+
+                // Sfide completate
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const userCompleted = completed.filter((c: any) => c.user_id === foundUser.id);
+                setCompletedChallenges(userCompleted);
+
+                // Richieste amicizia
+                const pending = formatFriendRequests(friendRequests, foundUser, users, t);
+                setRequests_(pending);
+
+                // Amici
+                const friendsList = formatFriendsList(friends, foundUser.id, users);
+                setFriends_(friendsList);
+            } catch (err) {
+                console.error('Failed to fetch user data:', err);
             }
-
-            // Imposta tema
-            const userDarkMode = foundUser.theme || 'light';
-            setDarkMode(userDarkMode === 'dark');
-
-            // Sfide completate
-            const completed = await getChallengeComplete();
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const userCompleted = completed.filter((c: any) => c.user_id === foundUser.id);
-            setCompletedChallenges(userCompleted);
-
-            // Richieste amicizia
-            const friendRequests = await getRequests();
-            const pending = formatFriendRequests(friendRequests, foundUser, users, t);
-            setRequests_(pending);
-
-            // Amici
-            const friends = await getFriends();
-            const friendsList = formatFriendsList(friends, foundUser.id, users);
-            setFriends_(friendsList);
         };
 
         fetchUserData();

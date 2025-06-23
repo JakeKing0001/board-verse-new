@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '../../../../lib/supabase';
+import { debugLog } from '../../../../lib/debug';
 
 /**
  * Handles POST requests to create a new friend request.
@@ -16,7 +17,7 @@ import { supabase } from '../../../../lib/supabase';
 export const POST = async (req: Request) => {
   try {
     const { senderID, receiverID } = await req.json();
-    console.log("Received data:", { senderID, receiverID });
+    debugLog('Received data:', { senderID, receiverID });
 
     // Inserimento dei dettagli dell'utente nel database
     const { error: insertError } = await supabase
@@ -78,7 +79,7 @@ export const DELETE = async (req: Request) => {
   try {
     const { id } = await req.json();
     const numericId = typeof id === 'string' ? parseInt(id, 10) : id;
-    console.log("Received data:", { id: numericId });
+    debugLog('Received data:', { id: numericId });
 
     // Inserimento dei dettagli dell'utente nel database
     const { error: deleteError } = await supabase

@@ -2,8 +2,10 @@
 
 import React from 'react';
 import Link from 'next/link';
-import RenderModel from '../components/RenderModel';
-import { Pawn } from '../components/models/Pawn';
+import dynamic from 'next/dynamic';
+
+const RenderModel = dynamic(() => import('../components/RenderModel'), { ssr: true });
+const Pawn = dynamic(() => import('../components/models/Pawn').then(mod => mod.Pawn), { ssr: true });
 import NavBar from '../components/NavBar';
 import { usePieceContext } from '../components/PieceContext';
 
@@ -31,12 +33,16 @@ export default function TablePage() {
             </div>
             <div className="h-[calc(100vh-5rem)] bg-transparent z-40 flex items-center justify-center relative">
                 <RenderModel gradientClassName={`absolute inset-0 bg-gradient-to-br ${darkMode ? 'from-slate-900 to-slate-600' : 'from-green-200 to-amber-100'}`}>
-                    <Pawn position={[-3, 0, -2]} />
-                    <Pawn position={[3, 0, -2]} />
-                    <Pawn position={[-3, 0, 2]} />
-                    <Pawn position={[3, 0, 2]} />
-                    <Pawn position={[-3, 0, 0]} />
-                    <Pawn position={[3, 0, 0]} />
+                    {[
+                        [-3, 0, -2],
+                        [3, 0, -2],
+                        [-3, 0, 2],
+                        [3, 0, 2],
+                        [-3, 0, 0],
+                        [3, 0, 0],
+                    ].map((pos, i) => (
+                        <Pawn key={i} position={pos as [number, number, number]} />
+                    ))}
                 </RenderModel>
                 <div className={`relative z-10 bg-white/20 backdrop-blur-lg rounded-xl p-8 shadow-2xl`}>
                     <h1 className={`text-4xl font-bold ${darkMode ? 'text-white' : 'text-green-800'} text-center mb-8`}>

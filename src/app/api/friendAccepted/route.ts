@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '../../../../lib/supabase';
+import { debugLog } from '../../../../lib/debug';
 
 /**
  * Handles the POST request to accept a friend by inserting a new friendship record into the database.
@@ -15,7 +16,7 @@ import { supabase } from '../../../../lib/supabase';
 export const POST = async (req: Request) => {
   try {
     const { userID, friendID } = await req.json();
-    console.log("Received data:", { userID, friendID });
+    debugLog('Received data:', { userID, friendID });
 
     // Inserimento dei dettagli dell'utente nel database
     const { error: insertError } = await supabase
@@ -77,7 +78,7 @@ export const GET = async () => {
 export const DELETE = async (req: Request) => {
   try {
     const { user_id, friend_id } = await req.json();
-    console.log("Received data:", { user_id, friend_id });
+    debugLog('Received data:', { user_id, friend_id });
 
     const { error: deleteError } = await supabase
       .from('friendships')

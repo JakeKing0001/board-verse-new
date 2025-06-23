@@ -197,6 +197,8 @@
     "insertGameName": "Bitte gib einen Namen für das Spiel ein!",
     "loginSuccess": "Erfolgreich eingeloggt!",
     "drawTitle": "Unentschieden!",
+    "losses": "Niederlagen",
+    "draws": "Unentschieden",
     "drawText": "Die Partie endete unentschieden.",
     "invalidCredentials": "Ungültige Anmeldedaten.",
     "forgotPasswordTitle": "Passwort wiederherstellen",
