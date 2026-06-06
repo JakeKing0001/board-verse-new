@@ -223,6 +223,7 @@ export const PieceProvider = ({ children }: { children: ReactNode }) => {
         };
 
         fetchUserData();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isLoggedIn]);
 
     // Update last seen periodically and on unload

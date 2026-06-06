@@ -237,6 +237,7 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
         setFenState(initialFEN);
         setBoard(parseFEN(initialFEN));
         setIsWhite(initialFEN.split(" ")[1] === "w");
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [mode, fen_challenge]);
 
     useEffect(() => {
@@ -476,6 +477,7 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
             const moves = showPiece(selectedPiece, isWhite, lastMove, fenState);
             disableOtherMoves(moves);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [movesList, mode, fenState, selectedPiece, lastMove]);
 
     //-----------------------------------------------------------------------------
@@ -483,6 +485,7 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
         if (mode === 'ai') {
             fetchStockfishData(fen, 15).then(setData);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [mode, fen]);
 
 
@@ -1047,7 +1050,6 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
         }
         setTimerDiv(false);
     };
-
     return (
         <>
             <Sidebar />
@@ -1059,6 +1061,7 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
 
                         {/* Nero */}
                         <div className="flex flex-col items-center">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                                 src={guestUser?.avatar || "/default-avatar.png"}
                                 alt="Nero"
@@ -1072,6 +1075,7 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
 
                         {/* Bianco */}
                         <div className="flex flex-col items-center">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                                 src={hostUser?.avatar || "/default-avatar.png"}
                                 alt="Bianco"

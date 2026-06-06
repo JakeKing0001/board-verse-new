@@ -120,14 +120,15 @@ export default function FriendsChatModal({ show, onClose, darkMode, t = {}, }: {
 
   useEffect(() => {
     if (!activeChat) return;
-
+    
     const interval = setInterval(() => {
       refreshChatMessages(activeChat.id);
     }, 1050);
-
+    
     return () => {
       clearInterval(interval);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeChat]);
 
   useEffect(() => {
@@ -372,7 +373,8 @@ export default function FriendsChatModal({ show, onClose, darkMode, t = {}, }: {
                 key={user.id}
                 className={`flex items-center p-3 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer border-b border-gray-200 dark:border-slate-600`}
                 onClick={() => handleOpenChat(user.id)}
-              >
+              > 
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={user.avatar} alt={user.name} className="w-10 h-10 rounded-full mr-3" />
                 <div className="flex-1">
                   <div className="flex justify-between">
@@ -403,6 +405,7 @@ export default function FriendsChatModal({ show, onClose, darkMode, t = {}, }: {
             >
               <ChevronLeft size={20} />
             </button>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={activeChat.avatar} alt={activeChat.name} className="w-8 h-8 rounded-full mr-3" />
             <div className="flex-1">
               <h4 className="font-medium">{activeChat.name}</h4>

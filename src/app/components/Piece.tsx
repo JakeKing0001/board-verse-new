@@ -54,6 +54,7 @@ export default function Piece({ type }: PieceProps) {
 
     /* eslint-disable @typescript-eslint/no-unused-vars */
     return (
+        // eslint-disable-next-line @next/next/no-img-element
         <img
             src={`https://www.chess.com/chess-themes/pieces/neo/150/${isWhitePiece}${pieceSymbol}.png`}
             alt='piece'

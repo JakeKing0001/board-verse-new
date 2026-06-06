@@ -121,6 +121,7 @@ export default function SideBar() {
                         {/* User Profile */}
                         {user && (
                             <div className={`flex items-center p-3 rounded-lg ${darkMode ? 'text-white bg-slate-900' : 'text-gray-900 bg-green-50'}`}>
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img
                                     src={user.avatar || "/default_avatar.png"}
                                     alt="User Avatar"

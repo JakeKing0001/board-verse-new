@@ -171,6 +171,7 @@ const AboutPage = () => {
                       className={`p-6 rounded-xl transition-all duration-300 ${darkMode ? 'bg-slate-700 hover:bg-slate-600' : 'bg-white/60 hover:bg-white/80'} flex flex-col items-center text-center`}
                     >
                       <div className="mb-4 w-24 h-24 overflow-hidden rounded-full border-4 border-white/20">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={member.avatar}
                           alt={member.name}

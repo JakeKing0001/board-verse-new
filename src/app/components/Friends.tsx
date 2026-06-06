@@ -289,6 +289,7 @@ const FriendsPage = () => {
                       >
                         <div className="flex items-center space-x-4">
                           <div className="relative">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                               src={friend.avatar}
                               alt={friend.username}
@@ -344,6 +345,7 @@ const FriendsPage = () => {
                         className={`p-4 rounded-xl transition-all duration-300 ${darkMode ? 'bg-slate-700' : 'bg-white/60'} flex items-center justify-between`}
                       >
                         <div className="flex items-center space-x-4">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
                             src={request.avatar}
                             alt={request.username}
@@ -426,6 +428,7 @@ const FriendsPage = () => {
                         className={`p-3 rounded-lg flex items-center justify-between ${darkMode ? 'bg-slate-700' : 'bg-green-50'}`}
                       >
                         <div className="flex items-center space-x-3">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
                             src={result.avatar}
                             alt={result.username}

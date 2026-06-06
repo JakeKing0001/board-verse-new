@@ -341,6 +341,7 @@ export default function ProfileSettings() {
                       {/* Avatar Upload */}
                       <div className="flex flex-col items-center space-y-4">
                         <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-md">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
                             src={profileData?.avatar || avatar}
                             alt="Profile avatar"

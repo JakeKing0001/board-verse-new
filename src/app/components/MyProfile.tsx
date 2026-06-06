@@ -35,8 +35,9 @@ export default function ProfilePage() {
       setUser(userData);
       setIsLoading(false);
     };
-
+    
     loadUser();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Preferenze utente (mock data semplice)
@@ -82,6 +83,7 @@ export default function ProfilePage() {
               {/* Avatar e informazioni base */}
               <div className="flex flex-col items-center">
                 <div className="w-40 h-40 rounded-full overflow-hidden border-4 border-white shadow-lg">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={user?.avatar || '/default_avatar.png'}
                     alt="Immagine profilo"
