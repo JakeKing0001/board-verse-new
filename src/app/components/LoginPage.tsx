@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import NavBar from "./NavBar";
 import { usePieceContext } from "./PieceContext";
 import toast from "react-hot-toast";
+import { supabase } from "../../../lib/supabase";
 
 /**
  * LoginPage component renders the login form and handles user authentication.
@@ -36,10 +37,20 @@ const LoginPage = () => {
   const { setIsLoggedIn, t, darkMode } = usePieceContext();
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmationNotice, setShowConfirmationNotice] = useState(false);
+  const [confirmationRequired, setConfirmationRequired] = useState(false);
+  const [isResendingConfirmation, setIsResendingConfirmation] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
       setRememberMe(localStorage.getItem("rememberMe") === "true");
+
+      const url = new URL(window.location.href);
+      if (url.searchParams.get("confirmation") === "pending") {
+        setShowConfirmationNotice(true);
+        url.searchParams.delete("confirmation");
+        window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+      }
     }
   }, []);
 
@@ -63,53 +74,65 @@ const LoginPage = () => {
     }
   }, []);
 
-  useEffect(() => {
-    const remember = localStorage.getItem("rememberMe") === "true";
-    if (!remember) {
-      sessionStorage.removeItem("token");
-      localStorage.removeItem("token");
-    }
-  }, []);
-
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
+    setErrors({});
+    setConfirmationRequired(false);
 
     try {
-      const response = await fetch("/api/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
+      if (rememberMe) {
+        localStorage.setItem('rememberMe', 'true');
+      } else {
+        localStorage.removeItem('rememberMe');
+      }
+
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim().toLowerCase(),
+        password,
       });
-      if (response.ok) {
-        const data = await response.json();
-        const token = data.token;
-        const rememberMeCheckbox = document.getElementById("remember-me") as HTMLInputElement;
-        if (rememberMeCheckbox?.checked) {
-          localStorage.setItem('rememberMe', 'true');
-        } else {
-          localStorage.removeItem('rememberMe');
-        }
-        setIsLoggedIn(token);
-        if (localStorage.getItem('rememberMe') === 'true') {
-          localStorage.setItem('token', token);
-        } else {
-          sessionStorage.setItem('token', token);
-        }
+
+      if (!error && data.session) {
+        setIsLoggedIn(data.session.access_token);
         toast.success(t.loginSuccess);
         setTimeout(() => { window.location.href = '/'; }, 500);
+      } else if (error?.code === 'email_not_confirmed') {
+        toast.error(t.emailNotConfirmed);
+        setErrors((prev) => ({ ...prev, email: t.emailNotConfirmed }));
+        setConfirmationRequired(true);
       } else {
         toast.error(t.invalidCredentials);
-        setErrors((prev) => ({ ...prev, email: 'Email o password non valide' }));
+        setErrors((prev) => ({ ...prev, email: t.invalidCredentials }));
       }
 
     } catch (error) {
       console.error('Errore nel login:', error);
-      setErrors(prev => ({ ...prev, email: 'Login fallito' }));
+      toast.error(t.loginFailed);
+      setErrors(prev => ({ ...prev, email: t.loginFailed }));
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleResendConfirmation = async () => {
+    setIsResendingConfirmation(true);
+
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: email.trim().toLowerCase(),
+        options: {
+          emailRedirectTo: `${window.location.origin}/login`,
+        },
+      });
+
+      if (error) throw error;
+      toast.success(t.confirmationResent);
+    } catch (error) {
+      console.error('Errore nel reinvio della conferma:', error);
+      toast.error(t.confirmationResendFailed);
+    } finally {
+      setIsResendingConfirmation(false);
     }
   };
 
@@ -133,6 +156,12 @@ const LoginPage = () => {
           {t.loginPageTitle}
         </h1>
 
+        {showConfirmationNotice && (
+          <div className={`mb-6 rounded-lg border px-4 py-3 text-sm ${darkMode ? 'border-amber-500/50 bg-amber-500/10 text-amber-200' : 'border-amber-300 bg-amber-50 text-amber-800'}`}>
+            {t.registrationConfirmationPending}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
           <label htmlFor="email" className={`block text-sm font-medium ${darkMode ? 'text-white' : 'text-green-700'}`}>
@@ -146,7 +175,24 @@ const LoginPage = () => {
             required
             className={`w-full px-4 py-3 ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white/50 border-green-200 text-slate-900'} rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all`}
             placeholder={t.yourEmail}
+            aria-invalid={Boolean(errors.email)}
+            aria-describedby={errors.email ? "login-error" : undefined}
           />
+          {errors.email && (
+            <p id="login-error" className="text-sm text-red-500" role="alert">
+              {errors.email}
+            </p>
+          )}
+          {confirmationRequired && (
+            <button
+              type="button"
+              onClick={handleResendConfirmation}
+              disabled={isResendingConfirmation}
+              className={`text-sm font-medium underline disabled:cursor-not-allowed disabled:opacity-60 ${darkMode ? 'text-amber-300 hover:text-amber-200' : 'text-amber-700 hover:text-amber-800'}`}
+            >
+              {isResendingConfirmation ? t.sending : t.resendConfirmation}
+            </button>
+          )}
           </div>
 
             <div className="space-y-2 relative">

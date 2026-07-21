@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '../../../../lib/supabase';
+import { createServerSupabase } from '../../../../lib/supabaseServer';
 
 /**
  * Creates a new empty conversation between two users if it does not already exist.
@@ -8,6 +8,7 @@ import { supabase } from '../../../../lib/supabase';
  */
 export const POST = async (req: Request) => {
   try {
+    const supabase = createServerSupabase(req);
     const { userID, friendID } = await req.json();
 
     // Check for existing conversation

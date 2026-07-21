@@ -8,11 +8,10 @@
  * @throws {Error} If the response is not successful or if no challenge is found.
  */
 export const getChallenge = async () => {
+    const { getApiHeaders } = await import('../lib/api');
     const response = await fetch(`/api/challenge`, {
         method: "GET",
-        headers: {
-            "Content-Type": "application/json",
-        },
+        headers: await getApiHeaders(),
     });
 
     if (response.ok) {

@@ -1,3 +1,5 @@
+import { supabase } from '../lib/supabase';
+
 /**
  * Sends a POST request to register a new user.
  *
@@ -12,19 +14,23 @@
  * @returns {Promise<any>} The parsed JSON response from the server.
  */
 export const registerUser = async (formData: { name: string; email: string; password: string, username: string }) => {
-  const response = await fetch(`/api/register`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
+  const { data, error } = await supabase.auth.signUp({
+    email: formData.email.trim().toLowerCase(),
+    password: formData.password,
+    options: {
+      emailRedirectTo: `${window.location.origin}/login`,
+      data: {
+        full_name: formData.name,
+        username: formData.username,
+      },
     },
-    body: JSON.stringify(formData),
   });
 
-  if (response.ok) {
-    return response.json();
+  if (error) {
+    throw new Error(error.message);
   }
 
-  throw new Error(`Error: ${response.status} - ${response.statusText}`);
+  return data;
 };
 
 /**
@@ -78,9 +84,7 @@ export const settingsUser = async (formData: {
 }) => {
   const response = await fetch(`/api/settings`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: await import('../lib/api').then(({ getApiHeaders }) => getApiHeaders()),
     body: JSON.stringify(formData),
   });
 
@@ -98,19 +102,11 @@ export const settingsUser = async (formData: {
  * @returns A promise that resolves when the request completes.
  */
 export const requestPasswordReset = async (email: string) => {
-  const response = await fetch(`/api/forgot-password`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ email }),
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${window.location.origin}/reset-password`,
   });
 
-  const data = await response.json().catch(() => ({}));
-
-  if (response.ok) {
-    return response.json();
+  if (error) {
+    throw new Error(error.message);
   }
-  
-  throw new Error(data.error || `Error: ${response.status} - ${response.statusText}`);
 };

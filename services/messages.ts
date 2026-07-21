@@ -10,11 +10,10 @@
  * @throws Will throw an error if the server response is not OK.
  */
 export const setMessages = async (formData: { senderID: number; receiverID: number; text: { text: string } }) => {
+  const { getApiHeaders } = await import('../lib/api');
   const response = await fetch(`/api/messages`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: await getApiHeaders(),
     body: JSON.stringify(formData),
   });
 
@@ -35,11 +34,10 @@ export const setMessages = async (formData: { senderID: number; receiverID: numb
  * @throws {Error} If the network response is not ok.
  */
 export const getMessages = async () => {
+  const { getApiHeaders } = await import('../lib/api');
   const response = await fetch(`/api/messages`, {
     method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: await getApiHeaders(),
   });
 
   if (response.ok) {
@@ -55,11 +53,10 @@ export const getMessages = async () => {
  * @returns A promise resolving with the API response.
  */
 export const createConversation = async (formData: { userID: number; friendID: number }) => {
+  const { getApiHeaders } = await import('../lib/api');
   const response = await fetch(`/api/conversations`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: await getApiHeaders(),
     body: JSON.stringify(formData),
   });
 

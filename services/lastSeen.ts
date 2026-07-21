@@ -5,9 +5,10 @@
  */
 export const updateLastSeen = async (formData: { userID: number }) => {
   try {
+    const { getApiHeaders } = await import('../lib/api');
     const res = await fetch('/api/lastSeen', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: await getApiHeaders(),
       body: JSON.stringify(formData),
     });
 

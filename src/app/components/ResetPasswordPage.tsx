@@ -1,43 +1,32 @@
 "use client";
 
 import { useState } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import NavBar from "./NavBar";
 import toast from "react-hot-toast";
+import { supabase } from "../../../lib/supabase";
 
 const ResetPasswordPage = () => {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const searchParams = useSearchParams();
   const router = useRouter();
-
-  const token = searchParams.get("token") || "";
-  const email = searchParams.get("email") || "";
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!token || !email) {
-      toast.error("Invalid reset link");
-      return;
-    }
     if (password !== confirm) {
       toast.error("Passwords do not match");
       return;
     }
     setIsLoading(true);
     try {
-      const res = await fetch("/api/reset-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, email, password }),
-      });
-      const data = await res.json();
-      if (res.ok) {
+      const { error } = await supabase.auth.updateUser({ password });
+      if (!error) {
         toast.success("Password updated");
+        await supabase.auth.signOut();
         router.push("/login");
       } else {
-        toast.error(data.error || "Failed to reset password");
+        toast.error(error.message || "Failed to reset password");
       }
     } catch {
       toast.error("An error occurred");

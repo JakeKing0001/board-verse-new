@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '../../../../lib/supabase';
+import { createServerSupabase } from '../../../../lib/supabaseServer';
 import { debugLog } from '../../../../lib/debug';
 
 /**
@@ -16,6 +16,7 @@ import { debugLog } from '../../../../lib/debug';
  */
 export const POST = async (req: Request) => {
   try {
+    const supabase = createServerSupabase(req);
     const { userID, challengeID} = await req.json();
     debugLog('Received data:', { userID, challengeID });
 
@@ -46,8 +47,9 @@ export const POST = async (req: Request) => {
  *
  * @returns {Promise<NextResponse>} A JSON response containing the completed challenges or an error message.
  */
-export const GET = async () => {
+export const GET = async (req: Request) => {
   try {
+    const supabase = createServerSupabase(req);
     const { data, error } = await supabase
       .from('challenge_completed')
       .select('user_id, challenge_id');

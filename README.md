@@ -13,7 +13,7 @@
   * **Online PvP:** gioca partite online in tempo reale con altri utenti. Si possono creare nuovi tavoli di gioco specificando tempo di gara e modalità, oppure unirsi a partite esistenti. Le partite online supportano la condivisione di un link per invitare direttamente un amico e includono l’aggiornamento in tempo reale delle mosse sulla scacchiera.
   * **Sfide e Puzzle:** metti alla prova le tue abilità con problemi di scacchi predefiniti (es. *“mate in 2”* e simili). Le sfide presentano posizioni specifiche (fornite in notazione FEN) in cui il giocatore deve trovare lo scacco matto o la soluzione in un numero limitato di mosse. Il completamento delle sfide viene tracciato per ogni utente, sbloccando eventualmente **trofei** o ricompense virtuali.
 * **Sistema di Profilo e Statistiche:** Ogni utente registrato ha un profilo personale con informazioni come nome, username, biografia e statistiche di gioco. Vengono registrati dati come numero di partite giocate, vittorie e altre statistiche salienti. L’utente può personalizzare le proprie preferenze (ad esempio lingua dell’interfaccia, tema chiaro/scuro, visibilità del profilo, notifiche ecc.).
-* **Autenticazione e Gestione Utenti:** La piattaforma include un sistema di registrazione e login utenti. È possibile creare un nuovo account fornendo nome, username, email e password (con validazione dei requisiti di complessità della password) e successivamente autenticarsi per accedere alle funzionalità di gioco online. Le password sono gestite in modo sicuro (hash e salvataggio sicuro tramite libreria *bcryptjs*).
+* **Autenticazione e Gestione Utenti:** La piattaforma include registrazione, login, recupero password e sessioni persistenti tramite **Supabase Auth**. I profili applicativi restano nella tabella `public.users` e sono collegati all'identità Auth tramite `auth_user_id`; le password non vengono lette né salvate dal codice dell'applicazione.
 * **Social e Amici:** Boardverse integra funzionalità social basilari. Gli utenti possono aggiungere altri giocatori come **amici**, inviare richieste di amicizia e gestire una lista amici. È presente una chat integrata: si può avviare una conversazione privata con un amico direttamente dalla piattaforma. I messaggi vengono inviati in tempo reale e le nuove chat o messaggi sono notificati dinamicamente. Queste funzioni incentivano la creazione di una comunità all’interno dell’app, permettendo anche di organizzare facilmente partite private con persone che si conoscono.
 * **Interfaccia Multilingua:** L’applicazione è disponibile in più lingue (attualmente Italiano, Inglese, Spagnolo, Francese e Tedesco) grazie al supporto di **i18n**. L’utente può selezionare la lingua preferita e tutti i testi dell’interfaccia (menu, pulsanti, descrizioni) verranno mostrati nella lingua scelta. Ciò rende Boardverse fruibile da un pubblico internazionale.
 * **Esperienza Utente Moderna:** L’interfaccia è stata realizzata con un design moderno e responsive. È presente una modalità **tema scuro/chiaro** attivabile in base alle preferenze utente, utile anche per chi ha esigenze di accessibilità (es. modalità high-contrast o per daltonici prevista nelle impostazioni). La scacchiera utilizza immagini di pezzi ad alta qualità (pezzi in stile “neo” forniti da chess.com) ed evidenzia le mosse valide, scacco al re, ecc. Inoltre, sono stati integrati elementi grafici 3D: ad esempio, animazioni tridimensionali di pedoni e un modello 3D di trofeo ruotante rendono l’esperienza visivamente più accattivante. *(Nota: le animazioni 3D richiedono WebGL e hardware grafico adeguato, ma l’app si degrada graficamente in modo elegante se non supportate.)*
@@ -30,7 +30,7 @@ Boardverse è stato sviluppato con un’architettura **web full-stack** moderna,
 * **Backend e Database:** Come backend **non** è utilizzato un server custom tradizionale, bensì i servizi forniti da **Supabase** – una piattaforma Backend-as-a-Service basata su PostgreSQL. Supabase gestisce:
 
   * Un database SQL (PostgreSQL) per conservare dati persistenti: profili utenti, partite (con dettagli come giocatori, mosse, stato), richieste di amicizia, liste amici, messaggi di chat, elenco delle sfide scacchistiche, ecc.
-  * Un sistema di autenticazione utente (basato su tabelle utenti) integrabile facilmente. *(Nota: L’applicazione attuale implementa la registrazione manualmente via API Next, ma avrebbe potuto utilizzare direttamente l’Auth di Supabase; in entrambi i casi le credenziali e gli utenti finiscono nella base dati.)*
+  * **Supabase Auth** per registrazione, login, recupero password e gestione sicura delle sessioni. Le API Next inoltrano il token dell'utente e PostgreSQL applica le policy Row Level Security (RLS) a ogni operazione.
   * **Supabase Realtime:** una funzionalità che permette di sottoscriversi ai cambiamenti del database in tempo reale. Boardverse sfrutta questa caratteristica per aggiornare immediatamente l’interfaccia quando avvengono eventi importanti: ad esempio, quando l’avversario effettua una mossa la riga corrispondente nella tabella `games` viene aggiornata e tutti i client in ascolto su quella partita ricevono l’update; analogamente, l’inserimento di un nuovo messaggio nella tabella `messages` viene inviato in push al destinatario in chat senza polling. Questo evita la necessità di implementare manualmente un server WebSocket custom, delegando a Supabase la sincronizzazione realtime.
   * **API e Funzioni Serverless:** Alcune logiche sono implementate tramite le API Routes di Next (funzioni serverless in Node) che interagiscono con Supabase. Ad esempio, le rotte in `src/app/api/` gestiscono richieste come la creazione di una nuova richiesta di amicizia, l’inserimento e recupero di sfide completate, ecc., effettuando operazioni sul database tramite gli SDK Supabase.
 * **Motore Scacchistico (AI):** Per implementare la modalità **giocatore vs computer**, Boardverse integra il motore open-source **Stockfish**. In particolare, l’applicazione invia la posizione corrente in notazione FEN a un’API esterna (stockfish.online) che fornisce la mossa migliore calcolata dal motore. Questo approccio evita di dover ospitare localmente il motore (che può essere oneroso) e sfrutta un servizio online per ottenere mosse IA in base a una profondità di analisi impostata. Il risultato è che l’utente può giocare contro un “computer” che risponde in modo intelligente, simulando diversi livelli di abilità in base alla profondità scelta.
@@ -38,7 +38,7 @@ Boardverse è stato sviluppato con un’architettura **web full-stack** moderna,
 * **Altre librerie e utilità:**
 
   * **next-i18next:** gestisce la localizzazione dell’app caricando i file di traduzione JSON per le varie lingue e fornendo il meccanismo di traduzione di testi nell’UI.
-  * **bcryptjs:** utilizzato per cifrare in hash le password degli utenti prima di salvarle nel database, aggiungendo un livello di sicurezza all’archiviazione delle credenziali.
+  * **Supabase JS:** client ufficiale usato per Auth, accesso al database e sottoscrizioni Realtime.
   * **ESLint:** il progetto include configurazioni di linting (con preset Next.js) per garantire uno stile di codice consistente e prevenire errori comuni. `npm run lint` può essere usato per analizzare il codice.
   * **Playwright:** nelle dipendenze di sviluppo è presente il framework di testing **Playwright**, il che indica che il progetto è predisposto per test end-to-end (ad esempio simulare l’interazione di un utente con il browser, come registrazione, login, partita, ecc.). È fornito uno script `npm run install:drivers` per installare i browser necessari ai test Playwright. *(Attualmente non sono inclusi test completi nella repository, ma la configurazione permette di aggiungerli facilmente.)*
 
@@ -64,8 +64,17 @@ Di seguito sono riportati i passi dettagliati per installare e avviare Boardvers
    ```
 
    *(In alternativa è possibile usare `yarn install` se si preferisce Yarn, oppure `pnpm install` se si usa pnpm – il progetto è compatibile con tutti e tre i gestori di pacchetti.)*
-4. **Configurare le Variabili d’Ambiente:** Creare un file `.env.local` nella radice del progetto e definire le variabili `NEXT_PUBLIC_SUPABASE_URL` , `NEXT_PUBLIC_SUPABASE_ANON_KEY` e `JWT_SECRET`. Quest'ultima sarà utilizzata per firmare i JSON Web Token restituiti dal backend. Il file `lib/supabase.js` leggerà automaticamente le prime due variabili per inizializzare il client.
-5. **Aggiornare il database:** Eseguire lo script `supabase/migrations/20240612_add_last_seen.sql` con l'editor SQL di Supabase o tramite `psql` per aggiungere la colonna `last_seen` nella tabella `users`.
+4. **Configurare le Variabili d’Ambiente:** Copiare `.env.example` in `.env.local` e impostare `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` usando i valori del pannello **Connect** del progetto Supabase. La vecchia variabile `NEXT_PUBLIC_SUPABASE_ANON_KEY` resta supportata per compatibilità, ma per nuove configurazioni è preferibile la publishable key.
+5. **Aggiornare il database:** Applicare in ordine gli script presenti in `supabase/migrations`. Le migrazioni collegano Supabase Auth ai profili BoardVerse e configurano grant, policy RLS, controlli di integrità e indici.
+
+   Se il database contiene utenti creati prima del passaggio a Supabase Auth, aggiungere temporaneamente `SUPABASE_SECRET_KEY` a `.env.local` e lanciare prima il controllo, poi l'importazione:
+
+   ```bash
+   npm run migrate:legacy-users
+   npm run migrate:legacy-users -- --apply
+   ```
+
+   La secret key è solo amministrativa: non deve avere il prefisso `NEXT_PUBLIC_`, non va inserita nel browser e va rimossa dal file locale al termine della migrazione.
 6. **Avviare il Server di Sviluppo:** Eseguire il comando:
 
    ```bash
@@ -174,7 +183,7 @@ board-verse-new/
 │   │   │   └── ...                # Altri componenti minori (modali, bottoni, ecc.)
 │   │   └── (altre pagine)         # Ogni sezione principale ha una propria sottocartella o file page.tsx (es: login, register, settings, ecc.)
 │   ├── lib/
-│   │   └── supabase.js           # Configurazione client Supabase (URL e anon key del database):contentReference[oaicite:50]{index=50}.
+│   │   └── supabase.js           # Client browser Supabase (URL e publishable key).
 │   ├── styles/ (opzionale)       # Potrebbe contenere file CSS aggiuntivi (in questo progetto la maggior parte dei stili è in Tailwind/global.css).
 │   └── public/
 │       ├── locales/             # File JSON per le traduzioni multilingua (en.json, it.json, ecc. contenenti tutte le stringhe dell’interfaccia):contentReference[oaicite:51]{index=51}:contentReference[oaicite:52]{index=52}.

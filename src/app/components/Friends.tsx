@@ -180,7 +180,10 @@ const FriendsPage = () => {
 
     if (friendToRemove && user) {
       try {
-          await deleteFriends({ user_id: user.id, friend_id: userId });
+          const otherUserId = friendToRemove.user_id === user.id
+            ? friendToRemove.friend_id
+            : friendToRemove.user_id;
+          await deleteFriends({ user_id: user.id, friend_id: otherUserId });
           setFriends_(friends.filter(friend => friend.id !== userId));
           toast.success(`${friendToRemove.username} ${t.removedFromFriends || "removed from friends"}`);
       } catch (error) {

@@ -8,11 +8,10 @@
  * @throws Will throw an error if the network response is not ok.
  */
 export const setChallengeComplete = async (formData: { userID: number; challengeID: number }) => {
+  const { getApiHeaders } = await import('../lib/api');
   const response = await fetch(`/api/challengeComplete`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: await getApiHeaders(),
     body: JSON.stringify(formData),
   });
 
@@ -30,11 +29,10 @@ export const setChallengeComplete = async (formData: { userID: number; challenge
  * @throws {Error} Throws an error if the network response is not ok.
  */
 export const getChallengeComplete = async () => {
+  const { getApiHeaders } = await import('../lib/api');
   const response = await fetch(`/api/challengeComplete`, {
     method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: await getApiHeaders(),
   });
 
   if (response.ok) {

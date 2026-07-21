@@ -1,7 +1,9 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
+import type { NextConfig } from 'next';
+
+const nextConfig: NextConfig = {
   reactStrictMode: true,
-  webpack: (config: any) => {
+  outputFileTracingRoot: process.cwd(),
+  webpack: (config) => {
     config.resolve.alias.canvas = false;
     return config;
   },

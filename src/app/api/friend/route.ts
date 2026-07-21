@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '../../../../lib/supabase';
+import { createServerSupabase } from '../../../../lib/supabaseServer';
 import { debugLog } from '../../../../lib/debug';
 
 /**
@@ -16,6 +16,7 @@ import { debugLog } from '../../../../lib/debug';
  */
 export const POST = async (req: Request) => {
   try {
+    const supabase = createServerSupabase(req);
     const { senderID, receiverID } = await req.json();
     debugLog('Received data:', { senderID, receiverID });
 
@@ -44,8 +45,9 @@ export const POST = async (req: Request) => {
  *
  * @returns {Promise<NextResponse>} A JSON response containing the friend requests data or an error message.
  */
-export const GET = async () => {
+export const GET = async (req: Request) => {
   try {
+    const supabase = createServerSupabase(req);
     const { data, error } = await supabase
       .from('friend_requests')
       .select('id, sender_id, receiver_id, sent_at');
@@ -77,6 +79,7 @@ export const GET = async () => {
  */
 export const DELETE = async (req: Request) => {
   try {
+    const supabase = createServerSupabase(req);
     const { id } = await req.json();
     const numericId = typeof id === 'string' ? parseInt(id, 10) : id;
     debugLog('Received data:', { id: numericId });

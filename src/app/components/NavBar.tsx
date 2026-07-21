@@ -7,6 +7,7 @@ import { useState, useMemo } from 'react'
 import FriendsChatModal from "./FriendsChatModal";
 import Link from 'next/link'
 import clsx from 'clsx';
+import { supabase } from '../../../lib/supabase';
 
 function classNames(...classes: (string | undefined)[]) {
   return classes.filter(Boolean).join(' ')
@@ -201,9 +202,8 @@ export default function NavBar({ current = 0 }: { current?: number }) {
                         } catch (err) {
                           console.error('Failed to update last seen:', err);
                         }
+                        await supabase.auth.signOut();
                         setIsLoggedIn('');
-                        localStorage.removeItem('token');
-                        sessionStorage.removeItem('token');
                       }}
                     >
                       {t.logout}

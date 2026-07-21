@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '../../../../lib/supabase';
+import { createServerSupabase } from '../../../../lib/supabaseServer';
 
 /**
  * Updates the `last_seen` timestamp for a given user.
@@ -9,6 +9,7 @@ import { supabase } from '../../../../lib/supabase';
  */
 export const POST = async (req: Request) => {
   try {
+    const supabase = createServerSupabase(req);
     const { userID } = await req.json();
     const { error } = await supabase
       .from('users')

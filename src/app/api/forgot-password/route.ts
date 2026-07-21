@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '../../../../lib/supabase';
+import { createServerSupabase } from '../../../../lib/supabaseServer';
 
 export const POST = async (req: Request) => {
   try {
+    const supabase = createServerSupabase(req);
     const { email } = await req.json();
     if (!email) {
       return NextResponse.json({ error: 'Email is required' }, { status: 400 });

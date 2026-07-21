@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '../../../../lib/supabase';
+import { createServerSupabase } from '../../../../lib/supabaseServer';
 import { debugLog } from '../../../../lib/debug';
 
 /**
@@ -34,6 +34,7 @@ import { debugLog } from '../../../../lib/debug';
  */
 export const POST = async (req) => {
   try {
+    const supabase = createServerSupabase(req);
     const { email, name, username, avatar, bio, location, birthdate, notifications_email, notifications_app, newsletter, game_invites, friend_requests, profile_visibility, show_online_status, show_play_history, allow_friend_requests, language, theme, color_blind_mode, text_size} = await req.json();
     debugLog('Received data:', { email, name, username, avatar, bio, location, birthdate, notifications_email, notifications_app, newsletter, game_invites, friend_requests, profile_visibility, show_online_status, show_play_history, allow_friend_requests, language, theme, color_blind_mode, text_size });
 
@@ -62,10 +63,15 @@ export const POST = async (req) => {
 
 
     // Inserimento dei dettagli dell'utente nel database
+    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+    if (authError || !authUser) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { error: insertError } = await supabase
       .from('users')
       .update(updateData)
-      .eq('email', email);
+      .eq('auth_user_id', authUser.id);
 
     if (insertError) {
       console.error("Supabase insertError:", insertError.message);

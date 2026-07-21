@@ -851,15 +851,15 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
                     setFenState(newFen);
                     fen = newFen;
                     actualMove = selectedPiece + square;
-                    const moveData = {
-                        game_id: gameId,
-                        from: selectedPiece,
-                        to: square,
-                        fen: newFen,
-                        user_id: user?.id,
-                        created_at: new Date().toISOString(),
-                    };
-                    await supabase.from('game_moves').insert([moveData]);
+                    if (mode === 'online' && gameId && user) {
+                        await supabase.from('game_moves').insert([{
+                            game_id: gameId,
+                            from_sq: selectedPiece,
+                            to_sq: square,
+                            moved_by: user.id,
+                            created_at: new Date().toISOString(),
+                        }]);
+                    }
                     setIsWhite(!isWhite);
                     if (window.innerWidth < 768 && mode === 'multiplayer') {
                         setShouldRotate(prev => !prev);

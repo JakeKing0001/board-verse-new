@@ -122,7 +122,7 @@ const OnlinePage = () => {
 }, []);
 
   useEffect(() => {
-    setGameTime(parseInt(days) * 24 * 60 + parseInt(hours) * 60 + parseInt(minutes) * 60 + parseInt(seconds));
+    setGameTime(parseInt(days) * 24 * 60 * 60 + parseInt(hours) * 60 * 60 + parseInt(minutes) * 60 + parseInt(seconds));
   }, [days, hours, minutes, seconds]);
 
   const handleCreateGame = () => {

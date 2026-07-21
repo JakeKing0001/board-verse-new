@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '../../../../lib/supabase';
+import { createServerSupabase } from '../../../../lib/supabaseServer';
 import { debugLog } from '../../../../lib/debug';
 
 /**
@@ -15,6 +15,7 @@ import { debugLog } from '../../../../lib/debug';
  */
 export const POST = async (req: Request) => {
   try {
+    const supabase = createServerSupabase(req);
     const { userID, friendID } = await req.json();
     debugLog('Received data:', { userID, friendID });
 
@@ -45,8 +46,9 @@ export const POST = async (req: Request) => {
  *
  * @returns {Promise<Response>} A JSON response containing the friendships data or an error message.
  */
-export const GET = async () => {
+export const GET = async (req: Request) => {
   try {
+    const supabase = createServerSupabase(req);
     // Esegui la tua logica qui
     const { data, error } = await supabase
       .from('friendships')
@@ -77,14 +79,14 @@ export const GET = async () => {
  */
 export const DELETE = async (req: Request) => {
   try {
+    const supabase = createServerSupabase(req);
     const { user_id, friend_id } = await req.json();
     debugLog('Received data:', { user_id, friend_id });
 
     const { error: deleteError } = await supabase
       .from('friendships')
       .delete()
-      .eq('user_id', user_id)
-      .eq('friend_id', friend_id);
+      .or(`and(user_id.eq.${user_id},friend_id.eq.${friend_id}),and(user_id.eq.${friend_id},friend_id.eq.${user_id})`);
 
     if (deleteError) {
       console.error("Supabase deleteError:", deleteError.message);

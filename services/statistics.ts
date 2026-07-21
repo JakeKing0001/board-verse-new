@@ -7,11 +7,10 @@ export interface UserStatistics {
 }
 
 export const getStatistics = async (userID: number): Promise<UserStatistics> => {
+  const { getApiHeaders } = await import('../lib/api');
   const response = await fetch(`/api/statistics?userId=${userID}`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json'
-    }
+    headers: await getApiHeaders(),
   });
 
   if (response.ok) {

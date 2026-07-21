@@ -1,34 +1,23 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '../../../../lib/supabase';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken'
-
-const JWT_SECRET = process.env.JWT_SECRET as string;
+import { createServerSupabase } from '../../../../lib/supabaseServer';
 
 export const POST = async (req: Request) => {
   try {
+    const supabase = createServerSupabase(req);
     const { email, password } = await req.json();
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
-    const { data: user, error } = await supabase
-      .from('users')
-      .select('id, password, email')
-      .eq('email', email)
-      .single();
-
-    if (error || !user) {
+    if (error || !data.session) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 400 });
     }
 
-    const passwordMatch = await bcrypt.compare(password, user.password);
-    if (!passwordMatch) {
-      return NextResponse.json({ error: 'Invalid credentials' }, { status: 400 });
-    }
-
-    const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
-
-    return NextResponse.json({ token });
-  } catch (err) {
-    console.error('Login error:', err);
+    return NextResponse.json({
+      access_token: data.session.access_token,
+      refresh_token: data.session.refresh_token,
+      user: data.user,
+    });
+  } catch (error) {
+    console.error('Login error:', error);
     return NextResponse.json({ error: 'An error occurred' }, { status: 500 });
   }
 };

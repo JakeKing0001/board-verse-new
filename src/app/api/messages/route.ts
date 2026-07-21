@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '../../../../lib/supabase';
+import { createServerSupabase } from '../../../../lib/supabaseServer';
 
 /**
  * Handles the POST request to send a message between two users.
@@ -17,6 +17,7 @@ import { supabase } from '../../../../lib/supabase';
  */
 export const POST = async (req: Request) => {
     try {
+        const supabase = createServerSupabase(req);
         const { senderID, receiverID, text } = await req.json();
 
         // Cerca se esiste già una conversazione tra questi due utenti
@@ -32,7 +33,7 @@ export const POST = async (req: Request) => {
             text: text.text,
             time: new Date().toISOString(),
             sender_id: senderID,
-            receiver_id: senderID
+            receiver_id: receiverID
         };
 
         if (existing) {
@@ -86,8 +87,9 @@ export const POST = async (req: Request) => {
  *
  * @returns {Promise<Response>} A promise that resolves to a Next.js JSON response containing the messages or an error message.
  */
-export const GET = async () => {
+export const GET = async (req: Request) => {
     try {
+        const supabase = createServerSupabase(req);
         const { data, error } = await supabase
             .from('messages')
             .select('*')

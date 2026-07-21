@@ -8,11 +8,10 @@
  * @throws Will throw an error if the network response is not ok.
  */
 export const setRequests = async (formData: { senderID: number; receiverID: number }) => {
+    const { getApiHeaders } = await import('../lib/api');
     const response = await fetch(`/api/friend`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: await getApiHeaders(),
       body: JSON.stringify(formData),
     });
   
@@ -30,11 +29,10 @@ export const setRequests = async (formData: { senderID: number; receiverID: numb
  * @throws {Error} Throws an error if the network response is not ok.
  */
 export const getRequests = async () => {
+    const { getApiHeaders } = await import('../lib/api');
     const response = await fetch(`/api/friend`, {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: await getApiHeaders(),
     });
   
     if (response.ok) {
@@ -52,11 +50,10 @@ export const getRequests = async () => {
  * @throws Will throw an error if the response is not OK.
  */
 export const deleteRequests = async (formData: { id: number }) => {
+    const { getApiHeaders } = await import('../lib/api');
     const response = await fetch(`/api/friend`, {
       method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: await getApiHeaders(),
       body: JSON.stringify(formData),
     });
   
@@ -77,11 +74,10 @@ export const deleteRequests = async (formData: { id: number }) => {
  * @throws Will throw an error if the network response is not ok.
  */
 export const setFriends = async (formData: { userID: number; friendID: number }) => {
+    const { getApiHeaders } = await import('../lib/api');
     const response = await fetch(`/api/friendAccepted`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: await getApiHeaders(),
       body: JSON.stringify(formData),
     });
   
@@ -99,11 +95,10 @@ export const setFriends = async (formData: { userID: number; friendID: number })
  * @throws {Error} Throws an error if the network response is not ok.
  */
 export const getFriends = async () => {
+    const { getApiHeaders } = await import('../lib/api');
     const response = await fetch(`/api/friendAccepted`, {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: await getApiHeaders(),
     });
   
     if (response.ok) {
@@ -125,14 +120,13 @@ export const getFriends = async () => {
  * @throws Will throw an error if the request fails.
  */
 export const deleteFriends = async (params: { user_id?: number, friend_id?: number }): Promise<void> => {
-  let url = `api/friendAccepted`;
+  const url = `/api/friendAccepted`;
+  const { getApiHeaders } = await import('../lib/api');
 
   
   const response = await fetch(url, {
     method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: await getApiHeaders(),
     body: JSON.stringify({ 
       user_id: params.user_id, 
       friend_id: params.friend_id 

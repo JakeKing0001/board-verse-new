@@ -7,7 +7,7 @@ import { getChallenge } from '../../../services/challenge';
 import { getChallengeComplete } from '../../../services/challengeComplete';
 import { getRequests } from '../../../services/friends';
 import { getFriends } from '../../../services/friends';
-import jwt from 'jsonwebtoken';
+import { supabase } from '../../../lib/supabase';
 import en from '../../../public/locales/en.json'
 import it from '../../../public/locales/it.json'
 import es from '../../../public/locales/es.json'
@@ -146,9 +146,20 @@ export const PieceProvider = ({ children }: { children: ReactNode }) => {
     const activeClass = 'scale-[1.15] bg-[#ffff33] opacity-50 rounded-full';
 
     useEffect(() => {
-        // Recupera il token salvato
-        const storedToken = localStorage.getItem('token') || sessionStorage.getItem('token') || '';
-        setIsLoggedIn(storedToken);
+        let active = true;
+
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            if (active) setIsLoggedIn(session?.access_token ?? '');
+        });
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            if (active) setIsLoggedIn(session?.access_token ?? '');
+        });
+
+        return () => {
+            active = false;
+            subscription.unsubscribe();
+        };
     }, []);
 
     useEffect(() => {
@@ -159,21 +170,15 @@ export const PieceProvider = ({ children }: { children: ReactNode }) => {
                 return;
             }
 
-            let payload: { id: number; email: string } | null = null;
-            try {
-                payload = jwt.decode(isLoggedIn) as { id: number; email: string } | null;
-            } catch (err) {
-                console.error('Invalid token:', err);
-            }
-
-            if (!payload) {
+            const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+            if (authError || !authUser) {
                 setUser(null);
                 return;
             }
 
             try {
                 const [users, completed, friendRequests, friends] = await Promise.all([
-                    getUsers(),
+                    getUsers(authUser.id),
                     getChallengeComplete(),
                     getRequests(),
                     getFriends(),
@@ -183,10 +188,11 @@ export const PieceProvider = ({ children }: { children: ReactNode }) => {
                 debugLog('All users:', allUsers);
 
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const foundUser = users.find((u: any) => u.id === payload?.id);
+                const foundUser = users.find((u: any) => u.auth_user_id === authUser.id);
                 if (!foundUser) return;
 
-                setUser(foundUser);
+                const currentUser = { ...foundUser, email: authUser.email ?? '' };
+                setUser(currentUser);
                 debugLog('Found user:', foundUser);
 
                 // Imposta lingua

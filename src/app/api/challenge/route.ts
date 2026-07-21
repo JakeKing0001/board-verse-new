@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '../../../../lib/supabase';
+import { createServerSupabase } from '../../../../lib/supabaseServer';
 import { debugLog } from '../../../../lib/debug';
 
 /**
@@ -13,8 +13,9 @@ import { debugLog } from '../../../../lib/debug';
  * - Returns a 400 status with an error message if there is a Supabase select error.
  * - Logs success and error messages to the console for debugging purposes.
  */
-export const GET = async () => {
+export const GET = async (req: Request) => {
   try {
+    const supabase = createServerSupabase(req);
     const { data, error } = await supabase
       .from('challenges')
       .select('id, fen, number_moves, created_at, cpu_moves');

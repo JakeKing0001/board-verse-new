@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '../../../../lib/supabase';
+import { createServerSupabase } from '../../../../lib/supabaseServer';
 
 export const GET = async (req: Request) => {
   try {
+    const supabase = createServerSupabase(req);
     const { searchParams } = new URL(req.url);
     const userId = searchParams.get('userId');
 
@@ -23,7 +24,7 @@ export const GET = async (req: Request) => {
     const { count: drawsCount } = await supabase
       .from('games')
       .select('*', { count: 'exact', head: true })
-      .eq('is_draw', true)
+      .eq('result', 'draw')
       .or(`host_id.eq.${userId},guest_id.eq.${userId}`);
 
     const { count: lossesCount } = await supabase
@@ -31,7 +32,7 @@ export const GET = async (req: Request) => {
       .select('*', { count: 'exact', head: true })
       .or(`host_id.eq.${userId},guest_id.eq.${userId}`)
       .neq('winner_id', userId)
-      .neq('is_draw', true);
+      .neq('result', 'draw');
 
     if (gamesError) {
       return NextResponse.json({ error: gamesError.message }, { status: 400 });

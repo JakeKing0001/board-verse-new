@@ -150,8 +150,8 @@ const RegisterPage = () => {
     setIsLoading(true);
 
     try {
-      await registerUser(formData); // Chiama la funzione di registrazione
-      window.location.href = "/"; // Reindirizzamento dopo successo
+      const registration = await registerUser(formData);
+      window.location.href = registration.session ? "/" : "/login?confirmation=pending";
     } catch (error) {
       console.error("Errore nella registrazione:", error);
       setErrors(prev => ({ ...prev, email: `${t.errorRegistrationFailed}` }));
