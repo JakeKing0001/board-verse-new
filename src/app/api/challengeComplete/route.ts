@@ -17,16 +17,40 @@ import { debugLog } from '../../../../lib/debug';
 export const POST = async (req: Request) => {
   try {
     const supabase = createServerSupabase(req);
-    const { userID, challengeID} = await req.json();
-    debugLog('Received data:', { userID, challengeID });
+    const { challengeID } = await req.json();
+    const numericChallengeId = Number(challengeID);
+
+    if (!Number.isInteger(numericChallengeId) || numericChallengeId <= 0) {
+      return NextResponse.json({ error: 'Invalid challengeID' }, { status: 400 });
+    }
+
+    const { data: authData, error: authError } = await supabase.auth.getUser();
+    if (authError || !authData.user) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+
+    const { data: profile, error: profileError } = await supabase
+      .from('users')
+      .select('id')
+      .eq('auth_user_id', authData.user.id)
+      .single();
+
+    if (profileError || !profile) {
+      return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
+    }
+
+    debugLog('Completing challenge:', { userID: profile.id, challengeID: numericChallengeId });
 
 
     // Inserimento dei dettagli dell'utente nel database
     const { error: insertError } = await supabase
       .from('challenge_completed')
-      .insert([{ user_id: userID, challenge_id: challengeID}]);
+      .insert([{ user_id: profile.id, challenge_id: numericChallengeId }]);
 
     if (insertError) {
+      if (insertError.code === '23505') {
+        return NextResponse.json({ message: 'Challenge already completed' });
+      }
       console.error("Supabase insertError:", insertError.message);
       return NextResponse.json({ error: insertError.message }, { status: 400 });
     }
@@ -50,6 +74,11 @@ export const POST = async (req: Request) => {
 export const GET = async (req: Request) => {
   try {
     const supabase = createServerSupabase(req);
+    const { data: authData, error: authError } = await supabase.auth.getUser();
+    if (authError || !authData.user) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+
     const { data, error } = await supabase
       .from('challenge_completed')
       .select('user_id, challenge_id');

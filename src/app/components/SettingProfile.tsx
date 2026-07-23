@@ -7,6 +7,20 @@ import { settingsUser } from '../../../services/auth';
 import toast from 'react-hot-toast';
 import { debugLog } from '../../../lib/debug';
 
+const normalizeLanguage = (language?: string | null) => {
+  const aliases: Record<string, string> = {
+    italiano: 'it',
+    english: 'en',
+    español: 'es',
+    français: 'fr',
+    deutsch: 'de',
+  };
+  const normalized = language?.toLocaleLowerCase() ?? 'it';
+  return aliases[normalized] ?? (
+    ['it', 'en', 'es', 'fr', 'de'].includes(normalized) ? normalized : 'it'
+  );
+};
+
 /**
  * ProfileSettings component provides a user interface for managing and updating user profile settings.
  * 
@@ -39,7 +53,14 @@ export default function ProfileSettings() {
   const [activeTab, setActiveTab] = useState('personal');
   const [avatar, setAvatar] = useState('default_avatar.png'); // Path to default avatar image
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
-  const { user, t, darkMode } = usePieceContext();
+  const {
+    user,
+    t,
+    darkMode,
+    setDarkMode,
+    setLanguage,
+    setUser,
+  } = usePieceContext();
 
   interface ProfileData {
     name: string;
@@ -83,7 +104,7 @@ export default function ProfileSettings() {
         show_online_status: user.show_online_status || false,
         show_play_history: user.show_play_history || false,
         allow_friend_requests: user.allow_friend_requests || false,
-        language: user.language || 'italiano',
+        language: normalizeLanguage(user.language),
         theme: user.theme || 'light',
         color_blind_mode: user.color_blind_mode || false,
         text_size: user.text_size || 'medium',
@@ -92,13 +113,6 @@ export default function ProfileSettings() {
 
     debugLog('User data set:', user);
   }, [user]);
-
-  useEffect(() => {
-    const style = document.getElementById("check-border-style");
-    if (style) {
-      document.head.removeChild(style);
-    }
-  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -231,8 +245,17 @@ export default function ProfileSettings() {
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files ? e.target.files[0] : null;
     if (file) {
-      // In a real application, you would upload the file to your server
-      // For demonstration, we'll just create a local URL
+      if (!file.type.startsWith('image/')) {
+        toast.error('Seleziona un file immagine valido.');
+        e.target.value = '';
+        return;
+      }
+      if (file.size > 180_000) {
+        toast.error('L’immagine deve pesare meno di 180 KB.');
+        e.target.value = '';
+        return;
+      }
+
       const reader = new FileReader();
       reader.onload = () => {
         if (reader.result) {
@@ -258,45 +281,46 @@ export default function ProfileSettings() {
 
     try {
       if (profileData) {
-        await settingsUser(profileData); // Chiama la funzione di registrazione
+        const result = await settingsUser(profileData);
+        setUser((previous) => previous
+          ? { ...previous, ...result.user }
+          : result.user);
+        setLanguage(normalizeLanguage(result.user.language));
+        setDarkMode(result.user.theme === 'dark');
         setSaveSuccess(true);
         toast.success(t.changesSaved);
-        setTimeout(() => {
-          window.location.href = '/settingsProfile'; // Reindirizzamento dopo successo
-        }, 500);
-
-        // Hide success message after 3 seconds
-        setTimeout(() => {
+        window.setTimeout(() => {
           setSaveSuccess(false);
         }, 3000);
       } else {
-        console.error("Profile data is null and cannot be submitted.");
+        toast.error('Il profilo non è ancora disponibile.');
       }
     } catch (error) {
-      console.error("Errore nella registrazione:", error);
+      console.error("Errore durante il salvataggio delle impostazioni:", error);
+      toast.error(error instanceof Error ? error.message : 'Salvataggio non riuscito.');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <>
-      <div className={`fixed top-0 left-0 w-full ${darkMode ? 'bg-slate-800' : 'bg-white'} shadow-md z-50`}>
+    <div className="bv-page">
+      <div className="bv-nav-slot">
         <NavBar current={-1} />
       </div>
 
-      <div className={`min-h-screen ${darkMode ? 'bg-slate-900 text-white' : 'bg-gradient-to-br from-green-100 via-amber-50 to-green-100'} pt-24 pb-16 px-4`}>
+      <main className="bv-page-with-nav min-h-screen px-4 pb-16 text-[var(--bv-text)]">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
-          <div className={`${darkMode ? 'bg-slate-800 text-white' : 'bg-white/30'} backdrop-blur-md rounded-2xl p-6 shadow-lg mb-6`}>
+          <div className="bv-glass bv-liquid mb-6 rounded-3xl p-6 shadow-lg">
             <h1 className="text-3xl font-bold">{t.profileSettings}</h1>
             <p className="mt-2">{t.manageProfilePreferences}</p>
           </div>
 
           {/* Settings Content */}
-          <div className={`${darkMode ? 'bg-slate-800 text-white' : 'bg-white/30'} backdrop-blur-md rounded-2xl shadow-lg overflow-hidden`}>
+          <div className="bv-glass bv-liquid bv-form overflow-hidden rounded-3xl shadow-lg">
             {/* Tabs */}
-            <div className={`flex border-b ${darkMode ? 'border-slate-700' : 'border-green-200'}`}>
+            <div className="bv-tabs m-3">
               <button
                 onClick={() => setActiveTab('personal')}
                 className={`px-6 py-4 font-medium text-sm focus:outline-none transition-colors ${activeTab === 'personal'
@@ -640,15 +664,15 @@ export default function ProfileSettings() {
                         <select
                           id="language"
                           name="preferences.language"
-                          value={profileData?.language || 'italiano'}
+                          value={profileData?.language || 'it'}
                           onChange={handleChange}
                           className={`w-full px-4 py-2 ${darkMode ? 'bg-slate-700 text-white border-slate-600 focus:ring-slate-300' : 'bg-white/50 border-green-200 focus:ring-green-500'} rounded-lg focus:ring-2 focus:border-transparent outline-none transition-all`}
                         >
-                          <option value="italiano">Italiano</option>
-                          <option value="english">English</option>
-                          <option value="español">Español</option>
-                          <option value="français">Français</option>
-                          <option value="deutsch">Deutsch</option>
+                          <option value="it">Italiano</option>
+                          <option value="en">English</option>
+                          <option value="es">Español</option>
+                          <option value="fr">Français</option>
+                          <option value="de">Deutsch</option>
                         </select>
                       </div>
 
@@ -667,12 +691,51 @@ export default function ProfileSettings() {
                           <option value="dark">{t.dark}</option>
                         </select>
                       </div>
-                      {/* Add more preferences here */}
+
                       <div>
-                        <br/>
-                        <label htmlFor="theme" className={`block text-2xl font-medium ${darkMode ? 'text-white' : 'text-green-700'} mb-1`}>
-                          {t.nextTime}
+                        <label htmlFor="textSize" className={`block text-sm font-medium ${darkMode ? 'text-white' : 'text-green-700'} mb-1`}>
+                          {t.textSize}
                         </label>
+                        <select
+                          id="textSize"
+                          name="preferences.textSize"
+                          value={profileData?.text_size || 'medium'}
+                          onChange={handleChange}
+                          className={`w-full px-4 py-2 ${darkMode ? 'bg-slate-700 text-white border-slate-600 focus:ring-slate-300' : 'bg-white/50 border-green-200 focus:ring-green-500'} rounded-lg focus:ring-2 focus:border-transparent outline-none transition-all`}
+                        >
+                          <option value="small">{t.small}</option>
+                          <option value="medium">{t.medium}</option>
+                          <option value="large">{t.large}</option>
+                        </select>
+                        <p className="mt-2 text-xs leading-5 text-[var(--bv-muted)]">
+                          {t.textSizeDescription || 'Adatta testi e controlli a una lettura più comoda.'}
+                        </p>
+                      </div>
+
+                      <div className="bv-glass-soft flex items-start justify-between gap-4 rounded-2xl p-4">
+                        <div>
+                          <label htmlFor="colorBlindMode" className="block text-sm font-bold text-[var(--bv-text)]">
+                            {t.colorBlindMode}
+                          </label>
+                          <p className="mt-1 text-xs leading-5 text-[var(--bv-muted)]">
+                            {t.colorBlindModeDesc}
+                          </p>
+                        </div>
+                        <label className="relative inline-flex shrink-0 cursor-pointer items-center">
+                          <input
+                            id="colorBlindMode"
+                            type="checkbox"
+                            name="preferences.colorblindMode"
+                            checked={profileData?.color_blind_mode || false}
+                            onChange={handleCheckboxChange}
+                            className="peer sr-only"
+                          />
+                          <span className="h-7 w-12 rounded-full bg-slate-300 transition after:absolute after:left-1 after:top-1 after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow after:transition-transform peer-checked:bg-sky-600 peer-checked:after:translate-x-5 peer-focus-visible:ring-4 peer-focus-visible:ring-sky-500/20 dark:bg-slate-700" />
+                        </label>
+                      </div>
+
+                      <div className="rounded-2xl border border-emerald-500/15 bg-emerald-500/10 p-4 text-sm leading-6 text-[var(--bv-muted)]">
+                        {t.preferencesApplyHint || 'Tema, lingua, dimensione del testo e palette accessibile vengono applicati subito dopo il salvataggio.'}
                       </div>
                     </div>
                   </div>
@@ -693,7 +756,7 @@ export default function ProfileSettings() {
                     <button
                       type="submit"
                       disabled={isLoading}
-                      className={`group relative inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-full text-white ${darkMode ? 'bg-slate-700 hover:bg-slate-600 focus:ring-slate-500' : 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 focus:ring-green-500'} shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1 active:translate-y-0`}
+                      className="bv-button-primary group relative px-8"
                     >
                       {isLoading ? (
                         <span className="flex items-center">
@@ -716,7 +779,7 @@ export default function ProfileSettings() {
             </div>
           </div>
         </div>
-      </div>
-    </>
+      </main>
+    </div>
   );
 }

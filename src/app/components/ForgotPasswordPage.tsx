@@ -55,11 +55,11 @@ const ForgotPasswordPage = () => {
   };
 
   return (
-    <>
-      <div className="fixed top-0 left-0 w-full bg-white shadow-md z-50">
+    <div className="bv-page">
+      <div className="bv-nav-slot">
         <NavBar current={-1} />
       </div>
-      <div className="fixed inset-0 flex items-center justify-center bg-gradient-to-br from-green-100 via-amber-50 to-green-100 pt-24">
+      <main className="bv-auth-page">
         <div className="relative flex flex-col items-center justify-center">
           {/* Elementi di sfondo animati */}
           <div className="absolute inset-0">
@@ -69,7 +69,7 @@ const ForgotPasswordPage = () => {
           </div>
 
           {/* Container principale */}
-          <div className="z-10 p-12 bg-white/30 backdrop-blur-md rounded-2xl shadow-xl transform hover:scale-105 transition-all duration-500 w-full max-w-md">
+          <div className="bv-glass bv-liquid bv-auth-card z-10 text-[var(--bv-text)]">
             {!isSubmitted ? (
               <>
                 <h1 className="text-3xl font-bold text-green-800 mb-4 tracking-tight text-center">
@@ -98,7 +98,7 @@ const ForgotPasswordPage = () => {
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-lg font-medium rounded-full text-white bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1 active:translate-y-0"
+                    className="bv-button-primary group relative w-full text-lg"
                   >
                   {isLoading ? (
                       <span className="flex items-center">
@@ -157,8 +157,8 @@ const ForgotPasswordPage = () => {
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] border border-green-300/30 rounded-full animate-pulse delay-500"></div>
           </div>
         </div>
-      </div>
-    </>
+      </main>
+    </div>
   );
 };
 

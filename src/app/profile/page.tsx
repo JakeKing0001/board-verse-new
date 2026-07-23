@@ -1,5 +1,11 @@
 import React from 'react'
 import MyProfile from '../components/MyProfile'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Profilo',
+  robots: { index: false, follow: false },
+}
 
 /**
  * Renders the user's profile page.

@@ -1,63 +1,59 @@
-import React, { useEffect, useState } from 'react';
-import { usePieceContext } from './PieceContext';
 import Image from 'next/image';
+import React from 'react';
+import { usePieceContext } from './PieceContext';
 
 interface PromotionModalProps {
   onPromotionComplete: (piece: string) => void;
+  isWhite: boolean;
 }
 
-/**
- * PromotionModal component displays a modal dialog for pawn promotion in a chess game.
- * 
- * It allows the user to select a piece (queen, rook, bishop, or knight) to promote a pawn to.
- * The modal appears with a fade-in effect and adapts its appearance based on the player's color.
- * 
- * @param onPromotionComplete - Callback function invoked with the selected piece type ('q', 'r', 'b', or 'n') when the user makes a selection.
- * 
- * @returns A modal overlay with selectable chess piece options for promotion.
- */
-const PromotionModal: React.FC<PromotionModalProps> = ({ onPromotionComplete }) => {
-  const [isVisible, setIsVisible] = useState(false);
+const promotionPieces = [
+  { value: 'q', label: 'Donna' },
+  { value: 'r', label: 'Torre' },
+  { value: 'b', label: 'Alfiere' },
+  { value: 'n', label: 'Cavallo' },
+] as const;
 
-  const { isWhite } = usePieceContext();
-
-  const buttonClass = `${!isWhite ? 'bg-gray-800' : 'bg-gray-300'} ${!isWhite ? 'hover:bg-black' : 'hover:bg-white'} text-white font-medium rounded-lg p-4 transition-colors duration-300`
-
-  useEffect(() => {
-    setIsVisible(true);
-  }, []);
+const PromotionModal: React.FC<PromotionModalProps> = ({ onPromotionComplete, isWhite }) => {
+  const { darkMode } = usePieceContext();
 
   return (
     <div
-      className={`w-64 h-64 p-4 backdrop-blur-md bg-white/30 rounded-lg z-[1000] absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 transition-opacity duration-500 ${isVisible ? 'opacity-100' : 'opacity-0'
-        }`}
+      className="bv-modal-backdrop fixed inset-0 z-[1000] flex items-center justify-center p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="promotion-title"
     >
-      <div className="grid grid-cols-2 gap-4 w-full h-full">
-        <button
-          onClick={() => onPromotionComplete('q')}
-          className={buttonClass}
-        >
-          <Image src={`https://www.chess.com/chess-themes/pieces/neo/150/${isWhite ? 'wq' : 'bq'}.png`} alt="queen" width={50} height={50} />
-        </button>
-        <button
-          onClick={() => onPromotionComplete('r')}
-          className={buttonClass}
-        >
-          <Image src={`https://www.chess.com/chess-themes/pieces/neo/150/${isWhite ? 'wr' : 'br'}.png`} alt="rook" width={50} height={50} />
-        </button>
-        <button
-          onClick={() => onPromotionComplete('b')}
-          className={buttonClass}
-        >
-          <Image src={`https://www.chess.com/chess-themes/pieces/neo/150/${isWhite ? 'wb' : 'bb'}.png`} alt="bishop" width={50} height={50} />
-        </button>
-        <button
-          onClick={() => onPromotionComplete('n')}
-          className={buttonClass}
-        >
-          <Image src={`https://www.chess.com/chess-themes/pieces/neo/150/${isWhite ? 'wn' : 'bn'}.png`} alt="knight" width={50} height={50} />
-        </button>
-      </div>
+      <section className="bv-glass-strong bv-liquid w-full max-w-sm rounded-[2rem] p-5 text-[var(--bv-text)] shadow-2xl sm:p-6">
+        <p className="text-xs font-black uppercase tracking-[0.2em] text-emerald-500">BoardVerse</p>
+        <h2 id="promotion-title" className="mt-2 text-2xl font-black">Scegli la promozione</h2>
+        <p className="mt-1 text-sm text-[var(--bv-muted)]">Il pedone ha raggiunto l’ultima traversa.</p>
+
+        <div className="mt-6 grid grid-cols-2 gap-3">
+          {promotionPieces.map((piece) => (
+            <button
+              key={piece.value}
+              type="button"
+              onClick={() => onPromotionComplete(piece.value)}
+              className={`group flex min-h-28 flex-col items-center justify-center gap-2 rounded-2xl border transition hover:-translate-y-1 ${
+                darkMode
+                  ? 'border-white/10 bg-white/5 hover:bg-white/10'
+                  : 'border-black/5 bg-white/50 hover:bg-white/75'
+              }`}
+              aria-label={`Promuovi a ${piece.label}`}
+            >
+              <Image
+                src={`https://www.chess.com/chess-themes/pieces/neo/150/${isWhite ? 'w' : 'b'}${piece.value}.png`}
+                alt=""
+                width={62}
+                height={62}
+                className="h-14 w-14 object-contain transition-transform group-hover:scale-110"
+              />
+              <span className="text-sm font-black">{piece.label}</span>
+            </button>
+          ))}
+        </div>
+      </section>
     </div>
   );
 };

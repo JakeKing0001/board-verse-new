@@ -36,14 +36,14 @@ const ResetPasswordPage = () => {
   };
 
   return (
-    <>
-      <div className="fixed top-0 left-0 w-full bg-white shadow-md z-50">
+    <div className="bv-page">
+      <div className="bv-nav-slot">
         <NavBar current={-1} />
       </div>
-      <div className="fixed inset-0 flex items-center justify-center bg-gradient-to-br from-green-100 via-amber-50 to-green-100 pt-24">
+      <main className="bv-auth-page">
         <form
           onSubmit={handleSubmit}
-          className="bg-white/30 backdrop-blur-md p-8 rounded-xl shadow-md w-full max-w-md"
+          className="bv-glass bv-liquid bv-auth-card"
         >
           <h1 className="text-2xl font-bold text-center mb-6">Reset Password</h1>
           <input
@@ -65,13 +65,13 @@ const ResetPasswordPage = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-2 bg-green-600 text-white rounded hover:bg-green-700"
+            className="bv-button-primary w-full"
           >
             {isLoading ? "Updating..." : "Update password"}
           </button>
         </form>
-      </div>
-    </>
+      </main>
+    </div>
   );
 };
 

@@ -4,69 +4,26 @@ import { createServerSupabase } from '../../../../lib/supabaseServer';
 export const GET = async (req: Request) => {
   try {
     const supabase = createServerSupabase(req);
-    const { searchParams } = new URL(req.url);
-    const userId = searchParams.get('userId');
+    const { data: authData, error: authError } = await supabase.auth.getUser();
 
-    if (!userId) {
-      return NextResponse.json({ error: 'Missing userId' }, { status: 400 });
+    if (authError || !authData.user) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
-    const { data: games, error: gamesError } = await supabase
-      .from('games')
-      .select('winner_id, result, host_id, guest_id')
-      .or(`host_id.eq.${userId},guest_id.eq.${userId}`);
-    
-    const { count: winsCount } = await supabase
-      .from('games')
-      .select('*', { count: 'exact', head: true })
-      .eq('winner_id', userId);
+    const { data, error } = await supabase.rpc('get_my_statistics');
 
-    const { count: drawsCount } = await supabase
-      .from('games')
-      .select('*', { count: 'exact', head: true })
-      .eq('result', 'draw')
-      .or(`host_id.eq.${userId},guest_id.eq.${userId}`);
-
-    const { count: lossesCount } = await supabase
-      .from('games')
-      .select('*', { count: 'exact', head: true })
-      .or(`host_id.eq.${userId},guest_id.eq.${userId}`)
-      .neq('winner_id', userId)
-      .neq('result', 'draw');
-
-    if (gamesError) {
-      return NextResponse.json({ error: gamesError.message }, { status: 400 });
+    if (error) {
+      console.error('Statistics RPC error:', error.message);
+      return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
-    const matchesPlayed = games?.length ?? 0;
-    const userNumericId = Number(userId);
-
-    /* eslint-disable @typescript-eslint/no-unused-vars */
-    const wins = games?.filter(g => g.winner_id === userNumericId).length ?? 0;
-    const draws = games?.filter(g => g.result === 'draw').length ?? 0;
-    const losses = games?.filter(
-      g => g.winner_id && g.winner_id !== userNumericId && g.result !== 'draw'
-    ).length ?? 0;
-    /* eslint-enable @typescript-eslint/no-unused-vars */    
-
-
-    const { count: challengesCount, error: challengesError } = await supabase
-      .from('challenge_completed')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', userId);
-
-    if (challengesError) {
-      return NextResponse.json({ error: challengesError.message }, { status: 400 });
-    }
-
-    return NextResponse.json({
-      matchesPlayed,
-      wins: winsCount ?? 0,
-      losses: lossesCount ?? 0,
-      draws: drawsCount ?? 0,
-      challengesCompleted: challengesCount ?? 0,
+    return NextResponse.json(data, {
+      headers: {
+        'Cache-Control': 'private, no-store, max-age=0',
+      },
     });
-  } catch {
+  } catch (error) {
+    console.error('Statistics route error:', error);
     return NextResponse.json({ error: 'An error occurred' }, { status: 500 });
   }
 };

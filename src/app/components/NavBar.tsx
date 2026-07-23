@@ -1,251 +1,228 @@
-import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
-import { Bars3Icon, XMarkIcon, ChatBubbleBottomCenterTextIcon } from '@heroicons/react/24/outline'
-import Image from 'next/image'
-import { usePieceContext } from './PieceContext'
-import { updateLastSeen } from '../../../services/lastSeen'
-import { useState, useMemo } from 'react'
-import FriendsChatModal from "./FriendsChatModal";
-import Link from 'next/link'
-import clsx from 'clsx';
+import {
+  Disclosure,
+  DisclosureButton,
+  DisclosurePanel,
+  Menu as HeadlessMenu,
+  MenuButton,
+  MenuItem,
+  MenuItems,
+} from '@headlessui/react';
+import {
+  BarChart3,
+  ChevronDown,
+  Gamepad2,
+  Home,
+  Info,
+  LogIn,
+  LogOut,
+  Menu,
+  MessageCircle,
+  Settings,
+  UserRound,
+  UsersRound,
+  X,
+} from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useMemo, useState } from 'react';
 import { supabase } from '../../../lib/supabase';
+import { updateLastSeen } from '../../../services/lastSeen';
+import FriendsChatModal from './FriendsChatModal';
+import { usePieceContext } from './PieceContext';
 
-function classNames(...classes: (string | undefined)[]) {
-  return classes.filter(Boolean).join(' ')
-}
-
-/**
- * NavBar component renders the main navigation bar for the application.
- * 
- * Features:
- * - Responsive navigation links with active state highlighting.
- * - Dark mode and light mode styling support.
- * - Mobile menu with disclosure for smaller screens.
- * - Friends chat modal toggle button.
- * - User profile dropdown menu with links to profile, settings, and authentication actions.
- * - Displays user avatar and handles login/logout state.
- * 
- * @param {object} props - Component props.
- * @param {number} [props.current=0] - The index of the currently active navigation item.
- * 
- * @returns {JSX.Element} The rendered navigation bar component.
- */
 export default function NavBar({ current = 0 }: { current?: number }) {
-
-  const { t, darkMode, isLoggedIn, setIsLoggedIn, user} = usePieceContext();
+  const { t, darkMode, isLoggedIn, setIsLoggedIn, user } = usePieceContext();
   const [showChatModal, setShowChatModal] = useState(false);
 
   const navigation = useMemo(() => [
-    { name: t.home, href: '/', current: current === 0 },
-    { name: t.gameTypes, href: 'gameMode', current: current === 1},
-    { name: t.statistics, href: 'statistics', current: current === 2},
-    { name: t.friends, href: 'friends', current: current === 3},
-    { name: t.about, href: 'about', current: current === 4},
-  ], [t, current]);
+    { name: t.home, href: '/', current: current === 0, icon: Home },
+    { name: t.gameTypes, href: '/gameMode', current: current === 1, icon: Gamepad2 },
+    { name: t.statistics, href: '/statistics', current: current === 2, icon: BarChart3 },
+    { name: t.friends, href: '/friends', current: current === 3, icon: UsersRound },
+    { name: t.about, href: '/about', current: current === 4, icon: Info },
+  ], [current, t]);
+
+  const logout = async () => {
+    try {
+      if (user) await updateLastSeen({ userID: user.id });
+    } catch (error) {
+      console.error('Failed to update last seen:', error);
+    }
+    await supabase.auth.signOut();
+    setIsLoggedIn(false);
+    setShowChatModal(false);
+  };
 
   return (
     <Disclosure
       as="nav"
-      className={clsx(
-        'bg-gradient-to-r',
-        darkMode ? 'from-slate-800 to-slate-900' : 'from-green-800 to-green-900 shadow-lg'
-      )}
+      aria-label="Navigazione principale"
+      className="bv-glass-strong bv-liquid relative mx-auto max-w-7xl rounded-[1.35rem] shadow-[0_18px_55px_-30px_rgba(3,35,26,0.65)]"
     >
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="relative flex h-20 items-center justify-between">
-          <div className="absolute inset-y-0 left-0 flex items-center sm:hidden">
-            {/* Mobile menu button*/}
-            <DisclosureButton
-              className={clsx(
-                'group relative inline-flex items-center justify-center rounded-lg p-2 transition-all duration-200',
-                darkMode
-                  ? 'text-slate-200 hover:bg-slate-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-slate-400'
-                  : 'text-green-200 hover:bg-green-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-green-400'
-              )}
-            >
-              <span className="absolute -inset-0.5" />
-              <span className="sr-only">Open main menu</span>
-              <Bars3Icon aria-hidden="true" className="block size-6 group-data-[open]:hidden" />
-              <XMarkIcon aria-hidden="true" className="hidden size-6 group-data-[open]:block" />
-            </DisclosureButton>
-          </div>
+      <div className="relative flex h-16 items-center gap-2 px-2 sm:h-[4.25rem] sm:px-3">
+        <DisclosureButton
+          className="group grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-black/5 bg-white/30 text-[var(--bv-text)] transition hover:bg-white/50 sm:hidden dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10"
+          aria-label="Apri menu principale"
+        >
+          <Menu aria-hidden="true" className="h-5 w-5 group-data-[open]:hidden" />
+          <X aria-hidden="true" className="hidden h-5 w-5 group-data-[open]:block" />
+        </DisclosureButton>
 
-          <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
-            <div className="flex shrink-0 items-center">
-              <Image
-                alt="My App"
-                src="/logo.svg"
-                width={100}
-                height={100}
-                className="h-14 w-auto brightness-125 rounded-xl"
-              />
-            </div>
-            <div className="hidden sm:ml-8 sm:block">
-              <div className="flex space-x-4">
-                {navigation.map((item) => (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    aria-current={item.current ? 'page' : undefined}
-                    className={classNames(
-                      item.current
-                        ? (darkMode
-                          ? 'bg-slate-700 text-white ring-2 ring-slate-400 ring-opacity-50'
-                          : 'bg-green-700 text-white ring-2 ring-green-400 ring-opacity-50'
-                        )
-                        : (darkMode
-                          ? 'text-slate-100 hover:bg-slate-700/50 hover:text-white'
-                          : 'text-green-100 hover:bg-green-700/50 hover:text-white'
-                        ),
-                      'rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200 hover:shadow-lg'
-                    )}
-                  >
-                    {item.name}
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </div>
+        <Link
+          href="/"
+          aria-label="BoardVerse home"
+          className="flex shrink-0 items-center gap-2 rounded-xl px-1.5 py-1 transition hover:bg-white/20"
+        >
+          <Image
+            alt=""
+            src="/logo.svg"
+            width={56}
+            height={56}
+            className="h-11 w-11 rounded-xl object-contain"
+            priority
+          />
+          <span className="hidden text-base font-black tracking-[-0.035em] text-[var(--bv-text)] lg:block">
+            BoardVerse
+          </span>
+        </Link>
 
-          <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0 gap-4">
+        <div className="hidden min-w-0 flex-1 items-center justify-center gap-1 sm:flex">
+          {navigation.map((item) => {
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.name}
+                href={item.href}
+                aria-current={item.current ? 'page' : undefined}
+                className={`group flex min-h-10 items-center gap-2 rounded-xl px-3 text-sm font-bold transition lg:px-4 ${
+                  item.current
+                    ? 'bg-emerald-500/15 text-emerald-800 shadow-[inset_0_0_0_1px_rgba(16,185,129,0.18)] dark:text-emerald-200'
+                    : 'text-[var(--bv-muted)] hover:bg-white/30 hover:text-[var(--bv-text)] dark:hover:bg-white/10'
+                }`}
+              >
+                <Icon aria-hidden="true" className="h-4 w-4 shrink-0 opacity-75" />
+                <span className="hidden md:inline">{item.name}</span>
+              </Link>
+            );
+          })}
+        </div>
 
-            <div className="relative">
-              <button
+        <div className="ml-auto flex shrink-0 items-center gap-1.5">
+          {isLoggedIn && user && (
+            <button
               type="button"
-              className={clsx(
-                'relative rounded-lg transition-all duration-200',
-                darkMode
-                  ? 'bg-slate-700/30 p-2 text-slate-200 hover:text-white hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-800'
-                  : 'bg-green-700/30 p-2 text-green-200 hover:text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 focus:ring-offset-green-800'
-              )}
-              onClick={() => setShowChatModal((prev) => !prev)}
-              >
-              <span className="absolute -inset-1.5" />
-              <span className="sr-only">View friends chat</span>
-              <ChatBubbleBottomCenterTextIcon aria-hidden="true" className="size-6" />
-              </button>
+              onClick={() => setShowChatModal((previous) => !previous)}
+              aria-expanded={showChatModal}
+              aria-label={showChatModal ? 'Chiudi chat amici' : 'Apri chat amici'}
+              className={`relative grid h-11 w-11 place-items-center rounded-xl border transition ${
+                showChatModal
+                  ? 'border-emerald-400/30 bg-emerald-500/15 text-emerald-700 dark:text-emerald-200'
+                  : 'border-black/5 bg-white/25 text-[var(--bv-muted)] hover:bg-white/50 hover:text-[var(--bv-text)] dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10'
+              }`}
+            >
+              <MessageCircle aria-hidden="true" className="h-5 w-5" />
+              <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-emerald-400 ring-2 ring-white/80 dark:ring-slate-900" />
+            </button>
+          )}
 
-              <div className="flex justify-between items-center">
-                <button
-                  className="text-xl font-bold hover:text-red-500"
-                  onClick={() => setShowChatModal(false)}
-                  aria-label="Close chat modal"
-                >
-                </button>
-              </div>
-            </div>
-            <FriendsChatModal show={showChatModal} onClose={() => setShowChatModal(false)} darkMode={darkMode} t={t} />
-            {/* Profile dropdown */}
-            <Menu as="div" className="relative ml-3">
-              <div>
-                <MenuButton
-                  className={clsx(
-                    'relative flex rounded-lg transition-all duration-200',
-                    darkMode
-                      ? 'bg-slate-700/30 p-1 text-sm hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-800'
-                      : 'bg-green-700/30 p-1 text-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 focus:ring-offset-green-800'
-                  )}
-                >
-                  <span className="absolute -inset-1.5" />
-                  <span className="sr-only">Open user menu</span>
-                  <Image
-                    alt="User Avatar"
-                    src={user?.avatar || '/default_avatar.png'}
-                    width={40}
-                    height={40}
-                    className="size-12 rounded-lg"
-                  />
-                </MenuButton>
-              </div>
-              <MenuItems
-                transition
-                className={clsx(
-                  'absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-lg py-1 shadow-xl ring-1 ring-black/5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in',
-                  darkMode ? 'bg-slate-900' : 'bg-white'
-                )}
-              >
-                {isLoggedIn && (
+          {isLoggedIn && user && (
+            <FriendsChatModal
+              show={showChatModal}
+              onClose={() => setShowChatModal(false)}
+              darkMode={darkMode}
+              t={t}
+            />
+          )}
+
+          <HeadlessMenu as="div" className="relative">
+            <MenuButton className="flex h-11 items-center gap-1 rounded-xl border border-black/5 bg-white/25 p-1 pr-2 text-[var(--bv-text)] transition hover:bg-white/50 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10">
+              <Image
+                alt="Avatar utente"
+                src={user?.avatar || '/default_avatar.png'}
+                width={40}
+                height={40}
+                className="h-9 w-9 rounded-[0.65rem] object-cover ring-1 ring-black/5 dark:ring-white/10"
+              />
+              <ChevronDown aria-hidden="true" className="h-4 w-4 opacity-55" />
+              <span className="sr-only">Apri menu utente</span>
+            </MenuButton>
+
+            <MenuItems
+              transition
+              anchor="bottom end"
+              className="bv-glass-strong z-[120] mt-2 w-56 origin-top-right rounded-2xl p-2 text-[var(--bv-text)] shadow-2xl transition [--anchor-gap:0.5rem] focus:outline-none data-[closed]:scale-95 data-[closed]:opacity-0"
+            >
+              {isLoggedIn && (
+                <>
                   <MenuItem>
                     <Link
                       href="/profile"
-                      className={clsx(
-                        'block px-4 py-2 text-sm transition-colors duration-150 data-[focus]:outline-none',
-                        darkMode ? 'text-white hover:bg-slate-700 data-[focus]:bg-slate-700' : 'text-gray-700 hover:bg-green-50 data-[focus]:bg-green-50'
-                      )}
+                      className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold data-[focus]:bg-emerald-500/10"
                     >
+                      <UserRound aria-hidden="true" className="h-4 w-4 text-emerald-500" />
                       {t.profile}
                     </Link>
                   </MenuItem>
-                )}
-                {isLoggedIn && (
                   <MenuItem>
                     <Link
                       href="/settingsProfile"
-                      className={clsx(
-                        'block px-4 py-2 text-sm transition-colors duration-150 data-[focus]:outline-none',
-                        darkMode ? 'text-white hover:bg-slate-700 data-[focus]:bg-slate-700' : 'text-gray-700 hover:bg-green-50 data-[focus]:bg-green-50'
-                      )}
+                      className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold data-[focus]:bg-emerald-500/10"
                     >
+                      <Settings aria-hidden="true" className="h-4 w-4 text-violet-500" />
                       {t.settings}
                     </Link>
-                  </MenuItem>)}
-                <MenuItem>
-                  {isLoggedIn ? (
-                    <Link
-                      href='#'
-                      className={clsx(
-                        'block px-4 py-2 text-sm transition-colors duration-150 data-[focus]:outline-none',
-                        darkMode ? 'text-white hover:bg-slate-700 data-[focus]:bg-slate-700' : 'text-gray-700 hover:bg-green-50 data-[focus]:bg-green-50'
-                      )}
-                      onClick={async () => {
-                        try {
-                          await updateLastSeen({ userID: user.id });
-                        } catch (err) {
-                          console.error('Failed to update last seen:', err);
-                        }
-                        await supabase.auth.signOut();
-                        setIsLoggedIn('');
-                      }}
-                    >
-                      {t.logout}
-                    </Link>
-                  ) : (
-                    <Link
-                      href='/login'
-                      className={clsx(
-                        'block px-4 py-2 text-sm transition-colors duration-150 data-[focus]:outline-none',
-                        darkMode ? 'text-white hover:bg-slate-700 data-[focus]:bg-slate-700' : 'text-gray-700 hover:bg-green-50 data-[focus]:bg-green-50'
-                      )}
-                    >
-                      {t.signin}
-                    </Link>
-                  )}
-                </MenuItem>
-              </MenuItems>
-            </Menu>
-          </div>
+                  </MenuItem>
+                </>
+              )}
+
+              <MenuItem>
+                {isLoggedIn ? (
+                  <button
+                    type="button"
+                    onClick={logout}
+                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold text-rose-600 data-[focus]:bg-rose-500/10 dark:text-rose-300"
+                  >
+                    <LogOut aria-hidden="true" className="h-4 w-4" />
+                    {t.logout}
+                  </button>
+                ) : (
+                  <Link
+                    href="/login"
+                    className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold data-[focus]:bg-emerald-500/10"
+                  >
+                    <LogIn aria-hidden="true" className="h-4 w-4 text-emerald-500" />
+                    {t.signin}
+                  </Link>
+                )}
+              </MenuItem>
+            </MenuItems>
+          </HeadlessMenu>
         </div>
       </div>
 
-      <DisclosurePanel className="sm:hidden">
-        <div className="space-y-2 px-3 pb-3 pt-2">
-          {navigation.map((item) => (
-            <DisclosureButton
-              key={item.name}
-              as="a"
-              href={item.href}
-              aria-current={item.current ? 'page' : undefined}
-              className={classNames(
-                item.current
-                  ? 'bg-green-700 text-white'
-                  : 'text-green-100 hover:bg-green-700/50 hover:text-white',
-                'block rounded-lg px-3 py-2 text-base font-medium transition-all duration-200'
-              )}
-            >
-              {item.name}
-            </DisclosureButton>
-          ))}
+      <DisclosurePanel className="border-t border-black/5 p-2 sm:hidden dark:border-white/10">
+        <div className="grid grid-cols-2 gap-1">
+          {navigation.map((item) => {
+            const Icon = item.icon;
+            return (
+              <DisclosureButton
+                key={item.name}
+                as={Link}
+                href={item.href}
+                aria-current={item.current ? 'page' : undefined}
+                className={`flex items-center gap-2 rounded-xl px-3 py-3 text-sm font-bold ${
+                  item.current
+                    ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-200'
+                    : 'text-[var(--bv-muted)] hover:bg-white/30 hover:text-[var(--bv-text)] dark:hover:bg-white/5'
+                }`}
+              >
+                <Icon aria-hidden="true" className="h-4 w-4" />
+                {item.name}
+              </DisclosureButton>
+            );
+          })}
         </div>
       </DisclosurePanel>
     </Disclosure>
-  )
+  );
 }

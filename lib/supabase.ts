@@ -15,25 +15,25 @@ const authStorage =
   typeof window === 'undefined'
     ? undefined
     : {
-        getItem(key) {
+        getItem(key: string) {
           return sessionStorage.getItem(key) ?? localStorage.getItem(key);
         },
-        setItem(key, value) {
+        setItem(key: string, value: string) {
           const remember = localStorage.getItem('rememberMe') === 'true';
           const selectedStorage = remember ? localStorage : sessionStorage;
           const otherStorage = remember ? sessionStorage : localStorage;
           otherStorage.removeItem(key);
           selectedStorage.setItem(key, value);
         },
-        removeItem(key) {
+        removeItem(key: string) {
           sessionStorage.removeItem(key);
           localStorage.removeItem(key);
         },
       };
 
 /**
- * Browser-side BoardVerse client. Only a publishable key is used here; access
- * to data is enforced by the database RLS policies and the Supabase session.
+ * Browser-side BoardVerse client. Only a publishable key is exposed; RLS
+ * policies and the authenticated session enforce access to application data.
  */
 export const supabase = createClient(supabaseUrl, supabasePublishableKey, {
   auth: {

@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabasePublishableKey =
@@ -12,11 +12,11 @@ if (!supabaseUrl || !supabasePublishableKey) {
 }
 
 /**
- * Creates a request-scoped server client. Forwarding the caller's access token
- * is what lets Postgres evaluate auth.uid() in RLS policies.
+ * Creates a request-scoped server client. The caller's bearer token is
+ * forwarded so Postgres can evaluate auth.uid() in RLS policies.
  */
-export const createServerSupabase = (request) => {
-  const authorization = request?.headers?.get('authorization');
+export const createServerSupabase = (request: Request): SupabaseClient => {
+  const authorization = request.headers.get('authorization');
 
   return createClient(supabaseUrl, supabasePublishableKey, {
     auth: {

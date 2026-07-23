@@ -64,7 +64,6 @@ const LoginPage = () => {
     password?: string;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [errors, setErrors] = useState<Errors>({});
 
   useEffect(() => {
@@ -93,7 +92,7 @@ const LoginPage = () => {
       });
 
       if (!error && data.session) {
-        setIsLoggedIn(data.session.access_token);
+        setIsLoggedIn(true);
         toast.success(t.loginSuccess);
         setTimeout(() => { window.location.href = '/'; }, 500);
       } else if (error?.code === 'email_not_confirmed') {
@@ -137,11 +136,11 @@ const LoginPage = () => {
   };
 
   return (
-    <>
-      <div className={`fixed top-0 left-0 w-full shadow-md z-50 ${darkMode ? 'bg-slate-800' : 'bg-white'}`}>
+    <div className="bv-page">
+      <div className="bv-nav-slot">
       <NavBar current={-1} />
       </div>
-      <div className={`fixed inset-0 flex items-center justify-center ${darkMode ? 'bg-slate-900' : 'bg-gradient-to-br from-green-100 via-amber-50 to-green-100'} pt-24`}>
+      <main className="bv-auth-page">
       <div className="relative flex flex-col items-center justify-center">
         {/* Elementi di sfondo animati */}
         <div className="absolute inset-0">
@@ -151,7 +150,7 @@ const LoginPage = () => {
         </div>
 
         {/* Container principale */}
-        <div className={`z-10 p-12 ${darkMode ? 'bg-slate-800 text-white' : 'bg-white/30 text-slate-900'} backdrop-blur-md rounded-2xl shadow-xl transform transition-all duration-500 w-full max-w-md`}>
+        <div className="bv-glass bv-liquid bv-auth-card z-10 text-[var(--bv-text)]">
         <h1 className="text-4xl font-bold mb-6 tracking-tight text-center">
           {t.loginPageTitle}
         </h1>
@@ -255,7 +254,7 @@ const LoginPage = () => {
           <button
           type="submit"
           disabled={isLoading}
-          className={`group relative w-full flex justify-center py-3 px-4 border border-transparent text-lg font-medium rounded-full text-white ${darkMode ? 'bg-slate-700 hover:bg-slate-600 focus:ring-slate-500' : 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 focus:ring-green-500'} shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1 active:translate-y-0`}
+          className="bv-button-primary group relative w-full text-lg"
           >
           {isLoading ? (
             <span className="flex items-center">
@@ -291,8 +290,8 @@ const LoginPage = () => {
         <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] border ${darkMode ? 'border-slate-500/30' : 'border-green-300/30'} rounded-full animate-pulse delay-500`}></div>
         </div>
       </div>
-      </div>
-    </>
+      </main>
+    </div>
   );
 };
 

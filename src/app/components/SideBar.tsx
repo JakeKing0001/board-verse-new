@@ -1,154 +1,120 @@
-import React, { useState } from "react";
-import Link from "next/link";
 import {
-    HomeIcon,
-    UserGroupIcon,
-    PuzzlePieceIcon,
-    InformationCircleIcon,
-    Cog6ToothIcon,
-} from "@heroicons/react/24/outline";
+    Gamepad2,
+    Home,
+    Info,
+    Menu,
+    Settings,
+    UsersRound,
+    X,
+} from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
 import { usePieceContext } from "./PieceContext";
 
-/**
- * SideBar component renders a responsive sidebar navigation menu for the application.
- * 
- * Features:
- * - Toggleable sidebar with a hamburger button.
- * - Displays navigation links with icons for Home, Game Types, Friends, and About pages.
- * - Adapts styles for dark and light modes.
- * - Shows user profile information and a link to profile settings at the bottom.
- * - Includes an overlay for mobile devices to close the sidebar when clicking outside.
- * 
- * Context:
- * - Uses `usePieceContext` to access the current user, translation strings, and dark mode state.
- * 
- * State:
- * - `isOpen`: Controls the visibility of the sidebar.
- * 
- * Accessibility:
- * - Sidebar and toggle button include appropriate ARIA labels.
- * 
- * @component
- */
 export default function SideBar() {
     const [isOpen, setIsOpen] = useState(false);
-    const { user, t, darkMode } = usePieceContext();
+    const { user, t } = usePieceContext();
 
     const menuItems = [
-        { name: `${t.home}`, icon: HomeIcon, href: "/" },
-        { name: `${t.gameTypes}`, icon: PuzzlePieceIcon, href: "/gameMode" },
-        { name: `${t.friends}`, icon: UserGroupIcon, href: "/friends" },
-        { name: `${t.about}`, icon: InformationCircleIcon, href: "/about" },
-        // { name: `${t.statistics}`, icon: BarChartIcon, href: "/statistics" },
+        { name: t.home, icon: Home, href: "/" },
+        { name: t.gameTypes, icon: Gamepad2, href: "/gameMode" },
+        { name: t.friends, icon: UsersRound, href: "/friends" },
+        { name: t.about, icon: Info, href: "/about" },
     ];
 
     return (
         <>
             <button
                 id="SidebarButton"
-                onClick={(e) => {
-                    setIsOpen(!isOpen);
-                    (e.currentTarget as HTMLButtonElement).style.display = "none";
-                }}
-                className={`fixed top-4 left-4 z-50 inline-flex items-center p-2 text-sm ${darkMode? 'text-white bg-slate-600 hover:bg-slate-500 focus:ring-slate-300':'text-green-600 bg-white hover:bg-green-50 focus:ring-green-300'} rounded-lg shadow-md focus:outline-none focus:ring-2`}
+                type="button"
+                onClick={() => setIsOpen(true)}
+                aria-expanded={isOpen}
+                aria-controls="game-sidebar"
+                className={`bv-glass-strong fixed left-3 top-3 z-50 grid h-11 w-11 place-items-center rounded-xl text-[var(--bv-text)] transition hover:-translate-y-0.5 sm:left-4 sm:top-4 ${
+                    isOpen ? "pointer-events-none opacity-0" : "opacity-100"
+                }`}
             >
-                <span className="sr-only">Toggle sidebar</span>
-                <svg
-                    className="w-6 h-6"
-                    aria-hidden="true"
-                    fill={darkMode? 'white':'green'}
-                    viewBox="0 0 20 20"
-                    xmlns="http://www.w3.org/2000/svg"
-                >
-                    <path
-                        clipRule="evenodd"
-                        fillRule="evenodd"
-                        d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 10.5a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5a.75.75 0 01-.75-.75zM2 10a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 10z"
-                    ></path>
-                </svg>
+                <span className="sr-only">Apri navigazione</span>
+                <Menu aria-hidden="true" className="h-5 w-5" />
             </button>
 
-            {/* Sidebar */}
             <aside
-                className={`fixed top-0 left-0 z-40 h-screen transition-transform duration-300 ease-in-out ${darkMode? 'bg-gray-800 border-gray-700':'bg-gray-50 border-gray-200'} border-r shadow-lg
-                ${isOpen ? "translate-x-0" : "-translate-x-full"}
-                w-64`}
-                aria-label="Sidebar"
+                id="game-sidebar"
+                className={`bv-glass-strong fixed inset-y-3 left-3 z-[70] flex w-[min(18rem,calc(100vw-1.5rem))] flex-col rounded-[1.75rem] p-3 text-[var(--bv-text)] transition-transform duration-300 sm:inset-y-4 sm:left-4 ${
+                    isOpen ? "translate-x-0" : "-translate-x-[calc(100%+2rem)]"
+                }`}
+                aria-label="Navigazione partita"
             >
-                <div className="h-full flex flex-col justify-between">
-                    {/* Logo and Menu Items */}
-                    <div className="px-3 py-4 overflow-y-auto">
-                        <div className="flex items-center justify-center mb-6">
-                            <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-green-700'}`}>{t.gameTypes}</h2>
-                        </div>
+                <div className="flex items-center justify-between px-2 py-2">
+                    <div>
+                        <p className="text-xs font-black uppercase tracking-[0.18em] text-emerald-500">BoardVerse</p>
+                        <h2 className="mt-1 text-xl font-black">{t.gameTypes}</h2>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() => setIsOpen(false)}
+                        className="grid h-10 w-10 place-items-center rounded-xl border border-black/5 bg-white/25 text-[var(--bv-muted)] hover:text-[var(--bv-text)] dark:border-white/10 dark:bg-white/5"
+                        aria-label="Chiudi navigazione"
+                    >
+                        <X aria-hidden="true" className="h-5 w-5" />
+                    </button>
+                </div>
 
-                        <ul className="space-y-5 font-medium">
-                            {menuItems.map((item, index) => (
-                                <li key={index}>
+                <nav className="mt-5 flex-1" aria-label="Collegamenti partita">
+                    <ul className="space-y-1">
+                        {menuItems.map((item) => {
+                            const Icon = item.icon;
+                            return (
+                                <li key={item.href}>
                                     <Link
                                         href={item.href}
-                                        className={`flex items-center p-3 rounded-lg group transition-all duration-200 ${
-                                            darkMode
-                                                ? 'text-white hover:bg-slate-600'
-                                                : 'text-gray-900 hover:bg-green-100'
-                                        }`}
+                                        className="group flex items-center gap-3 rounded-xl px-3 py-3 font-bold text-[var(--bv-muted)] transition hover:bg-emerald-500/10 hover:text-[var(--bv-text)]"
                                     >
-                                        <item.icon className={`w-5 h-5 ${darkMode ? 'text-white' : 'text-green-600'}`} />
-                                        <span className="ms-3">{item.name}</span>
+                                        <span className="grid h-9 w-9 place-items-center rounded-xl bg-white/25 text-emerald-600 transition group-hover:bg-emerald-500 group-hover:text-white dark:bg-white/5 dark:text-emerald-300">
+                                            <Icon aria-hidden="true" className="h-4 w-4" />
+                                        </span>
+                                        {item.name}
                                     </Link>
                                 </li>
-                            ))}
-                        </ul>
-                    </div>
+                            );
+                        })}
+                    </ul>
+                </nav>
 
-                    {/* User Profile and Settings */}
-                    <div className="border-t border-gray-200 dark:border-gray-700 px-3 py-4">
-                        <Link href="/settingsProfile">
-                            <button
-                                className={`w-full flex items-center p-3 rounded-lg group transition-all duration-200 mb-3 no-underline ${
-                                    darkMode
-                                        ? 'text-white bg-slate-900 hover:bg-slate-600'
-                                        : 'text-gray-900 bg-green-100 hover:bg-green-50'
-                                }`}
-                            >
-                                <Cog6ToothIcon className={`w-5 h-5 ${darkMode ? 'text-white' : 'text-green-600'}`} />
-                                <span className="ms-3 no-underline font-medium">
-                                    {t.profileSettings}
-                                </span>
-                            </button>
-                        </Link>
+                <div className="mt-4 border-t border-black/5 pt-3 dark:border-white/10">
+                    <Link
+                        href="/settingsProfile"
+                        className="flex items-center gap-3 rounded-xl px-3 py-3 font-bold text-[var(--bv-muted)] transition hover:bg-violet-500/10 hover:text-[var(--bv-text)]"
+                    >
+                        <Settings aria-hidden="true" className="h-5 w-5 text-violet-500" />
+                        {t.profileSettings}
+                    </Link>
 
-                        {/* User Profile */}
-                        {user && (
-                            <div className={`flex items-center p-3 rounded-lg ${darkMode ? 'text-white bg-slate-900' : 'text-gray-900 bg-green-50'}`}>
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img
-                                    src={user.avatar || "/default_avatar.png"}
-                                    alt="User Avatar"
-                                    className="w-10 h-10 rounded-lg"
-                                />
-                                <div className="ms-3">
-                                    <p />
-                                    <p className="text-sm font-medium">{user.username}</p>
-                                </div>
+                    {user && (
+                        <div className="mt-2 flex items-center gap-3 rounded-2xl border border-black/5 bg-white/25 p-3 dark:border-white/10 dark:bg-white/5">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                                src={user.avatar || "/default_avatar.png"}
+                                alt=""
+                                className="h-10 w-10 rounded-xl object-cover"
+                            />
+                            <div className="min-w-0">
+                                <p className="truncate text-sm font-black">{user.username}</p>
+                                <p className="text-xs text-[var(--bv-muted)]">Online</p>
                             </div>
-                        )}
-                    </div>
+                            <span className="ml-auto h-2.5 w-2.5 rounded-full bg-emerald-400 ring-4 ring-emerald-400/10" />
+                        </div>
+                    )}
                 </div>
             </aside>
 
-            {/* Overlay for mobile */}
             {isOpen && (
-                <div
-                    className="fixed inset-0 z-30 bg-black/50 backdrop-blur-sm transition-opacity duration-300 ease-in-out"
-                    onClick={() => {
-                        setIsOpen(false);
-                        const button = document.getElementById("SidebarButton");
-                        if (button) {
-                            button.style.display = "inline-flex";
-                        }
-                    }}
-                ></div>
+                <button
+                    type="button"
+                    aria-label="Chiudi navigazione"
+                    className="bv-modal-backdrop fixed inset-0 z-[60] cursor-default"
+                    onClick={() => setIsOpen(false)}
+                />
             )}
         </>
     );

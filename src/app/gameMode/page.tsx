@@ -1,5 +1,11 @@
 import React from 'react'
 import ChoosePage from '../components/ChoosePage'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Scegli modalità',
+  description: 'Scegli tra partita locale, computer, online e challenge.',
+}
 
 /**
  * Renders the game mode selection page.

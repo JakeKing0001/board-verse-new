@@ -47,12 +47,12 @@ const AboutPage = () => {
   ];
 
   return (
-    <>
-      <div className={`fixed top-0 left-0 w-full ${darkMode ? 'bg-slate-800' : 'bg-white'} shadow-md z-50`}>
-        <NavBar current={5} />
+    <div className="bv-page">
+      <div className="bv-nav-slot">
+        <NavBar current={4} />
       </div>
 
-      <div className={`fixed inset-0 flex flex-col items-center ${darkMode ? 'bg-slate-900 text-white' : 'bg-gradient-to-br from-green-100 via-amber-50 to-green-100 text-green-800'} pt-24 overflow-auto`}>
+      <main className="bv-page-with-nav relative flex min-h-screen flex-col items-center overflow-auto text-[var(--bv-text)]">
         
         {/* Animated background elements */}
         <div className="absolute inset-0">
@@ -63,8 +63,8 @@ const AboutPage = () => {
         </div>
 
         {/* Main content */}
-        <div className="z-10 w-full max-w-5xl px-4 flex flex-col items-center pb-20">
-          <h1 className="text-5xl font-bold mb-8 tracking-tight">
+        <div className="z-10 flex w-full max-w-5xl flex-col items-center px-4 pb-20 pt-10 sm:pt-14">
+          <h1 className="mb-8 text-center text-4xl font-black tracking-[-0.05em] sm:text-6xl">
             {t.aboutUs || "About BoardVerse"}
           </h1>
 
@@ -88,20 +88,35 @@ const AboutPage = () => {
           </div>
 
           {/* Tabs */}
-          <div className="w-full max-w-4xl mb-6 flex border-b">
+          <div className="bv-tabs mb-6 w-full max-w-4xl" role="tablist" aria-label={t.aboutUs}>
             <button
+              type="button"
+              role="tab"
+              id="about-story-tab"
+              aria-selected={activeTab === 'story'}
+              aria-controls="about-story-panel"
               className={`flex-1 py-3 font-medium text-lg ${activeTab === 'story' ? `border-b-2 ${darkMode ? 'border-blue-500' : 'border-green-500'}` : ''}`}
               onClick={() => setActiveTab('story')}
             >
               {t.ourStory || "Our Story"}
             </button>
             <button
+              type="button"
+              role="tab"
+              id="about-team-tab"
+              aria-selected={activeTab === 'team'}
+              aria-controls="about-team-panel"
               className={`flex-1 py-3 font-medium text-lg ${activeTab === 'team' ? `border-b-2 ${darkMode ? 'border-blue-500' : 'border-green-500'}` : ''}`}
               onClick={() => setActiveTab('team')}
             >
               {t.ourTeam || "Our Team"}
             </button>
             <button
+              type="button"
+              role="tab"
+              id="about-mission-tab"
+              aria-selected={activeTab === 'mission'}
+              aria-controls="about-mission-panel"
               className={`flex-1 py-3 font-medium text-lg ${activeTab === 'mission' ? `border-b-2 ${darkMode ? 'border-blue-500' : 'border-green-500'}` : ''}`}
               onClick={() => setActiveTab('mission')}
             >
@@ -110,11 +125,11 @@ const AboutPage = () => {
           </div>
 
           {/* Content based on active tab */}
-          <div className={`w-full max-w-4xl ${darkMode ? 'bg-slate-800' : 'bg-white/40'} backdrop-blur-md rounded-3xl shadow-2xl p-8 border ${darkMode ? 'border-slate-700' : 'border-white/50'}`}>
+          <div className={`bv-glass bv-liquid w-full max-w-4xl rounded-3xl border p-5 shadow-2xl sm:p-8 ${darkMode ? 'border-slate-700' : 'border-white/50'}`}>
             
             {/* Our Story Tab */}
             {activeTab === 'story' && (
-              <div className="space-y-8">
+              <div id="about-story-panel" role="tabpanel" aria-labelledby="about-story-tab" className="space-y-8">
                 <div className="prose max-w-none mb-10">
                   <h2 className={`text-2xl font-semibold mb-6 ${darkMode ? 'text-white' : 'text-green-800'}`}>
                     {t.chessJourney || "Our Chess Journey"}
@@ -155,7 +170,7 @@ const AboutPage = () => {
 
             {/* Our Team Tab */}
             {activeTab === 'team' && (
-              <div>
+              <div id="about-team-panel" role="tabpanel" aria-labelledby="about-team-tab">
                 <h2 className={`text-2xl font-semibold mb-6 ${darkMode ? 'text-white' : 'text-green-800'}`}>
                   {t.meetTheTeam || "Meet the Team Behind BoardVerse"}
                 </h2>
@@ -168,7 +183,7 @@ const AboutPage = () => {
                   {teamMembers.map((member) => (
                     <div 
                       key={member.id}
-                      className={`p-6 rounded-xl transition-all duration-300 ${darkMode ? 'bg-slate-700 hover:bg-slate-600' : 'bg-white/60 hover:bg-white/80'} flex flex-col items-center text-center`}
+                      className={`bv-glass-soft bv-card flex flex-col items-center rounded-2xl p-6 text-center transition-all duration-300 ${darkMode ? 'bg-slate-700 hover:bg-slate-600' : 'bg-white/60 hover:bg-white/80'}`}
                     >
                       <div className="mb-4 w-24 h-24 overflow-hidden rounded-full border-4 border-white/20">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -190,16 +205,20 @@ const AboutPage = () => {
                   <p className="mb-4">
                     {t.careerText || "We're always looking for passionate chess players and talented professionals to join our growing team."}
                   </p>
-                  <Link href="/careers" className={`inline-block px-6 py-2 rounded-full font-medium text-white transition-colors ${darkMode ? 'bg-blue-600 hover:bg-blue-500' : 'bg-green-600 hover:bg-green-500'}`}>
-                    {t.viewPositions || "View Open Positions"}
-                  </Link>
+                  <button
+                    type="button"
+                    disabled
+                    className={`inline-block cursor-not-allowed rounded-full px-6 py-2 font-medium text-white opacity-70 ${darkMode ? 'bg-blue-600' : 'bg-green-600'}`}
+                  >
+                    {t.positionsComingSoon || "Positions coming soon"}
+                  </button>
                 </div>
               </div>
             )}
 
             {/* Our Mission Tab */}
             {activeTab === 'mission' && (
-              <div className="space-y-8">
+              <div id="about-mission-panel" role="tabpanel" aria-labelledby="about-mission-tab" className="space-y-8">
                 <div className="mb-8">
                   <h2 className={`text-2xl font-semibold mb-6 ${darkMode ? 'text-white' : 'text-green-800'}`}>
                     {t.ourMission || "Our Mission"}
@@ -271,29 +290,29 @@ const AboutPage = () => {
           </div>
 
           {/* Call to action */}
-          <div className={`w-full max-w-4xl mt-10 p-8 rounded-3xl ${darkMode ? 'bg-slate-800/80' : 'bg-white/40'} backdrop-blur-md border ${darkMode ? 'border-slate-700' : 'border-white/50'} text-center`}>
+          <div className={`bv-glass bv-liquid mt-10 w-full max-w-4xl rounded-3xl border p-6 text-center sm:p-8 ${darkMode ? 'border-slate-700' : 'border-white/50'}`}>
             <h2 className="text-2xl font-bold mb-4">{t.joinCommunity || "Join Our Chess Community Today"}</h2>
             <p className="mb-6 max-w-2xl mx-auto">
               {t.joinText || "Whether you're just learning the rules or you're an experienced player looking for new challenges, there's a place for you at BoardVerse."}
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <Link 
-                href="/register" 
-                className={`px-8 py-3 rounded-full font-bold text-white transition-all duration-500 ease-in-out transform ${darkMode ? 'bg-blue-600 hover:bg-blue-500' : 'bg-green-600 hover:bg-green-500'} hover:-translate-y-1 active:translate-y-0`}
+              <Link
+                href="/register"
+                className="bv-button-primary px-8"
               >
                 {t.signUp || "Sign Up Free"}
               </Link>
               <Link 
-                href="/learn" 
-                className={`px-8 py-3 rounded-full font-bold transition-all duration-500 ease-in-out transform ${darkMode ? 'bg-slate-700 hover:bg-slate-600 text-white' : 'bg-white hover:bg-green-50 text-green-800'} hover:-translate-y-1 active:translate-y-0`}
+                href="/challenge"
+                className="bv-button-ghost px-8"
               >
                 {t.exploreResources || "Explore Resources"}
               </Link>
             </div>
           </div>
         </div>
-      </div>
-    </>
+      </main>
+    </div>
   );
 };
 

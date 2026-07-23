@@ -161,11 +161,11 @@ const RegisterPage = () => {
   };
 
   return (
-    <>
-      <div className={`fixed top-0 left-0 w-full shadow-md z-50 ${darkMode ? 'bg-slate-800' : 'bg-white'}`}>
+    <div className="bv-page">
+      <div className="bv-nav-slot">
         <NavBar current={-1} />
       </div>
-      <div className={`inset-0 flex items-center justify-center ${darkMode ? 'bg-slate-900' : 'bg-gradient-to-br from-green-100 via-amber-50 to-green-100'} pt-24 min-h-screen`}>
+      <main className="bv-auth-page">
         <div className="relative flex flex-col items-center justify-center w-full px-4 md:px-0">
           {/* Elementi di sfondo animati */}
           <div className="absolute inset-0">
@@ -175,7 +175,7 @@ const RegisterPage = () => {
           </div>
 
           {/* Container principale */}
-          <div className={`z-10 p-6 md:p-10 ${darkMode ? 'bg-slate-800 text-white' : 'bg-white/30'} backdrop-blur-md rounded-2xl shadow-xl transform hover:scale-105 transition-all duration-500 w-full max-w-md md:max-w-2xl`}>
+          <div className="bv-glass bv-liquid bv-auth-card bv-auth-card-wide z-10 text-[var(--bv-text)]">
             <h1 className={`text-2xl md:text-3xl font-bold ${darkMode ? 'text-white' : 'text-green-800'} mb-6 tracking-tight text-center`}>
               {t.joinBoardverse}
             </h1>
@@ -348,8 +348,8 @@ const RegisterPage = () => {
             <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200px] md:w-[300px] h-[200px] md:h-[300px] border ${darkMode ? 'border-slate-500/30' : 'border-green-300/30'} rounded-full animate-pulse delay-500`}></div>
           </div>
         </div>
-      </div>
-    </>
+      </main>
+    </div>
   );
 };
 

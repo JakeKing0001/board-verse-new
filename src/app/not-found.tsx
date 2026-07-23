@@ -1,15 +1,19 @@
-"use client";
-import React from "react";
-import ErrorPage from "./components/ErrorPage";
+import Link from "next/link";
 
-/**
- * Custom error page component for handling not found routes.
- * 
- * This component renders the `ErrorPage` component when a user navigates to a route
- * that does not exist within the application.
- *
- * @returns {JSX.Element} The rendered error page component.
- */
-export default function CustomErrorPage() {
-  return <ErrorPage />;
+export default function NotFound() {
+  return (
+    <main className="bv-page flex min-h-screen items-center justify-center p-6 text-center text-[var(--bv-text)]">
+      <div className="bv-glass bv-liquid w-full max-w-lg rounded-3xl p-8 sm:p-10">
+        <p className="text-sm font-black uppercase tracking-[0.25em] text-emerald-400">404</p>
+        <h1 className="mt-3 text-4xl font-black">Pagina non trovata</h1>
+        <p className="mt-3 text-slate-300">La posizione che cercavi non è più disponibile.</p>
+        <Link
+          href="/"
+          className="bv-button-primary mt-7 px-5"
+        >
+          Torna alla home
+        </Link>
+      </div>
+    </main>
+  );
 }

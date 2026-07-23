@@ -88,11 +88,20 @@ export const settingsUser = async (formData: {
     body: JSON.stringify(formData),
   });
 
-  if (response.ok) {
-    return response.json();
+  const payload = await response.json().catch(() => null) as {
+    message?: string;
+    error?: string;
+    user?: import('../src/types/domain').UserProfile;
+  } | null;
+
+  if (response.ok && payload?.user) {
+    return {
+      message: payload.message ?? 'Profile settings updated',
+      user: payload.user,
+    };
   }
-  
-  throw new Error(`Error: ${response.status} - ${response.statusText}`);
+
+  throw new Error(payload?.error || `Error: ${response.status} - ${response.statusText}`);
 };
 
 /**

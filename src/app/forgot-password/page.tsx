@@ -1,5 +1,11 @@
 import React from 'react'
 import ForgotPasswordPage from '../components/ForgotPasswordPage'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Password dimenticata',
+  robots: { index: false, follow: false },
+}
 
 /**
  * Renders the Forgot Password page component.

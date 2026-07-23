@@ -18,7 +18,9 @@ export const GET = async (req: Request) => {
     const supabase = createServerSupabase(req);
     const { data, error } = await supabase
       .from('challenges')
-      .select('id, fen, number_moves, created_at, cpu_moves');
+      .select('id, fen, number_moves, created_at, cpu_moves, title, description, difficulty, theme, rating, hint, sort_order')
+      .order('sort_order', { ascending: true, nullsFirst: false })
+      .order('id', { ascending: true });
 
     if (error) {
       console.error("Supabase select error:", error.message);
@@ -27,7 +29,11 @@ export const GET = async (req: Request) => {
 
     debugLog('Supabase select success:', data);
 
-    return NextResponse.json(data); // Restituisci i dati come risposta JSON
+    return NextResponse.json(data, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+      },
+    });
   } catch (err) {
     console.error("Unexpected error:", err);
     return NextResponse.json({ error: 'An error occurred' }, { status: 500 });

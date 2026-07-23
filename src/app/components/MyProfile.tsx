@@ -52,10 +52,10 @@ export default function ProfilePage() {
   if (isLoading) {
     return (
       <>
-        <div className={`fixed top-0 left-0 w-full ${darkMode ? 'bg-slate-800' : 'bg-white'} shadow-md z-50`}>
+        <div className="bv-nav-slot">
           <NavBar current={-1} />
         </div>
-        <div className={`min-h-screen ${darkMode ? 'bg-slate-900' : 'bg-gradient-to-br from-green-100 via-amber-50 to-green-100'} pt-24 pb-16 flex items-center justify-center`}>
+        <div className="bv-page flex min-h-screen items-center justify-center pb-16 pt-24">
           <div className={`animate-spin h-12 w-12 border-4 ${darkMode ? 'border-slate-500' : 'border-green-500'} rounded-full border-t-transparent`}></div>
         </div>
       </>
@@ -63,21 +63,21 @@ export default function ProfilePage() {
   }
 
   return (
-    <>
-      <div className={`fixed top-0 left-0 w-full ${darkMode ? 'bg-slate-800' : 'bg-white'} shadow-md z-50`}>
+    <div className="bv-page">
+      <div className="bv-nav-slot">
         <NavBar current={-1} />
       </div>
 
-      <div className={`min-h-screen ${darkMode ? 'bg-slate-900 text-white' : 'bg-gradient-to-br from-green-100 via-amber-50 to-green-100 text-black'} pt-24 pb-16 px-4`}>
+      <main className="bv-page-with-nav min-h-screen px-4 pb-16 text-[var(--bv-text)]">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
-          <div className={`${darkMode ? 'bg-slate-700' : 'bg-white/30'} backdrop-blur-md rounded-2xl p-6 shadow-lg mb-6`}>
+          <div className="bv-glass bv-liquid mb-6 rounded-3xl p-6 shadow-lg">
             <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-green-800'}`}>{t.profile}</h1>
             <p className="mt-2">{t.profileDescription}</p>
           </div>
 
           {/* Profilo Content */}
-          <div className={`${darkMode ? 'bg-slate-700' : 'bg-white/30'} backdrop-blur-md rounded-2xl shadow-lg overflow-hidden p-6 mb-6`}>
+          <div className="bv-glass bv-liquid mb-6 overflow-hidden rounded-3xl p-6 shadow-lg">
             {/* Sezione principale del profilo */}
             <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
               {/* Avatar e informazioni base */}
@@ -103,11 +103,11 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="mt-6 flex flex-col sm:flex-row gap-2">
-                  <button className={`px-6 py-2 ${darkMode ? 'bg-blue-600 text-white hover:bg-blue-500' : 'bg-blue-500 text-white hover:bg-blue-600'} rounded-full transition-colors text-sm font-medium shadow-sm`}
+                  <button className="bv-button-primary px-6 text-sm"
                     onClick={() => router.push('/friends')}>
                     {t.addFriend || 'Aggiungi Amico'}
                   </button>
-                  <button className={`px-6 py-2 ${darkMode ? 'bg-slate-600 text-white hover:bg-slate-500' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'} rounded-full transition-colors text-sm font-medium shadow-sm`}>
+                  <button className="bv-button-ghost px-6 text-sm">
                     Messaggio
                   </button>
                 </div>
@@ -115,7 +115,7 @@ export default function ProfilePage() {
 
               {/* Bio section */}
               <div className="flex-1 text-center md:text-left">
-                <div className={`${darkMode ? 'bg-slate-600' : 'bg-white/50'} p-6 rounded-xl mb-4`}>
+                <div className="bv-glass-soft mb-4 rounded-2xl p-6">
                   <h3 className={`text-xl font-semibold mb-3 ${darkMode ? 'text-white' : 'text-green-800'} flex items-center`}>
                     <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
@@ -131,9 +131,9 @@ export default function ProfilePage() {
           </div>
 
           {/* Tabs per informazioni aggiuntive */}
-          <div className={`${darkMode ? 'bg-slate-700' : 'bg-white/30'} backdrop-blur-md rounded-2xl shadow-lg overflow-hidden`}>
+          <div className="bv-glass bv-liquid overflow-hidden rounded-3xl shadow-lg">
             {/* Tab Navigation */}
-            <div className="flex border-b border-opacity-20">
+            <div className="bv-tabs m-3">
               <button
                 onClick={() => setActiveTab('info')}
                 className={`flex-1 py-4 px-6 text-center font-medium transition-colors ${
@@ -206,7 +206,7 @@ export default function ProfilePage() {
             </div>
           </div>
         </div>
-      </div>
-    </>
+      </main>
+    </div>
   );
 }

@@ -6,19 +6,9 @@ import { usePieceContext } from "./PieceContext";
 import toast from "react-hot-toast";
 import { supabase } from "../../../lib/supabase";
 import { useRouter } from "next/navigation";
-
-interface GameSummary {
-  id: string;
-  name: string;
-  host_id: number;
-  guest_id: number;
-  status: string;
-  winner_id: number | null;
-  result: 'white' | 'black' | 'draw' | null;
-  is_private: boolean;
-  time: number; // Tempo in secondi
-  created_at: string;
-}
+import { createGame, getRecentGames, joinGame } from "../../../services/games";
+import type { GameCursor, GameSummary } from "../../types/domain";
+import { Globe2, Plus, Search, X } from "lucide-react";
 
 /**
  * OnlinePage component provides the main interface for the online multiplayer mode.
@@ -66,9 +56,12 @@ const OnlinePage = () => {
   const [modalTab, setModalTab] = useState('search'); // 'search' or 'id'
   const [gameId, setGameId] = useState('');
   const [gameName, setGameName] = useState('');
-  const [gameTime, setGameTime] = useState(10);
+  const [gameTime, setGameTime] = useState(600);
   const [isPrivate, setIsPrivate] = useState(false);
   const [recentGames, setRecentGames] = useState<GameSummary[]>([]);
+  const [nextCursor, setNextCursor] = useState<GameCursor | null>(null);
+  const [isLoadingGames, setIsLoadingGames] = useState(false);
+  const [createdGame, setCreatedGame] = useState<GameSummary | null>(null);
   const [days, setDays] = useState('0');
   const [hours, setHours] = useState('0');
   const [minutes, setMinutes] = useState('10');
@@ -77,20 +70,42 @@ const OnlinePage = () => {
   const router = useRouter();
 
   useEffect(() => {
-    supabase
-      .from("games")
-      .select("id,name,host_id,guest_id,winner_id,result,status,is_private,time,created_at")
-      .order("created_at", { ascending: false })
-      .then(({ data }) => setRecentGames(data || []));
-  }, []);
+    if (!isLoggedIn) {
+      setRecentGames([]);
+      setNextCursor(null);
+      return;
+    }
+
+    let active = true;
+    setIsLoadingGames(true);
+    getRecentGames()
+      .then(({ games, nextCursor: cursor }) => {
+        if (!active) return;
+        setRecentGames(games);
+        setNextCursor(cursor);
+      })
+      .catch(() => {
+        if (active) toast.error(t.gameSearchError || "Impossibile caricare le partite.");
+      })
+      .finally(() => {
+        if (active) setIsLoadingGames(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [isLoggedIn, t.gameSearchError]);
 
   useEffect(() => {
+  if (!isLoggedIn) return;
+
   const channel = supabase
     .channel("realtime-games-list")
     .on(
       "postgres_changes",
       { event: "INSERT", schema: "public", table: "games" },
       (payload) => {
+        if (payload.new.is_private || payload.new.status !== 'waiting') return;
         setRecentGames((prev) => {
           // 1) Se già presente, non la aggiungiamo
           if (prev.some(g => g.id === payload.new.id)) {
@@ -105,13 +120,14 @@ const OnlinePage = () => {
       "postgres_changes",
       { event: "UPDATE", schema: "public", table: "games" },
       (payload) => {
-        setRecentGames((prev) =>
-          prev.map(g =>
-            g.id === payload.new.id
-              ? (payload.new as GameSummary)
-              : g
-          )
-        );
+        setRecentGames((prev) => {
+          if (payload.new.is_private || payload.new.status !== 'waiting') {
+            return prev.filter((game) => game.id !== payload.new.id);
+          }
+          return prev.map((game) =>
+            game.id === payload.new.id ? (payload.new as GameSummary) : game
+          );
+        });
       }
     )
     .subscribe();
@@ -119,7 +135,7 @@ const OnlinePage = () => {
   return () => {
     supabase.removeChannel(channel);
   };
-}, []);
+}, [isLoggedIn]);
 
   useEffect(() => {
     setGameTime(parseInt(days) * 24 * 60 * 60 + parseInt(hours) * 60 * 60 + parseInt(minutes) * 60 + parseInt(seconds));
@@ -147,19 +163,28 @@ const OnlinePage = () => {
   const handleJoinGame = async (g: GameSummary) => {
     if (!user) return toast.error(t.mustBeLogged);
     if (g.status === "waiting" && g.host_id !== user.id) {
-      // Unirsi come guest
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { data, error } = await supabase
-        .from("games")
-        .update({ guest_id: user.id, status: "playing" })
-        .eq("id", g.id)
-        .select()
-        .single();
-      if (error) {
+      try {
+        const joinedGame = await joinGame({ gameId: g.id });
+        router.push(`/chessboard?mode=online&gameId=${joinedGame.id}&time=${joinedGame.time}`);
+      } catch {
         toast.error(t.gameJoinError);
-        return;
       }
-      router.push(`/chessboard?mode=online&gameId=${g.id}&time=${g.time}`);
+    }
+  };
+
+  const handleJoinByCode = async () => {
+    const value = gameId.trim();
+    if (!value) {
+      toast.error(t.gameNotFound);
+      return;
+    }
+
+    try {
+      const joinedGame = await joinGame({ joinCode: value });
+      setShowModal(false);
+      router.push(`/chessboard?mode=online&gameId=${joinedGame.id}&time=${joinedGame.time}`);
+    } catch {
+      toast.error(t.gameJoinError);
     }
   };
 
@@ -173,36 +198,56 @@ const OnlinePage = () => {
       toast.error(t.loginToCreateGame);
       return;
     }
-
-    const newGame = {
-      name: gameName,
-      host_id: user.id,
-      guest_id: null,
-      status: "waiting",
-      is_private: isPrivate,
-      time: gameTime,
-      created_at: new Date().toISOString(),
-    }
-
-    const { data, error } = await supabase.from("games").insert([newGame]).select().single();
-
-    if (error) {
-      toast.error(t.gameCreateError);
+    if (!Number.isInteger(gameTime) || gameTime < 30) {
+      toast.error(t.invalidGameTime || "Imposta una durata di almeno 30 secondi.");
       return;
     }
 
-    setShowModal(false);
-    toast.success(`${t.createGameProgress} \"${gameName}\"`);
-    // Qui andrebbe la logica per creare effettivamente la partita
-    setRecentGames((prev) => [data, ...prev]);
-    router.push(`/chessboard?mode=online&gameId=${data.id}&time=${gameTime}`);
+    try {
+      const data = await createGame({
+        name: gameName,
+        time: gameTime,
+        isPrivate,
+      });
+
+      setRecentGames((prev) => isPrivate ? prev : [data, ...prev]);
+      if (isPrivate) {
+        setCreatedGame(data);
+        setModalType('created');
+        toast.success(t.gameCreated || "Partita privata creata.");
+        return;
+      }
+
+      setShowModal(false);
+      toast.success(`${t.createGameProgress} "${gameName}"`);
+      router.push(`/chessboard?mode=online&gameId=${data.id}&time=${gameTime}`);
+    } catch {
+      toast.error(t.gameCreateError);
+    }
+  };
+
+  const loadMoreGames = async () => {
+    if (!nextCursor || isLoadingGames) return;
+    setIsLoadingGames(true);
+    try {
+      const page = await getRecentGames(nextCursor);
+      setRecentGames((previous) => {
+        const known = new Set(previous.map((game) => game.id));
+        return [...previous, ...page.games.filter((game) => !known.has(game.id))];
+      });
+      setNextCursor(page.nextCursor);
+    } catch {
+      toast.error(t.gameSearchError || "Impossibile caricare altre partite.");
+    } finally {
+      setIsLoadingGames(false);
+    }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'In corso': return darkMode ? 'text-blue-400' : 'text-blue-600';
-      case 'In attesa': return darkMode ? 'text-amber-400' : 'text-amber-600';
-      case 'Completa': return darkMode ? 'text-green-400' : 'text-green-600';
+      case 'playing': return darkMode ? 'text-blue-400' : 'text-blue-600';
+      case 'waiting': return darkMode ? 'text-amber-400' : 'text-amber-600';
+      case 'complete': return darkMode ? 'text-green-400' : 'text-green-600';
       default: return '';
     }
   };
@@ -214,12 +259,12 @@ const OnlinePage = () => {
   };
 
   return (
-    <>
-      <div className={`fixed top-0 left-0 w-full ${darkMode ? 'bg-slate-800' : 'bg-white'} shadow-md z-50`}>
-        <NavBar current={2} />
+    <div className="bv-page">
+      <div className="bv-nav-slot">
+        <NavBar current={1} />
       </div>
 
-      <div className={`fixed inset-0 flex flex-col items-center ${darkMode ? 'bg-slate-900 text-white' : 'bg-gradient-to-br from-green-100 via-amber-50 to-green-100 text-green-800'} pt-24 overflow-hidden`}>
+      <main className="bv-page-with-nav relative flex min-h-screen flex-col items-center overflow-y-auto pb-12 text-[var(--bv-text)]">
 
         {/* Animated background elements */}
         <div className="absolute inset-0">
@@ -230,40 +275,40 @@ const OnlinePage = () => {
         </div>
 
         {/* Main content */}
-        <div className="z-10 w-full max-w-5xl px-4 flex flex-col items-center">
-          <h1 className="text-5xl font-bold mb-8 tracking-tight">
+        <div className="z-10 flex w-full max-w-5xl flex-col items-center px-4 py-10 sm:py-14">
+          <span className="bv-eyebrow">
+            <Globe2 aria-hidden="true" className="h-3.5 w-3.5" />
+            Live multiplayer
+          </span>
+          <h1 className="mt-5 text-center text-4xl font-black tracking-[-0.05em] sm:text-6xl">
             {t.onlineMode || "Modalità Online"}
           </h1>
 
           {/* Game buttons */}
-          <div className="flex flex-col sm:flex-row gap-6 mb-10 w-full sm:w-auto justify-center">
+          <div className="mb-10 mt-8 flex w-full flex-col justify-center gap-3 sm:w-auto sm:flex-row">
             <button
               onClick={handleCreateGame}
-              className={`group relative inline-flex items-center justify-center px-8 py-4 text-xl font-bold text-white transition-all duration-500 ease-in-out transform ${darkMode ? 'bg-slate-700 hover:bg-slate-600' : 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700'} rounded-full shadow-lg hover:shadow-xl hover:-translate-y-1 active:translate-y-0`}
+              className="bv-button-primary group px-8 text-base sm:text-lg"
             >
               <span className="relative flex items-center">
+                <Plus aria-hidden="true" className="mr-2 h-5 w-5" />
                 <span>{t.createGame || "Crea Partita"}</span>
-                <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                </svg>
               </span>
             </button>
 
             <button
               onClick={handleSearchGame}
-              className={`group relative inline-flex items-center justify-center px-8 py-4 text-xl font-bold text-white transition-all duration-500 ease-in-out transform ${darkMode ? 'bg-slate-700 hover:bg-slate-600' : 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700'} rounded-full shadow-lg hover:shadow-xl hover:-translate-y-1 active:translate-y-0`}
+              className="bv-button-secondary group px-8 text-base sm:text-lg"
             >
               <span className="relative flex items-center">
+                <Search aria-hidden="true" className="mr-2 h-5 w-5 text-violet-500" />
                 <span>{t.findGame || "Cerca Partita"}</span>
-                <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                </svg>
               </span>
             </button>
           </div>
 
           {/* Recent games list */}
-          <div className={`w-full max-w-4xl ${darkMode ? 'bg-slate-800' : 'bg-white/40'} backdrop-blur-md rounded-3xl shadow-2xl p-8 border ${darkMode ? 'border-slate-700' : 'border-white/50'}`}>
+          <div className={`bv-glass bv-liquid w-full max-w-4xl rounded-3xl border p-5 shadow-2xl sm:p-8 ${darkMode ? 'border-slate-700' : 'border-white/50'}`}>
             <h2 className="text-2xl font-semibold mb-6">
               {t.recentGames || "Partite Recenti"}
             </h2>
@@ -273,7 +318,7 @@ const OnlinePage = () => {
                 {recentGames.map((game) => (
                   <div
                     key={game.id}
-                    className={`p-4 rounded-xl transition-all duration-300 hover:scale-[1.02] ${darkMode ? 'bg-slate-700 hover:bg-slate-600' : 'bg-white/60 hover:bg-white/80'} cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-3`}
+                    className={`bv-glass-soft flex flex-col justify-between gap-3 rounded-2xl p-4 transition-all duration-300 sm:flex-row sm:items-center ${darkMode ? 'bg-slate-700 hover:bg-slate-600' : 'bg-white/60 hover:bg-white/80'}`}
                   >
                     <div className="flex-grow">
                       <h3 className="font-bold text-lg">{game.name}</h3>
@@ -283,51 +328,79 @@ const OnlinePage = () => {
                         {game.status === 'complete' && (
                           <span>{game.result}</span>
                         )}
-                        <span className="opacity-75">{game.created_at}</span>
+                        <span className="opacity-75">
+                          {new Intl.DateTimeFormat(undefined, {
+                            dateStyle: 'short',
+                            timeStyle: 'short',
+                          }).format(new Date(game.created_at))}
+                        </span>
                       </div>
                     </div>
                     <button
+                      type="button"
                       onClick={() => handleJoinGame(game)}
-                      disabled={game.status !== 'waiting'}
+                      disabled={game.status !== 'waiting' || game.host_id === user?.id}
                       className={`px-4 py-2 rounded-full text-white text-sm font-medium ${darkMode ? 'bg-blue-600 hover:bg-blue-500' : 'bg-green-600 hover:bg-green-500'} transition-colors disabled:opacity-50`}
                     >
                       {t.joinGame || "Partecipa"}
                     </button>
                   </div>
                 ))}
+                {!isLoadingGames && recentGames.length === 0 && (
+                  <p className="rounded-xl border border-dashed border-current/20 p-8 text-center opacity-75">
+                    {t.noGamesAvailable || "Nessuna partita pubblica disponibile al momento."}
+                  </p>
+                )}
               </div>
+              {nextCursor && (
+                <button
+                  type="button"
+                  onClick={loadMoreGames}
+                  disabled={isLoadingGames}
+                  className={`mx-auto mt-5 block rounded-full px-5 py-2 text-sm font-semibold transition-colors disabled:opacity-50 ${darkMode ? 'bg-slate-700 hover:bg-slate-600' : 'bg-white hover:bg-green-50'}`}
+                >
+                  {isLoadingGames ? (t.loading || "Caricamento...") : (t.loadMore || "Carica altre")}
+                </button>
+              )}
             </div>
           </div>
         </div>
-      </div>
+      </main>
 
       {/* Modals */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className={`relative max-w-md w-full mx-4 p-6 rounded-2xl shadow-2xl ${darkMode ? 'bg-slate-800 text-white' : 'bg-white text-green-800'}`}>
+        <div className="bv-modal-backdrop fixed inset-0 z-[150] flex items-center justify-center p-3 sm:p-4">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="online-modal-title"
+            className={`bv-glass-strong bv-liquid relative max-h-[92svh] w-full max-w-lg overflow-y-auto rounded-3xl border p-5 shadow-2xl sm:p-8 ${darkMode ? 'border-slate-700 text-white' : 'border-white/80 text-green-900'}`}
+          >
             <button
+              type="button"
+              aria-label={t.close || "Chiudi"}
               onClick={() => setShowModal(false)}
-              className={`absolute top-4 right-4 p-1 rounded-full ${darkMode ? 'hover:bg-slate-700' : 'hover:bg-gray-100'}`}
+              className={`absolute right-4 top-4 z-10 grid h-10 w-10 place-items-center rounded-xl ${darkMode ? 'hover:bg-slate-700' : 'hover:bg-gray-100'}`}
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-              </svg>
+              <X aria-hidden="true" className="h-5 w-5" />
             </button>
 
             {/* Search Game Modal */}
             {modalType === 'search' && (
               <>
-                <h3 className="text-2xl font-bold mb-6">{t.findGame || "Cerca Partita"}</h3>
+                <h3 id="online-modal-title" className="text-2xl font-bold mb-6">{t.findGame || "Cerca Partita"}</h3>
 
                 {/* Tab buttons */}
-                <div className="flex mb-6 border-b">
+                <div className="bv-tabs mb-6">
                   <button
+                    type="button"
                     className={`flex-1 pb-3 font-medium ${modalTab === 'search' ? `border-b-2 ${darkMode ? 'border-blue-500' : 'border-green-500'}` : ''}`}
                     onClick={() => setModalTab('search')}
                   >
                     {t.searchGame || "Cerca Partita"}
                   </button>
                   <button
+                    type="button"
                     className={`flex-1 pb-3 font-medium ${modalTab === 'id' ? `border-b-2 ${darkMode ? 'border-blue-500' : 'border-green-500'}` : ''}`}
                     onClick={() => setModalTab('id')}
                   >
@@ -339,11 +412,30 @@ const OnlinePage = () => {
                 {modalTab === 'search' ? (
                   <div className="space-y-4">
                     <p>{t.searchGameDescription || "Cerca una partita disponibile tra quelle attualmente in attesa di giocatori."}</p>
-                    <div className={`p-4 rounded-lg ${darkMode ? 'bg-slate-700' : 'bg-green-50'}`}>
-                      <div className="flex justify-between items-center">
-                        <span>{t.searchingGame || "Ricerca di partite..."}</span>
-                        <div className="animate-spin rounded-full h-5 w-5 border-2 border-t-transparent border-current"></div>
-                      </div>
+                    <div className="max-h-64 space-y-2 overflow-y-auto pr-1">
+                      {recentGames.slice(0, 8).map((game) => (
+                        <button
+                          type="button"
+                          key={game.id}
+                          onClick={() => handleJoinGame(game)}
+                          className={`flex w-full items-center justify-between gap-3 rounded-2xl p-4 text-left transition-colors ${darkMode ? 'bg-slate-800 hover:bg-slate-700' : 'bg-green-50 hover:bg-green-100'}`}
+                        >
+                          <span className="min-w-0">
+                            <strong className="block truncate">{game.name}</strong>
+                            <span className="text-xs opacity-65">
+                              #{game.id} · {Math.max(1, Math.round(game.time / 60))} min
+                            </span>
+                          </span>
+                          <span className="shrink-0 text-sm font-bold">
+                            {t.joinGame || "Partecipa"}
+                          </span>
+                        </button>
+                      ))}
+                      {!isLoadingGames && recentGames.length === 0 && (
+                        <p className={`rounded-2xl border border-dashed p-5 text-center text-sm ${darkMode ? 'border-slate-700' : 'border-green-200'}`}>
+                          {t.noGamesAvailable || "Nessuna partita pubblica disponibile al momento."}
+                        </p>
+                      )}
                     </div>
                   </div>
                 ) : (
@@ -354,33 +446,29 @@ const OnlinePage = () => {
                       value={gameId}
                       onChange={(e) => setGameId(e.target.value)}
                       placeholder={t.gameIdExample}
-                      className={`w-full px-4 py-3 rounded-lg focus:outline-none ${darkMode ? 'bg-slate-700 focus:ring-1 focus:ring-blue-500' : 'bg-green-50 focus:ring-1 focus:ring-green-500'}`}
+                      className="bv-input"
                     />
                   </div>
                 )}
 
-                <div className="mt-8 flex justify-end">
-                  <button
-                    onClick={async () => {
-                      const game = recentGames.find(game => game.id === gameId);
-                      if (game) {
-                        await handleJoinGame(game);
-                      } else {
-                        toast.error(t.gameNotFound);
-                      }
-                    }}
-                    className={`px-6 py-2 rounded-full font-medium text-white ${darkMode ? 'bg-blue-600 hover:bg-blue-500' : 'bg-green-600 hover:bg-green-500'} transition-colors`}
-                  >
-                    {t.joinGame || "Partecipa"}
-                  </button>
-                </div>
+                {modalTab === 'id' && (
+                  <div className="mt-8 flex justify-end">
+                    <button
+                      type="button"
+                      onClick={handleJoinByCode}
+                      className={`px-6 py-2 rounded-full font-medium text-white ${darkMode ? 'bg-blue-600 hover:bg-blue-500' : 'bg-green-600 hover:bg-green-500'} transition-colors`}
+                    >
+                      {t.joinGame || "Partecipa"}
+                    </button>
+                  </div>
+                )}
               </>
             )}
 
             {/* Create Game Modal */}
             {modalType === 'create' && (
               <>
-                <h3 className="text-2xl font-bold mb-6">{t.createGame || "Crea Partita"}</h3>
+                <h3 id="online-modal-title" className="text-2xl font-bold mb-6">{t.createGame || "Crea Partita"}</h3>
 
                 <div className="space-y-5">
                   <div>
@@ -390,7 +478,7 @@ const OnlinePage = () => {
                       value={gameName}
                       onChange={(e) => setGameName(e.target.value)}
                       placeholder={t.gameNamePlaceholder || "Inserisci un nome..."}
-                      className={`w-full px-4 py-3 rounded-lg focus:outline-none ${darkMode ? 'bg-slate-700 focus:ring-1 focus:ring-blue-500' : 'bg-green-50 focus:ring-1 focus:ring-green-500'}`}
+                      className="bv-input"
                     />
                   </div>
 
@@ -416,7 +504,7 @@ const OnlinePage = () => {
                       </h3>
                     </div>
 
-                    <div className="grid grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                       <div>
                         <label className={`block text-sm ${darkMode ? 'text-white' : 'text-gray-600 mb-1'}`}>
                           {t.days || "Giorni"}
@@ -425,7 +513,7 @@ const OnlinePage = () => {
                           type="text"
                           value={days}
                           onChange={(e) => setDays(validateNumber(e.target.value, 99))}
-                          className={`w-full p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 ${darkMode ? 'focus:ring-white bg-slate-800 text-white' : 'focus:ring-green-500'}`}
+                          className="bv-input text-center"
                           placeholder="0"
                         />
                       </div>
@@ -437,7 +525,7 @@ const OnlinePage = () => {
                           type="text"
                           value={hours}
                           onChange={(e) => setHours(validateNumber(e.target.value, 23))}
-                          className={`w-full p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 ${darkMode ? 'focus:ring-white bg-slate-800 text-white' : 'focus:ring-green-500'}`}
+                          className="bv-input text-center"
                           placeholder="0"
                         />
                       </div>
@@ -449,7 +537,7 @@ const OnlinePage = () => {
                           type="text"
                           value={minutes}
                           onChange={(e) => setMinutes(validateNumber(e.target.value, 59))}
-                          className={`w-full p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 ${darkMode ? 'focus:ring-white bg-slate-800 text-white' : 'focus:ring-green-500'}`}
+                          className="bv-input text-center"
                           placeholder="0"
                         />
                       </div>
@@ -461,7 +549,7 @@ const OnlinePage = () => {
                           type="text"
                           value={seconds}
                           onChange={(e) => setSeconds(validateNumber(e.target.value, 59))}
-                          className={`w-full p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 ${darkMode ? 'focus:ring-white bg-slate-800 text-white' : 'focus:ring-green-500'}`}
+                          className="bv-input text-center"
                           placeholder="0"
                         />
                       </div>
@@ -494,12 +582,14 @@ const OnlinePage = () => {
 
                 <div className="mt-8 flex justify-end gap-3">
                   <button
+                    type="button"
                     onClick={() => setShowModal(false)}
                     className={`px-6 py-2 rounded-full font-medium ${darkMode ? 'text-slate-300 hover:bg-slate-700' : 'text-green-800 hover:bg-green-50'}`}
                   >
                     {t.cancel || "Annulla"}
                   </button>
                   <button
+                    type="button"
                     onClick={handleStartGame}
                     className={`px-6 py-2 rounded-full font-medium text-white ${darkMode ? 'bg-blue-600 hover:bg-blue-500' : 'bg-green-600 hover:bg-green-500'} transition-colors`}
                   >
@@ -508,10 +598,52 @@ const OnlinePage = () => {
                 </div>
               </>
             )}
+
+            {modalType === 'created' && createdGame && (
+              <>
+                <div className={`mb-5 flex h-14 w-14 items-center justify-center rounded-2xl ${darkMode ? 'bg-emerald-400/15 text-emerald-300' : 'bg-emerald-100 text-emerald-700'}`}>
+                  <span aria-hidden="true" className="text-2xl">✓</span>
+                </div>
+                <h3 id="online-modal-title" className="text-2xl font-bold">
+                  {t.gameCreated || "Partita privata creata"}
+                </h3>
+                <p className="mt-2 opacity-75">
+                  {t.shareInviteCode || "Condividi questo codice con la persona che vuoi invitare."}
+                </p>
+                <div className={`mt-6 rounded-2xl border p-4 ${darkMode ? 'border-slate-700 bg-slate-800' : 'border-emerald-200 bg-emerald-50'}`}>
+                  <span className="text-xs font-bold uppercase tracking-[0.18em] opacity-60">
+                    {t.inviteCode || "Codice invito"}
+                  </span>
+                  <div className="mt-2 flex items-center gap-3">
+                    <code className="min-w-0 flex-1 break-all text-sm font-semibold">
+                      {createdGame.join_code}
+                    </code>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        if (!createdGame.join_code) return;
+                        await navigator.clipboard.writeText(createdGame.join_code);
+                        toast.success(t.codeCopied || "Codice copiato.");
+                      }}
+                      className={`shrink-0 rounded-xl px-3 py-2 text-sm font-bold ${darkMode ? 'bg-slate-700 hover:bg-slate-600' : 'bg-white hover:bg-emerald-100'}`}
+                    >
+                      {t.copy || "Copia"}
+                    </button>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => router.push(`/chessboard?mode=online&gameId=${createdGame.id}&time=${createdGame.time}`)}
+                  className={`mt-6 w-full rounded-full px-6 py-3 font-bold text-white ${darkMode ? 'bg-blue-600 hover:bg-blue-500' : 'bg-green-600 hover:bg-green-500'}`}
+                >
+                  {t.goToBoard || "Vai alla scacchiera"}
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 };
 

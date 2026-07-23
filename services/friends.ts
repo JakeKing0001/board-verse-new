@@ -28,7 +28,7 @@ export const setRequests = async (formData: { senderID: number; receiverID: numb
  * @returns {Promise<any>} A promise that resolves to the JSON response containing friend requests.
  * @throws {Error} Throws an error if the network response is not ok.
  */
-export const getRequests = async () => {
+export const getRequests = async (): Promise<FriendRequest[]> => {
     const { getApiHeaders } = await import('../lib/api');
     const response = await fetch(`/api/friend`, {
       method: "GET",
@@ -94,7 +94,7 @@ export const setFriends = async (formData: { userID: number; friendID: number })
  * @returns {Promise<any>} A promise that resolves to the JSON response containing the list of accepted friends.
  * @throws {Error} Throws an error if the network response is not ok.
  */
-export const getFriends = async () => {
+export const getFriends = async (): Promise<Friendship[]> => {
     const { getApiHeaders } = await import('../lib/api');
     const response = await fetch(`/api/friendAccepted`, {
       method: "GET",
@@ -138,3 +138,4 @@ export const deleteFriends = async (params: { user_id?: number, friend_id?: numb
   }
   throw new Error('Failed to delete friend');
 };
+import type { FriendRequest, Friendship } from '../src/types/domain';

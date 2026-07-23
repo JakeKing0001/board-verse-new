@@ -52,7 +52,6 @@ export default function Piece({ type }: PieceProps) {
         setActivePiece(isActive ? null : pieceId);
     };
 
-    /* eslint-disable @typescript-eslint/no-unused-vars */
     return (
         // eslint-disable-next-line @next/next/no-img-element
         <img
@@ -68,5 +67,4 @@ export default function Piece({ type }: PieceProps) {
             onContextMenu={(e) => { e.preventDefault(); }}
         />
     );
-    /* eslint-enable @typescript-eslint/no-unused-vars */
 }

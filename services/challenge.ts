@@ -1,30 +1,30 @@
-/**
- * Fetches the current challenge from the `/api/challenge` endpoint.
- *
- * Sends a GET request to retrieve challenge data. Throws an error if the response is not OK
- * or if no challenge data is found in the response.
- *
- * @returns {Promise<any>} The challenge data returned from the API.
- * @throws {Error} If the response is not successful or if no challenge is found.
- */
-export const getChallenge = async () => {
-    const { getApiHeaders } = await import('../lib/api');
-    const response = await fetch(`/api/challenge`, {
-        method: "GET",
-        headers: await getApiHeaders(),
-    });
+export type ChallengeDifficulty = 'beginner' | 'intermediate' | 'advanced' | 'expert';
 
-    if (response.ok) {
-        const data = await response.json();
-        console.log("Data fetched from API:", data);
+export interface ChessChallenge {
+  id: number;
+  fen: string;
+  number_moves: number;
+  cpu_moves: string[] | null;
+  created_at: string;
+  title: string;
+  description: string;
+  difficulty: ChallengeDifficulty;
+  theme: string;
+  rating: number;
+  hint: string | null;
+  sort_order: number | null;
+}
 
-        // Controlla se ci sono utenti nella risposta
-        if (!data || data.length === 0) {
-            throw new Error("Nessuna challenge trovata.");
-        }
+export const getChallenge = async (): Promise<ChessChallenge[]> => {
+  const { getApiHeaders } = await import('../lib/api');
+  const response = await fetch('/api/challenge', {
+    method: 'GET',
+    headers: await getApiHeaders(),
+  });
 
-        return data;
-    }
-
+  if (!response.ok) {
     throw new Error(`Errore: ${response.status} - ${response.statusText}`);
+  }
+
+  return response.json();
 };

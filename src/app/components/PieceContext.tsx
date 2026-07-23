@@ -1,72 +1,72 @@
 "use client";
 
-import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
+import React, {
+    createContext,
+    useState,
+    useContext,
+    ReactNode,
+    useEffect,
+    useMemo,
+    type Dispatch,
+    type SetStateAction,
+} from 'react';
 import { debugLog } from '../../../lib/debug';
-import { getUsers } from '../../../services/login';
-import { getChallenge } from '../../../services/challenge';
-import { getChallengeComplete } from '../../../services/challengeComplete';
-import { getRequests } from '../../../services/friends';
-import { getFriends } from '../../../services/friends';
 import { supabase } from '../../../lib/supabase';
-import en from '../../../public/locales/en.json'
 import it from '../../../public/locales/it.json'
-import es from '../../../public/locales/es.json'
-import fr from '../../../public/locales/fr.json'
-import de from '../../../public/locales/de.json'
+import type { ChessChallenge } from '../../../services/challenge';
+import type {
+    CompletedChallenge,
+    FriendProfile,
+    FriendRequest,
+    FriendRequestDisplay,
+    Friendship,
+    UserProfile,
+} from '../../types/domain';
+import AppSkeleton from './AppSkeleton';
 
-const PieceContext = createContext<{
+type Translation = Record<string, string>;
+
+interface PieceContextValue {
     activePiece: string | null;
-    setActivePiece: (piece: string | null) => void;
+    setActivePiece: Dispatch<SetStateAction<string | null>>;
     activeClass: string;
     hoverPiece: string | null;
-    setHoverPiece: (piece: string | null) => void;
+    setHoverPiece: Dispatch<SetStateAction<string | null>>;
     isWhite: boolean;
-    setIsWhite: (value: boolean) => void;
+    setIsWhite: Dispatch<SetStateAction<boolean>>;
     time: number;
-    setTime: (value: number) => void;
+    setTime: Dispatch<SetStateAction<number>>;
     mode: string;
-    setMode: (value: string) => void;
+    setMode: Dispatch<SetStateAction<string>>;
     isGameOver: string;
-    setIsGameOver: (value: string) => void;
+    setIsGameOver: Dispatch<SetStateAction<string>>;
     selectedPiece: string | null;
-    setSelectedPiece: (piece: string | null) => void;
+    setSelectedPiece: Dispatch<SetStateAction<string | null>>;
     subMovesDrag: string;
-    setsubMovesDrag: (moves: string) => void;
-    isLoggedIn: string; // Token di login dell'utente
-    setIsLoggedIn: (value: string) => void; // Funzione per aggiornare lo stato di login
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    user: any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    setUser: (user: any) => void;
+    setsubMovesDrag: Dispatch<SetStateAction<string>>;
+    isLoggedIn: boolean;
+    setIsLoggedIn: Dispatch<SetStateAction<boolean>>;
+    user: UserProfile | null;
+    setUser: Dispatch<SetStateAction<UserProfile | null>>;
     language: string;
-    setLanguage: (language: string) => void;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    t: any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    setT: (translation: any) => void;
+    setLanguage: Dispatch<SetStateAction<string>>;
+    t: Translation;
+    setT: Dispatch<SetStateAction<Translation>>;
     darkMode: boolean;
-    setDarkMode: (value: boolean) => void;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    challenges: any[];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    setChallenges: (challenges: any[]) => void;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    completedChallenges: any[];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    setCompletedChallenges: (completedChallenges: any[]) => void;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    requests: any[];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    setRequests_: (requests: any[]) => void;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    friends: any[];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    setFriends_: (friends: any[]) => void;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    allUsers: any[];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    setAllUsers: (users: any[]) => void;
-} | null>(null);
+    setDarkMode: Dispatch<SetStateAction<boolean>>;
+    challenges: ChessChallenge[];
+    setChallenges: Dispatch<SetStateAction<ChessChallenge[]>>;
+    completedChallenges: CompletedChallenge[];
+    setCompletedChallenges: Dispatch<SetStateAction<CompletedChallenge[]>>;
+    requests: FriendRequestDisplay[];
+    setRequests_: Dispatch<SetStateAction<FriendRequestDisplay[]>>;
+    friends: FriendProfile[];
+    setFriends_: Dispatch<SetStateAction<FriendProfile[]>>;
+    allUsers: UserProfile[];
+    setAllUsers: Dispatch<SetStateAction<UserProfile[]>>;
+}
+
+const PieceContext = createContext<PieceContextValue | null>(null);
 
 /**
  * Provides a context for managing the state of chess pieces, user information, challenges, friends, and UI preferences
@@ -121,39 +121,71 @@ export const PieceProvider = ({ children }: { children: ReactNode }) => {
 
     const [isGameOver, setIsGameOver] = useState<string>('');
 
-    const [isLoggedIn, setIsLoggedIn] = useState<string>(''); // Token di autenticazione dell'utente
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [authReady, setAuthReady] = useState(false);
+    const [profileReady, setProfileReady] = useState(false);
 
     const [selectedPiece, setSelectedPiece] = useState<string | null>(null); // Stato del pezzo attivo
 
     const [subMovesDrag, setsubMovesDrag] = useState<string>('');
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const [user, setUser] = useState<any>(null); // Stato dell'utente
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const [allUsers, setAllUsers] = useState<any[]>([]); // Stato per memorizzare tutti gli utenti
-    const [language, setLanguage] = useState<string>('en'); // Stato della lingua
-    const [t, setT] = useState(en); // Traduzione corrente
+    const [user, setUser] = useState<UserProfile | null>(null);
+    const [allUsers, setAllUsers] = useState<UserProfile[]>([]);
+    const [language, setLanguage] = useState<string>('it'); // Stato della lingua
+    const [t, setT] = useState<Translation>(it);
     const [darkMode, setDarkMode] = useState(false); // Stato della modalità scura
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const [challenges, setChallenges] = useState<any[]>([]); // Stato per memorizzare le sfide
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const [completedChallenges, setCompletedChallenges] = useState<any[]>([]); // Stato per memorizzare le sfide completate
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const [requests, setRequests_] = useState<any[]>([]); // Stato per memorizzare le richieste di amicizia
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const [friends, setFriends_] = useState<any[]>([]); // Stato per memorizzare gli amici
+    const [challenges, setChallenges] = useState<ChessChallenge[]>([]);
+    const [completedChallenges, setCompletedChallenges] = useState<CompletedChallenge[]>([]);
+    const [requests, setRequests_] = useState<FriendRequestDisplay[]>([]);
+    const [friends, setFriends_] = useState<FriendProfile[]>([]);
+    const userTextSize = user?.text_size;
+    const userColorBlindMode = Boolean(user?.color_blind_mode);
 
     const activeClass = 'scale-[1.15] bg-[#ffff33] opacity-50 rounded-full';
 
     useEffect(() => {
+        document.documentElement.dataset.theme = darkMode ? 'dark' : 'light';
+        document.documentElement.classList.toggle('dark', darkMode);
+    }, [darkMode]);
+
+    useEffect(() => {
+        const textSize = ['small', 'medium', 'large'].includes(userTextSize ?? '')
+            ? userTextSize!
+            : 'medium';
+        document.documentElement.dataset.textSize = textSize;
+        document.documentElement.dataset.colorBlind = userColorBlindMode ? 'true' : 'false';
+    }, [userColorBlindMode, userTextSize]);
+
+    useEffect(() => {
+        let active = true;
+        void loadTranslations(language).then((translations) => {
+            if (active) setT(translations);
+        });
+        return () => {
+            active = false;
+        };
+    }, [language]);
+
+    useEffect(() => {
         let active = true;
 
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            if (active) setIsLoggedIn(session?.access_token ?? '');
-        });
+        supabase.auth.getSession()
+            .then(({ data: { session } }) => {
+                if (active) setIsLoggedIn(Boolean(session));
+            })
+            .catch((error) => {
+                console.error('Failed to restore the authentication session:', error);
+                if (active) setIsLoggedIn(false);
+            })
+            .finally(() => {
+                if (active) setAuthReady(true);
+            });
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-            if (active) setIsLoggedIn(session?.access_token ?? '');
+            if (active) {
+                setIsLoggedIn(Boolean(session));
+                setAuthReady(true);
+            }
         });
 
         return () => {
@@ -163,74 +195,110 @@ export const PieceProvider = ({ children }: { children: ReactNode }) => {
     }, []);
 
     useEffect(() => {
-        // Fetch generale dell'utente e dei suoi dati associati
+        let active = true;
+
         const fetchUserData = async () => {
+            if (!authReady) return;
+
+            setProfileReady(false);
+
             if (!isLoggedIn) {
                 setUser(null);
+                setAllUsers([]);
+                setRequests_([]);
+                setFriends_([]);
+                setCompletedChallenges([]);
+                setLanguage('it');
+                setT(it);
+                setDarkMode(false);
+                setProfileReady(true);
                 return;
             }
 
+            setUser(null);
+            setAllUsers([]);
+            setRequests_([]);
+            setFriends_([]);
+
             const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
             if (authError || !authUser) {
-                setUser(null);
+                if (active) {
+                    setUser(null);
+                    setProfileReady(true);
+                }
                 return;
             }
 
             try {
-                const [users, completed, friendRequests, friends] = await Promise.all([
-                    getUsers(authUser.id),
-                    getChallengeComplete(),
-                    getRequests(),
-                    getFriends(),
-                ]);
-
-                setAllUsers(users);
-                debugLog('All users:', allUsers);
-
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const foundUser = users.find((u: any) => u.auth_user_id === authUser.id);
-                if (!foundUser) return;
+                const loginService = await import('../../../services/login');
+                const foundUser = await loginService.getOwnProfile(authUser.id);
 
                 const currentUser = { ...foundUser, email: authUser.email ?? '' };
+                const userLanguage = normalizeLanguage(foundUser.language);
+                const translations = await loadTranslations(userLanguage);
+                const userDarkMode = foundUser.theme || 'light';
+
+                if (!active) return;
+
                 setUser(currentUser);
+                setAllUsers([currentUser]);
+                setLanguage(userLanguage);
+                setT(translations);
+                setDarkMode(userDarkMode === 'dark');
+                setProfileReady(true);
                 debugLog('Found user:', foundUser);
 
-                // Imposta lingua
-                const userLanguage = foundUser.language || 'en';
-                setLanguage(userLanguage);
+                try {
+                    const friendsService = await import('../../../services/friends');
+                    const [directory, friendRequests, friendships] = await Promise.all([
+                        loginService.getUserDirectory(),
+                        friendsService.getRequests(),
+                        friendsService.getFriends(),
+                    ]);
 
-                switch (userLanguage) {
-                    case 'it': setT(it); break;
-                    case 'es': setT(es); break;
-                    case 'fr': setT(fr); break;
-                    case 'de': setT(de); break;
-                    default: setT(en);
+                    if (!active) return;
+
+                    const users = [
+                        ...directory.filter((candidate) => candidate.id !== currentUser.id),
+                        currentUser,
+                    ];
+                    setAllUsers(users);
+                    setRequests_(formatFriendRequests(
+                        friendRequests,
+                        currentUser,
+                        users,
+                        translations,
+                    ));
+                    setFriends_(formatFriendsList(friendships, currentUser.id, users));
+                    debugLog('All users:', users);
+                } catch (error) {
+                    if (active) {
+                        setRequests_([]);
+                        setFriends_([]);
+                        console.error('Failed to load social data:', error);
+                    }
                 }
-
-                // Imposta tema
-                const userDarkMode = foundUser.theme || 'light';
-                setDarkMode(userDarkMode === 'dark');
-
-                // Sfide completate
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const userCompleted = completed.filter((c: any) => c.user_id === foundUser.id);
-                setCompletedChallenges(userCompleted);
-
-                // Richieste amicizia
-                const pending = formatFriendRequests(friendRequests, foundUser, users, t);
-                setRequests_(pending);
-
-                // Amici
-                const friendsList = formatFriendsList(friends, foundUser.id, users);
-                setFriends_(friendsList);
             } catch (err) {
-                console.error('Failed to fetch user data:', err);
+                if (active) {
+                    setUser(null);
+                    setAllUsers([]);
+                    setRequests_([]);
+                    setFriends_([]);
+                    setLanguage('it');
+                    setT(it);
+                    setDarkMode(false);
+                    setProfileReady(true);
+                    console.error('Failed to fetch user data:', err);
+                }
             }
         };
 
-        fetchUserData();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isLoggedIn]);
+        void fetchUserData();
+
+        return () => {
+            active = false;
+        };
+    }, [authReady, isLoggedIn]);
 
     // Update last seen periodically and on unload
     useEffect(() => {
@@ -255,85 +323,7 @@ export const PieceProvider = ({ children }: { children: ReactNode }) => {
         };
     }, [user]);
 
-    useEffect(() => {
-        // Sfide generali (non collegate all'utente)
-        const fetchChallenges = async () => {
-            try {
-                const challenges = await getChallenge();
-                setChallenges(challenges);
-            } catch (err) {
-                console.error("Errore nel get delle sfide:", err);
-            }
-        };
-
-        fetchChallenges();
-    }, []);
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    function formatFriendRequests(friendRequests: any[], user: any, users: any[], t: any) {
-        return friendRequests
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .filter((req: any) => req.receiver_id === user.id)
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .map((req: any) => {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const sender = users.find((u: any) => u.id === req.sender_id);
-                if (!sender) return undefined;
-
-                const sentAt = new Date(req.sent_at);
-                const now = new Date();
-                const diffMs = now.getTime() - sentAt.getTime();
-                const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-                let requestDate = '';
-                if (diffDays === 0) requestDate = t.today || "Today";
-                else if (diffDays === 1) requestDate = t.yesterday || "Yesterday";
-                else requestDate = `${diffDays} ${t.daysAgo || "days ago"}`;
-
-                return {
-                    id: req.id,
-                    sender_id: req.sender_id,
-                    receiver_id: req.receiver_id,
-                    username: sender.username,
-                    email: sender.email,
-                    avatar: sender.avatar,
-                    requestDate,
-                };
-            })
-            .filter((x): x is NonNullable<typeof x> => !!x);
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    function formatFriendsList(friends: any[], userId: number, users: any[]) {
-        return friends
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .filter((friend: any) =>
-                friend.user_id === userId || friend.friend_id === userId
-            )
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .map((friend: any) => {
-                const friendUserId = friend.user_id === userId ? friend.friend_id : friend.user_id;
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const friendUser = users.find((u: any) => u.id === friendUserId);
-                if (!friendUser) return undefined;
-                return {
-                    id: friend.id,
-                    user_id: friend.user_id,
-                    friend_id: friend.friend_id,
-                    username: friendUser.username,
-                    email: friendUser.email,
-                    avatar: friendUser.avatar,
-                    status: friendUser.status,
-                    lastSeen: friendUser.last_seen,
-                };
-            })
-            .filter((x): x is NonNullable<typeof x> => !!x);
-    }
-
-
-
-    return (
-        <PieceContext.Provider value={{
+    const contextValue = useMemo<PieceContextValue>(() => ({
             activePiece,
             setActivePiece,
             activeClass,
@@ -371,11 +361,126 @@ export const PieceProvider = ({ children }: { children: ReactNode }) => {
             setFriends_,
             allUsers,
             setAllUsers,
-        }}>
+        }), [
+            activePiece,
+            allUsers,
+            challenges,
+            completedChallenges,
+            darkMode,
+            friends,
+            hoverPiece,
+            isGameOver,
+            isLoggedIn,
+            isWhite,
+            language,
+            mode,
+            requests,
+            selectedPiece,
+            subMovesDrag,
+            t,
+            time,
+            user,
+        ]);
+
+    return (
+        <PieceContext.Provider value={contextValue}>
             {children}
+            {(!authReady || !profileReady) && <ApplicationBootstrap />}
         </PieceContext.Provider>
     );
 };
+
+function formatFriendRequests(
+    friendRequests: FriendRequest[],
+    user: UserProfile,
+    users: UserProfile[],
+    translations: Translation,
+): FriendRequestDisplay[] {
+    return friendRequests
+        .filter((request) => request.receiver_id === user.id)
+        .map((request) => {
+            const sender = users.find((candidate) => candidate.id === request.sender_id);
+            if (!sender) return undefined;
+
+            const sentAt = new Date(request.sent_at);
+            const now = new Date();
+            const diffMs = now.getTime() - sentAt.getTime();
+            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+            let requestDate = '';
+            if (diffDays === 0) requestDate = translations.today || 'Today';
+            else if (diffDays === 1) requestDate = translations.yesterday || 'Yesterday';
+            else requestDate = `${diffDays} ${translations.daysAgo || 'days ago'}`;
+
+            return {
+                id: request.id,
+                sender_id: request.sender_id,
+                receiver_id: request.receiver_id,
+                sent_at: request.sent_at,
+                username: sender.username ?? undefined,
+                email: sender.email ?? undefined,
+                avatar: sender.avatar ?? undefined,
+                requestDate,
+            };
+        })
+        .filter((request): request is NonNullable<typeof request> => Boolean(request));
+}
+
+function formatFriendsList(
+    friendships: Friendship[],
+    userId: number,
+    users: UserProfile[],
+): FriendProfile[] {
+    return friendships
+        .filter((friend) => friend.user_id === userId || friend.friend_id === userId)
+        .map((friend) => {
+            const friendUserId = friend.user_id === userId ? friend.friend_id : friend.user_id;
+            const friendUser = users.find((candidate) => candidate.id === friendUserId);
+            if (!friendUser) return undefined;
+
+            return {
+                id: friend.id,
+                user_id: friend.user_id,
+                friend_id: friend.friend_id,
+                username: friendUser.username ?? undefined,
+                email: friendUser.email ?? undefined,
+                avatar: friendUser.avatar ?? undefined,
+                status: friendUser.status,
+                lastSeen: friendUser.last_seen ?? undefined,
+            };
+        })
+        .filter((friend): friend is NonNullable<typeof friend> => Boolean(friend));
+}
+
+function ApplicationBootstrap() {
+    return <AppSkeleton overlay label="Preparazione del profilo BoardVerse" />;
+}
+
+async function loadTranslations(language: string) {
+    switch (language) {
+        case 'en': return (await import('../../../public/locales/en.json')).default;
+        case 'es': return (await import('../../../public/locales/es.json')).default;
+        case 'fr': return (await import('../../../public/locales/fr.json')).default;
+        case 'de': return (await import('../../../public/locales/de.json')).default;
+        default: return it;
+    }
+}
+
+function normalizeLanguage(language?: string | null): string {
+    const normalized = language?.toLocaleLowerCase();
+    const aliases: Record<string, string> = {
+        italiano: 'it',
+        english: 'en',
+        español: 'es',
+        français: 'fr',
+        deutsch: 'de',
+    };
+    return aliases[normalized ?? ''] ?? (
+        ['it', 'en', 'es', 'fr', 'de'].includes(normalized ?? '')
+            ? normalized!
+            : 'it'
+    );
+}
 
 export const usePieceContext = () => {
     const context = useContext(PieceContext);

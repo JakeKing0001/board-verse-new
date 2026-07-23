@@ -1,38 +1,72 @@
 import { NextResponse } from 'next/server';
 import { createServerSupabase } from '../../../../lib/supabaseServer';
+import {
+  AuthenticationError,
+  requireAuthenticatedProfile,
+} from '../../../../lib/serverAuth';
+
+export const GET = async (req: Request) => {
+  try {
+    const supabase = createServerSupabase(req);
+    await requireAuthenticatedProfile(supabase);
+    const { data, error } = await supabase.rpc('get_my_conversations');
+
+    if (error) {
+      console.error('Unable to load conversation summaries:', error);
+      return NextResponse.json(
+        { error: 'Unable to load conversations' },
+        { status: 400 },
+      );
+    }
+
+    return NextResponse.json(
+      { conversations: data ?? [] },
+      { headers: { 'Cache-Control': 'private, no-store' } },
+    );
+  } catch (error) {
+    if (error instanceof AuthenticationError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
+    console.error('Unexpected conversation summary error:', error);
+    return NextResponse.json({ error: 'An error occurred' }, { status: 500 });
+  }
+};
 
 /**
- * Creates a new empty conversation between two users if it does not already exist.
+ * Verifies that the authenticated user and the requested profile are friends.
  *
- * Expects a JSON body containing `userID` and `friendID`.
+ * Expects a JSON body containing `friendID`.
  */
 export const POST = async (req: Request) => {
   try {
     const supabase = createServerSupabase(req);
-    const { userID, friendID } = await req.json();
+    const { profileId } = await requireAuthenticatedProfile(supabase);
+    const { friendID } = await req.json();
+    const numericFriendId = Number(friendID);
 
-    // Check for existing conversation
-    const { data: existing } = await supabase
-      .from('messages')
-      .select('id')
-      .or(`and(sender_id.eq.${userID},receiver_id.eq.${friendID}),and(sender_id.eq.${friendID},receiver_id.eq.${userID})`)
-      .limit(1)
-      .single();
-
-    if (existing) {
-      return NextResponse.json({ message: 'Conversation already exists' });
+    if (!Number.isInteger(numericFriendId) || numericFriendId <= 0) {
+      return NextResponse.json({ error: 'Invalid friendID' }, { status: 400 });
     }
 
-    const { error } = await supabase
-      .from('messages')
-      .insert([{ sender_id: userID, receiver_id: friendID, text: [] }]);
+    const { data: friendship, error } = await supabase
+      .from('friendships')
+      .select('id')
+      .or(`and(user_id.eq.${profileId},friend_id.eq.${numericFriendId}),and(user_id.eq.${numericFriendId},friend_id.eq.${profileId})`)
+      .limit(1)
+      .maybeSingle();
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
+      return NextResponse.json({ error: 'Unable to verify friendship' }, { status: 400 });
+    }
+    if (!friendship) {
+      return NextResponse.json({ error: 'Friendship required' }, { status: 403 });
     }
 
-    return NextResponse.json({ message: 'Conversation created successfully' });
-  } catch {
+    return NextResponse.json({ message: 'Conversation ready' });
+  } catch (error) {
+    if (error instanceof AuthenticationError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
     return NextResponse.json({ error: 'An error occurred' }, { status: 500 });
   }
 };

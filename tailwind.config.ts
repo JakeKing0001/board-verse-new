@@ -1,6 +1,7 @@
 import type { Config } from "tailwindcss";
 
 export default {
+  darkMode: "class",
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -14,6 +15,9 @@ export default {
         'coordinate-light': '#739552',
         'coordinate-dark': '#EBECD0',
       },
+      fontFamily: {
+        sans: ['var(--font-geist-sans)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+      },
       backgroundImage: {
         'Chessboard-1': "url('/Chessboard-1.jpg')",
       }
@@ -21,4 +25,3 @@ export default {
   },
   plugins: [],
 } satisfies Config;
-

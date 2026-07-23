@@ -13,6 +13,18 @@ type GLTFResult = GLTF & {
   }
 }
 
+const PAWN_MODEL_PATH = '/models/scene-transformed.glb';
+const DRACO_DECODER_PATH = '/draco/';
+
+const seededMovementValue = (
+  x: number,
+  z: number,
+  offset: number,
+): number => {
+  const value = Math.sin(x * 12.9898 + z * 78.233 + offset * 37.719) * 43758.5453;
+  return value - Math.floor(value);
+};
+
 /**
  * Renders a 3D pawn model with animated movement and interactive hover effects.
  *
@@ -27,7 +39,7 @@ type GLTFResult = GLTF & {
  * @returns A React component rendering the animated pawn model.
  */
 export function Pawn(props: { position?: [number, number, number] }) {
-  const { nodes, materials } = useGLTF('models/scene-transformed.glb') as GLTFResult
+  const { nodes, materials } = useGLTF(PAWN_MODEL_PATH, DRACO_DECODER_PATH) as GLTFResult
 
   // Riferimento al gruppo
   const modelRef = useRef<THREE.Group>(null);
@@ -39,18 +51,19 @@ export function Pawn(props: { position?: [number, number, number] }) {
     const initialPosition = props.position || [0, 0, 0];
     const borderMultiplierX = Math.abs(initialPosition[0]) > 3 ? 2 : 1;
     const borderMultiplierZ = Math.abs(initialPosition[2]) > 3 ? 2 : 1;
+    const [baseX, , baseZ] = initialPosition;
 
     return {
-      verticalFrequency: Math.random() * 2 + 1,
-      horizontalFrequencyX: Math.random() * 0.5 + 0.1,
-      horizontalFrequencyZ: Math.random() * 0.5 + 0.1,
+      verticalFrequency: seededMovementValue(baseX, baseZ, 1) * 2 + 1,
+      horizontalFrequencyX: seededMovementValue(baseX, baseZ, 2) * 0.5 + 0.1,
+      horizontalFrequencyZ: seededMovementValue(baseX, baseZ, 3) * 0.5 + 0.1,
       amplitudeX: (Math.abs(initialPosition[0]) + 1) * borderMultiplierX,
       amplitudeZ: (Math.abs(initialPosition[2]) + 1) * borderMultiplierZ,
-      rotationSpeedX: Math.random() * 0.5,
-      rotationSpeedY: Math.random() * 0.5,
-      rotationSpeedZ: Math.random() * 0.5,
-      baseX: initialPosition[0],
-      baseZ: initialPosition[2]
+      rotationSpeedX: seededMovementValue(baseX, baseZ, 4) * 0.5,
+      rotationSpeedY: seededMovementValue(baseX, baseZ, 5) * 0.5,
+      rotationSpeedZ: seededMovementValue(baseX, baseZ, 6) * 0.5,
+      baseX,
+      baseZ,
     };
   }, [props.position]);
 
@@ -109,4 +122,4 @@ export function Pawn(props: { position?: [number, number, number] }) {
   )
 }
 
-useGLTF.preload('models/scene-transformed.glb')
+useGLTF.preload(PAWN_MODEL_PATH, DRACO_DECODER_PATH)

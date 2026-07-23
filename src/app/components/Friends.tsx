@@ -62,8 +62,17 @@ const FriendsPage = () => {
     }
 
     // Remove the loggedInUser from search results
-    const resultsAll = allUsers.filter(user => user.username.toLowerCase().includes(searchQuery.toLowerCase()));
-    const results = resultsAll.filter(u => user ? u.id !== user.id : true);
+    const results = allUsers
+      .filter((candidate) =>
+        candidate.username?.toLowerCase().includes(searchQuery.toLowerCase()),
+      )
+      .filter((candidate) => user ? candidate.id !== user.id : true)
+      .map((candidate) => ({
+        id: candidate.id,
+        username: candidate.username ?? `Utente ${candidate.id}`,
+        email: candidate.email ?? '',
+        avatar: candidate.avatar ?? '/default_avatar.png',
+      }));
     if (results.length === 0) {
       toast.error(t.noUsersFound || "No users found");
     } else {
@@ -106,10 +115,10 @@ const FriendsPage = () => {
 
     // Se vuoi ottenere l'ID dell'utente che ha inviato la richiesta (friendID)
     // supponendo che la struttura sia { id, sender_id, receiver_id, ... }
-    const friendID = userRequest ? userRequest.sender_id : undefined;
+    const friendID = userRequest?.sender_id;
     debugLog('Friend ID:', friendID);
 
-    if (user && userRequest) {
+    if (user && userRequest && friendID) {
       try {
         // Add to friends in backend
         await setFriends({
@@ -119,7 +128,7 @@ const FriendsPage = () => {
 
         // Initialize an empty conversation between the new friends
         if (friendID) {
-          await createConversation({ userID: user.id, friendID });
+          await createConversation({ friendID });
         }
 
         // Delete request
@@ -133,9 +142,11 @@ const FriendsPage = () => {
           ...friends,
           {
             id: userRequest.id,
-            username: userRequest.username,
-            email: userRequest.email,
-            avatar: userRequest.avatar,
+            user_id: user.id,
+            friend_id: friendID,
+            username: userRequest.username ?? `Utente ${friendID}`,
+            email: userRequest.email ?? '',
+            avatar: userRequest.avatar ?? '/default_avatar.png',
             status: 'online',
             lastSeen: 'Now'
           }
@@ -216,12 +227,12 @@ const FriendsPage = () => {
   };
 
   return (
-    <>
-      <div className={`fixed top-0 left-0 w-full ${darkMode ? 'bg-slate-800' : 'bg-white'} shadow-md z-50`}>
+    <div className="bv-page">
+      <div className="bv-nav-slot">
         <NavBar current={3} />
       </div>
 
-      <div className={`fixed inset-0 flex flex-col items-center ${darkMode ? 'bg-slate-900 text-white' : 'bg-gradient-to-br from-green-100 via-amber-50 to-green-100 text-green-800'} pt-24 overflow-hidden`}>
+      <main className="bv-page-with-nav relative flex min-h-screen flex-col items-center overflow-y-auto pb-14 text-[var(--bv-text)]">
 
         {/* Animated background elements */}
         <div className="absolute inset-0">
@@ -232,8 +243,8 @@ const FriendsPage = () => {
         </div>
 
         {/* Main content */}
-        <div className="z-10 w-full max-w-5xl px-4 flex flex-col items-center">
-          <h1 className="text-5xl font-bold mb-8 tracking-tight">
+        <div className="z-10 flex w-full max-w-5xl flex-col items-center px-4 py-10 sm:py-14">
+          <h1 className="mb-8 text-center text-4xl font-black tracking-[-0.05em] sm:text-6xl">
             {t.friends || "Friends"}
           </h1>
 
@@ -241,7 +252,7 @@ const FriendsPage = () => {
           <div className="mb-8">
             <button
               onClick={handleAddFriend}
-              className={`group relative inline-flex items-center justify-center px-8 py-4 text-xl font-bold text-white transition-all duration-500 ease-in-out transform ${darkMode ? 'bg-slate-700 hover:bg-slate-600' : 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700'} rounded-full shadow-lg hover:shadow-xl hover:-translate-y-1 active:translate-y-0`}
+              className="bv-button-primary group px-8 text-base sm:text-lg"
             >
               <span className="relative flex items-center">
                 <span>{t.addFriend || "Add Friend"}</span>
@@ -253,7 +264,7 @@ const FriendsPage = () => {
           </div>
 
           {/* Tabs */}
-          <div className="w-full max-w-4xl mb-6 flex border-b">
+          <div className="bv-tabs mb-6 w-full max-w-4xl">
             <button
               className={`flex-1 py-3 font-medium text-lg ${activeTab === 'friends' ? `border-b-2 ${darkMode ? 'border-blue-500' : 'border-green-500'}` : ''}`}
               onClick={() => setActiveTab('friends')}
@@ -272,7 +283,7 @@ const FriendsPage = () => {
           </div>
 
           {/* Friends list or requests based on active tab */}
-          <div className={`w-full max-w-4xl ${darkMode ? 'bg-slate-800' : 'bg-white/40'} backdrop-blur-md rounded-3xl shadow-2xl p-8 border ${darkMode ? 'border-slate-700' : 'border-white/50'}`}>
+          <div className={`bv-glass bv-liquid w-full max-w-4xl rounded-3xl border p-5 shadow-2xl sm:p-8 ${darkMode ? 'border-slate-700' : 'border-white/50'}`}>
             {activeTab === 'friends' ? (
               <>
                 <h2 className="text-2xl font-semibold mb-6">
@@ -288,14 +299,14 @@ const FriendsPage = () => {
                     {friends.map((friend) => (
                       <div
                         key={friend.id}
-                        className={`p-4 rounded-xl transition-all duration-300 ${darkMode ? 'bg-slate-700 hover:bg-slate-600' : 'bg-white/60 hover:bg-white/80'} flex items-center justify-between`}
+                        className={`bv-glass-soft flex flex-col gap-4 rounded-2xl p-4 transition-all duration-300 sm:flex-row sm:items-center sm:justify-between ${darkMode ? 'bg-slate-700 hover:bg-slate-600' : 'bg-white/60 hover:bg-white/80'}`}
                       >
                         <div className="flex items-center space-x-4">
                           <div className="relative">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
-                              src={friend.avatar}
-                              alt={friend.username}
+                              src={friend.avatar || '/default_avatar.png'}
+                              alt={friend.username || 'Amico'}
                               className="w-12 h-12 rounded-full object-cover border-2 border-white/30"
                             />
                             <span
@@ -305,14 +316,14 @@ const FriendsPage = () => {
                           <div>
                             <h3 className="font-bold">{friend.username}</h3>
                             <div className="flex items-center text-sm">
-                              <span className={getStatusColor(friend.status)}>
+                              <span className={getStatusColor(friend.status || 'offline')}>
                                 {friend.status === 'online' ? (t.online || "Online") : (t.lastSeen || "Last seen") + ": " + friend.lastSeen}
                               </span>
                             </div>
                           </div>
                         </div>
 
-                        <div className="flex gap-2">
+                        <div className="flex w-full flex-wrap gap-2 sm:w-auto">
                           <button
                             className={`px-3 py-1 rounded-full text-sm ${darkMode ? 'bg-blue-600 hover:bg-blue-500 text-white' : 'bg-green-100 hover:bg-green-200 text-green-800'} transition-colors`}
                           >
@@ -345,13 +356,13 @@ const FriendsPage = () => {
                     {requests.map((request) => (
                       <div
                         key={request.id}
-                        className={`p-4 rounded-xl transition-all duration-300 ${darkMode ? 'bg-slate-700' : 'bg-white/60'} flex items-center justify-between`}
+                        className={`bv-glass-soft flex flex-col gap-4 rounded-2xl p-4 transition-all duration-300 sm:flex-row sm:items-center sm:justify-between ${darkMode ? 'bg-slate-700' : 'bg-white/60'}`}
                       >
                         <div className="flex items-center space-x-4">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
-                            src={request.avatar}
-                            alt={request.username}
+                            src={request.avatar || '/default_avatar.png'}
+                            alt={request.username || 'Richiesta di amicizia'}
                             className="w-12 h-12 rounded-full object-cover border-2 border-white/30"
                           />
                           <div>
@@ -362,7 +373,7 @@ const FriendsPage = () => {
                           </div>
                         </div>
 
-                        <div className="flex gap-2">
+                        <div className="flex w-full flex-wrap gap-2 sm:w-auto">
                           <button
                             onClick={() => acceptFriendRequest(request.id)}
                             className={`px-3 py-1 rounded-full text-sm ${darkMode ? 'bg-green-600 hover:bg-green-500 text-white' : 'bg-green-500 hover:bg-green-600 text-white'} transition-colors`}
@@ -384,12 +395,12 @@ const FriendsPage = () => {
             )}
           </div>
         </div>
-      </div>
+      </main>
 
       {/* Add Friend Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className={`relative max-w-md w-full mx-4 p-6 rounded-2xl shadow-2xl ${darkMode ? 'bg-slate-800 text-white' : 'bg-white text-green-800'}`}>
+        <div className="bv-modal-backdrop fixed inset-0 z-[150] flex items-center justify-center p-4">
+          <div className="bv-glass-strong bv-liquid bv-form relative mx-4 w-full max-w-md rounded-3xl p-6 text-[var(--bv-text)] shadow-2xl">
             <button
               onClick={() => setShowModal(false)}
               className={`absolute top-4 right-4 p-1 rounded-full ${darkMode ? 'hover:bg-slate-700' : 'hover:bg-gray-100'}`}
@@ -463,7 +474,7 @@ const FriendsPage = () => {
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 };
 

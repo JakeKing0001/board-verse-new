@@ -1,21 +1,40 @@
-/**
- * Fetches analysis data from the Stockfish online API for a given chess position in FEN notation and search depth.
- *
- * @param fen - The FEN (Forsyth-Edwards Notation) string representing the chess board position.
- * @param depth - The search depth for the Stockfish engine analysis.
- * @returns A promise that resolves to the JSON response from the Stockfish API, or `null` if an error occurs.
- *
- * @throws Will throw an error if the HTTP response is not OK.
- */
-export async function fetchStockfishData(fen: string, depth: number) {
-  try {
-    const response = await fetch(`https://stockfish.online/api/s/v2.php?fen=${fen}&depth=${depth}`);
-    if (response.ok) {
-      return response.json(); // Directly return the promise
-    }
-    throw new Error(`Errore HTTP! Status: ${response.status}`);
-  } catch (error) {
-    console.error("Errore nella fetch:", error);
-    return null;
+export interface StockfishData {
+  success: boolean;
+  source: 'stockfish' | 'local-fallback';
+  move: string;
+  bestmove: string;
+  evaluation: number | null;
+  mate: number | null;
+  continuation: string;
+  warning?: string;
+}
+
+interface StockfishError {
+  success?: false;
+  error?: string;
+}
+
+export async function fetchStockfishData(
+  fen: string,
+  depth: number,
+  signal?: AbortSignal,
+): Promise<StockfishData> {
+  const searchParams = new URLSearchParams({
+    fen,
+    depth: String(Math.min(15, Math.max(1, Math.trunc(depth)))),
+  });
+  const response = await fetch(`/api/stockfish?${searchParams.toString()}`, {
+    cache: 'no-store',
+    credentials: 'same-origin',
+    headers: { Accept: 'application/json' },
+    signal,
+  });
+  const payload = await response.json() as StockfishData | StockfishError;
+
+  if (!response.ok || !payload.success || !('move' in payload)) {
+    const errorMessage = 'error' in payload ? payload.error : undefined;
+    throw new Error(errorMessage || `Analisi Stockfish non disponibile (${response.status})`);
   }
+
+  return payload;
 }

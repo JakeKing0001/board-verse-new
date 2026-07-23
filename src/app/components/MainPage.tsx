@@ -1,88 +1,179 @@
+"use client";
+
+import {
+  ArrowRight,
+  Bot,
+  ChartNoAxesCombined,
+  Puzzle,
+  ShieldCheck,
+  Sparkles,
+  Zap,
+} from "lucide-react";
 import Link from "next/link";
-import NavBar from "./NavBar";
-import { useEffect } from "react";
-import { usePieceContext } from "./PieceContext";
 import toast from "react-hot-toast";
+import NavBar from "./NavBar";
+import { usePieceContext } from "./PieceContext";
 
-/**
- * MainPage component renders the landing page of the application.
- * 
- * Features:
- * - Displays a navigation bar at the top.
- * - Shows an animated, visually appealing background with blurred, colored circles and decorative rings.
- * - Presents the main title, description, and a prominent "Play" button.
- * - The "Play" button navigates to the game mode if the user is logged in; otherwise, it shows an error toast.
- * - Adapts styles based on the current dark mode setting.
- * - Removes a specific style element from the document head on mount for cleanup.
- * 
- * Context:
- * - Uses `usePieceContext` to access authentication status, translation function, and dark mode state.
- * 
- * @component
- */
+const previewPieces = ["♜", "♞", "♝", "♛", "♔", "♙", "♟", "♚"];
+
 const MainPage = () => {
-  const { isLoggedIn, t, darkMode } = usePieceContext();
+  const { isLoggedIn, t } = usePieceContext();
+  const playHref = isLoggedIn ? "/gameMode" : "/login";
 
-  useEffect(() => {
-    const style = document.getElementById("check-border-style");
-    if (style) {
-      document.head.removeChild(style);
-    }
-  }, []);
+  const features = [
+    {
+      icon: Bot,
+      title: t.homeFeatureAi || "Allenati con Stockfish",
+      description: t.homeFeatureAiDescription || "Scegli il livello e affronta un motore affidabile.",
+      accent: "from-violet-500 to-indigo-500",
+    },
+    {
+      icon: Puzzle,
+      title: t.homeFeatureChallenge || "Risolvi challenge",
+      description: t.homeFeatureChallengeDescription || "Affina tattica, visione e precisione mossa dopo mossa.",
+      accent: "from-amber-400 to-orange-500",
+    },
+    {
+      icon: ChartNoAxesCombined,
+      title: t.homeFeatureStats || "Misura i progressi",
+      description: t.homeFeatureStatsDescription || "Statistiche private e leggibili per capire dove migliori.",
+      accent: "from-emerald-400 to-teal-500",
+    },
+  ];
 
   return (
-    <>
-      <div className={`fixed top-0 left-0 w-full ${darkMode ? 'bg-slate-800' : 'bg-white'} shadow-md z-50`}>
+    <div className="bv-page">
+      <div className="bv-nav-slot">
         <NavBar current={0} />
       </div>
-      <div className={`fixed inset-0 flex items-center justify-center ${darkMode ? 'bg-slate-900' : 'bg-gradient-to-br from-green-100 via-amber-50 to-green-100'} pt-24 overflow-hidden`}>
-        <div className="relative flex flex-col items-center justify-center">
-          {/* Animated background elements - migliorati con più elementi e colori */}
-          <div className="absolute inset-0">
-            <div className={`absolute top-1/4 left-1/4 w-40 h-40 sm:w-60 sm:h-60 md:w-80 md:h-80 ${darkMode ? 'bg-slate-700' : 'bg-green-200'} rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse`}></div>
-            <div className={`absolute top-1/3 right-1/3 w-48 h-48 sm:w-72 sm:h-72 md:w-96 md:h-96 ${darkMode ? 'bg-slate-600' : 'bg-amber-200'} rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse delay-700`}></div>
-            <div className={`absolute bottom-1/4 left-1/3 w-36 h-36 sm:w-56 sm:h-56 md:w-72 md:h-72 ${darkMode ? 'bg-slate-800' : 'bg-green-300'} rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse delay-1000`}></div>
-            <div className={`absolute bottom-1/3 right-1/4 w-32 h-32 sm:w-48 sm:h-48 md:w-64 md:h-64 ${darkMode ? 'bg-slate-700' : 'bg-amber-100'} rounded-full mix-blend-multiply filter blur-xl opacity-60 animate-pulse delay-500`}></div>
-          </div>
 
-          {/* Main content container - design migliorato */}
-          <div className={`z-10 text-center px-4 py-8 sm:px-8 sm:py-10 md:p-14 ${darkMode ? 'bg-slate-800 text-white' : 'bg-white/40 text-green-800'} backdrop-blur-md rounded-3xl shadow-2xl transform hover:scale-105 transition-all duration-500 border ${darkMode ? 'border-slate-700' : 'border-white/50'} w-[95vw] max-w-xl sm:max-w-2xl`}>
-            <h1 className="text-6xl font-bold mb-6 tracking-tight">
-              Boardverse
+      <main className="bv-page-with-nav pb-10 sm:pb-16">
+        <section className="bv-shell grid min-h-[calc(100svh-7rem)] items-center gap-10 py-10 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16 lg:py-16">
+          <div className="relative z-10">
+            <span className="bv-eyebrow">
+              <Sparkles aria-hidden="true" className="h-3.5 w-3.5" />
+              {t.homeEyebrow || "La tua arena strategica"}
+            </span>
+
+            <h1 className="bv-title mt-6">
+              Pensa.
+              <br />
+              Gioca.
+              <br />
+              <span className="bv-title-gradient">Evolvi.</span>
             </h1>
-            <p className="text-2xl mb-10 font-light max-w-md mx-auto">
-              {t.mainPageDescription}
+
+            <p className="bv-lead mt-7">
+              {t.homeHeroDescription || t.mainPageDescription}
             </p>
 
-            <Link href={isLoggedIn ? "/gameMode" : ""}>
-              <button
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <Link
+                href={playHref}
                 onClick={() => {
-                  if (!isLoggedIn) {
-                    toast.error(t.loginToPlay);
-                  }
+                  if (!isLoggedIn) toast.error(t.loginToPlay);
                 }}
-                className={`group relative inline-flex items-center justify-center px-10 py-4 text-xl font-bold text-white transition-all duration-500 ease-in-out transform ${darkMode ? 'bg-slate-700 hover:bg-slate-600' : 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700'} rounded-full shadow-lg hover:shadow-xl hover:-translate-y-1 active:translate-y-0`}
+                className="bv-button-primary group px-6"
               >
-                <span className="relative flex items-center">
-                  <span>{t.play}</span>
-                  <svg className="ml-2 w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
-                  </svg>
-                  <span className="absolute bottom-0 left-0 w-full h-px bg-white transform origin-left scale-x-0 transition-transform duration-300 group-hover:scale-x-100"></span>
-                </span>
-              </button>
-            </Link>
+                {t.play}
+                <ArrowRight aria-hidden="true" className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </Link>
+              <Link href="/challenge" className="bv-button-ghost px-6">
+                <Puzzle aria-hidden="true" className="h-4 w-4 text-violet-500" />
+                {t.challenges}
+              </Link>
+            </div>
 
-            {/* Decorative rings - design migliorato */}
-            <div className="absolute inset-0 -z-10">
-              <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[620px] h-[620px] border-2 ${darkMode ? 'border-slate-700/30' : 'border-green-200/30'} rounded-full animate-pulse`}></div>
-              <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[520px] h-[520px] border-2 ${darkMode ? 'border-slate-600/30' : 'border-amber-200/30'} rounded-full animate-pulse delay-300`}></div>
-              <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[420px] h-[420px] border-2 ${darkMode ? 'border-slate-500/30' : 'border-green-300/30'} rounded-full animate-pulse delay-500`}></div>
+            <div className="mt-8 flex flex-wrap gap-x-5 gap-y-2 text-sm font-semibold text-[var(--bv-muted)]">
+              <span className="inline-flex items-center gap-2">
+                <ShieldCheck aria-hidden="true" className="h-4 w-4 text-emerald-500" />
+                {t.homePrivate || "Dati protetti"}
+              </span>
+              <span className="inline-flex items-center gap-2">
+                <Zap aria-hidden="true" className="h-4 w-4 text-amber-500" />
+                {t.homeFast || "Esperienza veloce"}
+              </span>
             </div>
           </div>
-        </div>
-      </div>
-    </>
+
+          <div className="relative mx-auto w-full max-w-[34rem] lg:mx-0 lg:ml-auto">
+            <div
+              aria-hidden="true"
+              className="absolute -inset-8 rounded-[4rem] bg-gradient-to-br from-emerald-400/20 via-violet-400/10 to-amber-300/20 blur-3xl"
+            />
+
+            <div className="bv-glass bv-liquid relative rounded-[2.5rem] p-4 sm:p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-black uppercase tracking-[0.18em] text-emerald-600 dark:text-emerald-300">
+                    BoardVerse
+                  </p>
+                  <p className="mt-1 text-xl font-black">Focus mode</p>
+                </div>
+                <span className="flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-200">
+                  <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
+                  Live
+                </span>
+              </div>
+
+              <div className="relative mx-auto mt-5 aspect-square w-[78%] rotate-[-2deg] rounded-[1.6rem] border border-white/25 bg-[#6f4937] p-2 shadow-2xl sm:p-3">
+                <div className="grid h-full grid-cols-4 overflow-hidden rounded-xl">
+                  {Array.from({ length: 16 }).map((_, index) => {
+                    const piece = previewPieces[index % previewPieces.length];
+                    return (
+                      <div
+                        key={index}
+                        className={`grid place-items-center text-[clamp(1.7rem,5vw,3.5rem)] ${
+                          (Math.floor(index / 4) + index) % 2 === 0
+                            ? "bg-[#efd9b3] text-slate-900"
+                            : "bg-[#9a6147] text-white"
+                        }`}
+                      >
+                        {index === 5 || index === 10 ? "" : piece}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="mt-5 flex items-center justify-between gap-3">
+                <div className="bv-glass-strong min-w-0 flex-1 rounded-2xl px-4 py-3">
+                  <p className="text-[10px] font-black uppercase tracking-[0.15em] text-[var(--bv-muted)]">
+                    Analisi posizione
+                  </p>
+                  <p className="mt-0.5 truncate text-sm font-black text-emerald-600 dark:text-emerald-300">
+                    +1.24 · Mossa forte
+                  </p>
+                </div>
+
+                <div className="bv-glass-strong grid h-12 w-12 shrink-0 place-items-center rounded-2xl">
+                  <Bot aria-hidden="true" className="h-6 w-6 text-violet-500" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="bv-shell bv-defer pb-8" aria-label="Funzionalità principali">
+          <div className="grid gap-4 md:grid-cols-3">
+            {features.map((feature) => {
+              const Icon = feature.icon;
+              return (
+                <article key={feature.title} className="bv-glass-soft bv-card rounded-[var(--bv-radius)] p-5 sm:p-6">
+                  <span className={`grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br ${feature.accent} text-white shadow-lg`}>
+                    <Icon aria-hidden="true" className="h-5 w-5" />
+                  </span>
+                  <h2 className="mt-5 text-lg font-black">{feature.title}</h2>
+                  <p className="mt-2 text-sm leading-6 text-[var(--bv-muted)]">
+                    {feature.description}
+                  </p>
+                </article>
+              );
+            })}
+          </div>
+        </section>
+      </main>
+    </div>
   );
 };
 

@@ -4,6 +4,8 @@ import * as THREE from 'three'
 import React, { useRef } from 'react'
 import { useGLTF} from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
+
+const DRACO_DECODER_PATH = '/draco/';
 import { JSX } from 'react';
 import { GLTF } from 'three-stdlib'
 
@@ -29,7 +31,10 @@ type GLTFResult = GLTF & {
  */
 export function Trophy(props: JSX.IntrinsicElements['group']) {
   const groupRef = useRef<THREE.Group>(null);
-  const { nodes, materials } = useGLTF('/models/trophy-transformed.glb') as GLTFResult
+  const { nodes, materials } = useGLTF(
+    '/models/trophy-transformed.glb',
+    DRACO_DECODER_PATH,
+  ) as GLTFResult
 
   useFrame(() => {
     if (groupRef.current) {
@@ -65,4 +70,4 @@ export function Trophy(props: JSX.IntrinsicElements['group']) {
   )
 }
 
-useGLTF.preload('/models/trophy-transformed.glb')
+useGLTF.preload('/models/trophy-transformed.glb', DRACO_DECODER_PATH)
