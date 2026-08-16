@@ -54,6 +54,17 @@ test('la scelta modalità non dipende da HDR esterni', async ({ page }) => {
   expect(criticalConsoleErrors).toEqual([]);
 });
 
+test('la homepage presenta chiaramente la nuova esperienza 3D', async ({ page }) => {
+  await page.goto('/');
+
+  await expect(page.getByRole('link', { name: /Scacchiera immersiva a schermo intero/ })).toHaveAttribute(
+    'href',
+    '/gameMode',
+  );
+  await expect(page.getByText('2D/3D', { exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Entra nella partita' })).toBeVisible();
+});
+
 test('muovere un pedone mantiene il DOM sincronizzato con React', async ({ page }) => {
   const pageErrors: string[] = [];
   const removeChildErrors: string[] = [];
@@ -105,7 +116,18 @@ test('la visuale passa da 2D a 3D durante la partita senza perdere la posizione'
   await expect(threeDimensionalView).toHaveAttribute('aria-pressed', 'true');
   await expect(page.getByRole('group', { name: 'Visuale 3D' })).toBeVisible();
   await expect(page.locator('canvas')).toBeVisible({ timeout: 15_000 });
-  await expect(page.getByText('Trascina per ruotare · scorri per zoomare')).toBeVisible();
+  const interactionHint = page.getByText('Trascina per ruotare · scorri per zoomare');
+  if ((page.viewportSize()?.width ?? 0) <= 640) {
+    await expect(interactionHint).toBeHidden();
+  } else {
+    await expect(interactionHint).toBeVisible();
+  }
+  const immersiveScene = page.locator('.board-3d-immersive');
+  await expect(immersiveScene).toHaveCSS('position', 'fixed');
+  const sceneBounds = await immersiveScene.boundingBox();
+  const viewport = page.viewportSize();
+  expect(sceneBounds?.width).toBeGreaterThanOrEqual((viewport?.width ?? 1) - 1);
+  expect(sceneBounds?.height).toBeGreaterThanOrEqual((viewport?.height ?? 1) - 1);
 
   const twoDimensionalView = page.getByRole('button', { name: 'Visuale 2D' });
   await twoDimensionalView.click();

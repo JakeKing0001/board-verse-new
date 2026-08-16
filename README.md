@@ -1,7 +1,7 @@
 <div align="center">
   <img src="public/logo.svg" width="88" alt="Boardverse logo" />
   <h1>Boardverse</h1>
-  <p><strong>A full-stack chess platform for live play, focused training and measurable progress.</strong></p>
+  <p><strong>A full-stack chess platform with live play, focused training and a full-screen immersive 3D board.</strong></p>
   <p>
     <a href="#product-tour">Product tour</a> ·
     <a href="#engineering-highlights">Engineering</a> ·
@@ -9,28 +9,29 @@
   </p>
 </div>
 
-![Boardverse home interface](docs/boardverse-preview.png)
+![Boardverse home interface with immersive 3D announcement](docs/boardverse-home-3d.jpg)
 
 Boardverse turns a classic chess application into a complete product experience:
-authenticated profiles, private realtime games, Stockfish training, tactical
-challenges, social features and persistent statistics in one responsive interface.
+an accessible 2D board, a rotatable full-screen 3D arena, authenticated profiles,
+private realtime games, Stockfish training, tactical challenges, social features
+and persistent statistics in one responsive interface.
 
 ## Product tour
 
 | Play your way | Build a complete player journey |
 | --- | --- |
 | Local multiplayer, Stockfish, private online rooms and curated challenges | Account recovery, friends, private messages, profiles, themes and statistics |
-| Switch between an accessible 2D board and an interactive 3D view mid-game | One shared position keeps moves, turns, timers and realtime updates synchronized |
+| Switch between an accessible 2D board and a full-screen 3D arena mid-game | One shared position keeps moves, turns, timers and realtime updates synchronized |
 | Five interface languages | Responsive, accessible UI with dark and colour-blind modes |
 
 ![Boardverse game mode selection](docs/boardverse-game-modes.png)
 
 ### One match, two perspectives
 
-Players can move between the fast, accessible 2D board and an interactive 3D
-table at any point in a match. The 3D camera can rotate and zoom, while legal
-targets, captures, castling, check and the last move receive distinct visual
-feedback.
+Players can move between the fast, accessible 2D board and an immersive 3D
+arena at any point in a match. In 3D, the entire viewport becomes the scene:
+the board can rotate and zoom beneath a compact game HUD, while legal targets,
+captures, castling, check and the last move receive distinct visual feedback.
 
 ![Boardverse interactive 3D chess view](docs/boardverse-3d.jpg)
 
@@ -40,7 +41,7 @@ feedback.
 - **Server-verified authentication:** Supabase sessions are validated before privileged operations.
 - **Database security:** Row Level Security, explicit grants and authenticated RPCs protect sensitive game flows.
 - **Chess intelligence:** `chess.js`, custom state logic and a Stockfish integration cover legal play and AI training.
-- **Dual board renderer:** the 2D and procedural Three.js boards consume the same FEN and legal-move model, so players can switch perspective without restarting a match.
+- **Dual board renderer:** the 2D interface and full-viewport procedural Three.js arena consume the same FEN and legal-move model, so players can switch perspective without restarting a match.
 - **Product-level UX:** multilingual copy, responsive navigation, loading states, themes and accessibility preferences.
 - **Quality gates:** unit tests, browser smoke tests, linting and production builds run in CI.
 

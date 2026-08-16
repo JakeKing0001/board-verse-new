@@ -82,6 +82,11 @@ body {
   color: var(--bv-text);
 }
 
+body.boardverse-3d-active {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
 ::selection {
   background: rgb(32 201 151 / 0.3);
   color: var(--bv-text);
@@ -516,6 +521,56 @@ body {
   box-shadow: 0 8px 20px -15px color-mix(in srgb, var(--bv-primary) 72%, transparent);
 }
 
+.board-3d-top-hud {
+  position: fixed;
+  top: 1rem;
+  left: 50%;
+  z-index: 55;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  transform: translateX(-50%);
+}
+
+.board-3d-mode-badge {
+  display: inline-flex;
+  min-height: 3.2rem;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid rgb(255 255 255 / 0.16);
+  border-radius: 1rem;
+  padding: 0.7rem 0.9rem;
+  background: rgb(5 16 18 / 0.72);
+  color: #b8f8df;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  box-shadow: 0 18px 45px -24px rgb(0 0 0 / 0.8);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  backdrop-filter: blur(18px) saturate(140%);
+}
+
+.board-view-switcher-immersive {
+  border-color: rgb(255 255 255 / 0.15);
+  background: rgb(5 16 18 / 0.72);
+  box-shadow: 0 18px 45px -24px rgb(0 0 0 / 0.8);
+}
+
+.board-view-switcher-immersive button {
+  color: rgb(226 247 240 / 0.7);
+}
+
+.board-view-switcher-immersive button:hover {
+  color: white;
+}
+
+.board-view-switcher-immersive button.is-active {
+  border-color: rgb(70 231 174 / 0.36);
+  background: rgb(31 184 137 / 0.2);
+  color: #8ff3ce;
+}
+
 .board-3d-frame {
   isolation: isolate;
   background:
@@ -525,6 +580,37 @@ body {
   box-shadow:
     0 32px 84px -30px rgb(15 23 42 / 0.72),
     0 0 0 1px rgb(255 255 255 / 0.08) inset;
+}
+
+.board-3d-immersive {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  width: 100vw;
+  height: 100svh;
+  overflow: hidden;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.board-3d-immersive.is-dark {
+  background: #050b12;
+}
+
+.board-3d-immersive.is-light {
+  background: #dfece6;
+}
+
+.board-3d-immersive::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    linear-gradient(to bottom, rgb(2 8 11 / 0.2), transparent 18% 76%, rgb(2 8 11 / 0.28)),
+    radial-gradient(circle at 50% 50%, transparent 48%, rgb(2 8 11 / 0.28) 100%);
 }
 
 .board-3d-stage {
@@ -537,6 +623,7 @@ body {
 .board-3d-stage canvas {
   width: 100% !important;
   height: 100% !important;
+  touch-action: none;
 }
 
 .board-3d-hint {
@@ -555,6 +642,179 @@ body {
   box-shadow: var(--bv-shadow-soft);
   -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
+}
+
+.board-3d-immersive .board-3d-hint {
+  position: fixed;
+  right: auto;
+  bottom: 1rem;
+  left: 50%;
+  z-index: 45;
+  border-color: rgb(255 255 255 / 0.15);
+  background: rgb(5 16 18 / 0.72);
+  color: rgb(226 247 240 / 0.78);
+  transform: translateX(-50%);
+}
+
+.board-3d-player-stack {
+  position: fixed;
+  top: 50%;
+  left: 1rem;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  transform: translateY(-50%);
+}
+
+.board-3d-player-stack > div {
+  min-width: 7.5rem;
+  border: 1px solid rgb(255 255 255 / 0.14);
+  border-radius: 1.15rem;
+  padding: 0.75rem;
+  background: rgb(5 16 18 / 0.68);
+  color: white;
+  box-shadow: 0 18px 45px -24px rgb(0 0 0 / 0.85);
+  -webkit-backdrop-filter: blur(16px) saturate(135%);
+  backdrop-filter: blur(16px) saturate(135%);
+}
+
+.board-3d-player-stack > span {
+  font-size: 0.65rem;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.board-3d-timers {
+  position: fixed;
+  top: 50%;
+  right: 1rem;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.home-3d-announcement {
+  display: inline-flex;
+  min-height: 2rem;
+  align-items: center;
+  gap: 0.48rem;
+  border: 1px solid rgb(34 211 153 / 0.28);
+  border-radius: 999px;
+  padding: 0.35rem 0.7rem 0.35rem 0.4rem;
+  background: linear-gradient(135deg, rgb(16 185 129 / 0.14), rgb(6 182 212 / 0.1));
+  color: var(--bv-primary);
+  font-size: 0.7rem;
+  font-weight: 850;
+  text-decoration: none;
+  box-shadow: 0 12px 28px -22px rgb(5 150 105 / 0.8);
+}
+
+.home-3d-announcement > span {
+  border-radius: 999px;
+  padding: 0.22rem 0.45rem;
+  background: linear-gradient(135deg, #0c9870, #06b6d4);
+  color: white;
+  font-size: 0.58rem;
+  letter-spacing: 0.11em;
+}
+
+.home-3d-announcement:hover {
+  border-color: rgb(34 211 153 / 0.5);
+  background: linear-gradient(135deg, rgb(16 185 129 / 0.2), rgb(6 182 212 / 0.15));
+}
+
+.home-board-preview-3d {
+  transform: perspective(980px) rotateX(12deg) rotateZ(-2deg);
+  transform-style: preserve-3d;
+  transition: transform 420ms cubic-bezier(0.2, 0.75, 0.2, 1);
+}
+
+.home-board-preview-3d:hover {
+  transform: perspective(980px) rotateX(5deg) rotateZ(0deg) scale(1.015);
+}
+
+.home-board-preview-3d > div {
+  transform: translateZ(8px);
+}
+
+.home-board-preview-badge {
+  position: absolute;
+  right: -1rem;
+  bottom: -0.9rem;
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.42rem;
+  border: 1px solid rgb(255 255 255 / 0.6);
+  border-radius: 999px;
+  padding: 0.5rem 0.7rem;
+  background: rgb(255 255 255 / 0.82);
+  color: #087d5b;
+  font-size: 0.68rem;
+  font-weight: 900;
+  box-shadow: 0 14px 30px -18px rgb(5 74 55 / 0.72);
+  transform: translateZ(22px);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+
+html[data-theme="dark"] .home-board-preview-badge {
+  border-color: rgb(255 255 255 / 0.18);
+  background: rgb(5 20 18 / 0.82);
+  color: #71e6bd;
+}
+
+@media (max-width: 640px) {
+  .board-3d-top-hud {
+    top: 0.65rem;
+  }
+
+  .board-3d-mode-badge {
+    display: none;
+  }
+
+  .board-view-switcher-immersive button {
+    min-height: 2.8rem;
+    padding-inline: 0.7rem;
+  }
+
+  .board-3d-player-stack {
+    top: auto;
+    bottom: 5.2rem;
+    left: 0.6rem;
+    flex-direction: row;
+    transform: none;
+  }
+
+  .board-3d-player-stack > div {
+    min-width: auto;
+    padding: 0.5rem;
+  }
+
+  .board-3d-player-stack > span {
+    display: none;
+  }
+
+  .board-3d-timers {
+    top: auto;
+    right: 0.55rem;
+    bottom: 0.55rem;
+    left: 0.55rem;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 0.45rem;
+    transform: none;
+  }
+
+  .board-3d-immersive .board-3d-hint {
+    display: none;
+  }
 }
 
 .board-square {

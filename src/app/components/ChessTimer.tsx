@@ -5,6 +5,7 @@ interface ChessTimerProps {
   isWhite: boolean;
   initialTime: number;
   role: 'host' | 'guest' | 'spectator';
+  immersive?: boolean;
 }
 
 const formatClock = (time: number) => {
@@ -52,7 +53,7 @@ function TimerCard({
   );
 }
 
-const ChessTimer: React.FC<ChessTimerProps> = ({ isWhite, initialTime, role }) => {
+const ChessTimer: React.FC<ChessTimerProps> = ({ isWhite, initialTime, role, immersive = false }) => {
   const [whiteTime, setWhiteTime] = useState(initialTime);
   const [blackTime, setBlackTime] = useState(initialTime);
   const { t, setIsGameOver } = usePieceContext();
@@ -85,7 +86,9 @@ const ChessTimer: React.FC<ChessTimerProps> = ({ isWhite, initialTime, role }) =
     : [<React.Fragment key="black">{blackTimer}</React.Fragment>, <React.Fragment key="white">{whiteTimer}</React.Fragment>];
 
   return (
-    <div className="pointer-events-none fixed inset-x-2 bottom-2 z-40 flex items-end justify-between gap-2 sm:absolute sm:inset-y-0 sm:left-auto sm:right-4 sm:flex-col sm:justify-center sm:gap-8 lg:right-8">
+    <div className={immersive
+      ? 'board-3d-timers'
+      : 'pointer-events-none fixed inset-x-2 bottom-2 z-40 flex items-end justify-between gap-2 sm:absolute sm:inset-y-0 sm:left-auto sm:right-4 sm:flex-col sm:justify-center sm:gap-8 lg:right-8'}>
       {orderedTimers}
     </div>
   );

@@ -16,6 +16,7 @@ interface ChessBoard3DProps {
   whiteToMove: boolean;
   orientation: 'white' | 'black';
   darkMode: boolean;
+  immersive?: boolean;
   label: string;
   fallbackText: string;
   onSquareClick: (square: string) => void | Promise<void>;
@@ -384,6 +385,7 @@ function ChessScene({
   whiteToMove,
   orientation,
   darkMode,
+  immersive,
   onSquareClick,
 }: Omit<ChessBoard3DProps, 'board' | 'label' | 'fallbackText'> & { squares: SceneSquare[] }) {
   const legalMoveMap = useMemo(
@@ -398,7 +400,25 @@ function ChessScene({
 
   return (
     <>
-      <PerspectiveCamera makeDefault fov={43} position={[0, 8.5, 8.8]} />
+      {immersive && (
+        <>
+          <color attach="background" args={[darkMode ? '#050b12' : '#dfece6']} />
+          <fog attach="fog" args={[darkMode ? '#050b12' : '#dfece6', 14, 34]} />
+          <mesh receiveShadow position={[0, -0.43, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+            <planeGeometry args={[60, 60]} />
+            <meshStandardMaterial
+              color={darkMode ? '#07131a' : '#c8ddd3'}
+              metalness={0.08}
+              roughness={0.82}
+            />
+          </mesh>
+          <gridHelper
+            args={[44, 44, darkMode ? '#1b766a' : '#6fa493', darkMode ? '#102f2e' : '#aac8bd']}
+            position={[0, -0.405, 0]}
+          />
+        </>
+      )}
+      <PerspectiveCamera makeDefault fov={immersive ? 40 : 43} position={immersive ? [0, 9.2, 10.8] : [0, 8.5, 8.8]} />
       <ambientLight intensity={0.78} />
       <hemisphereLight args={[darkMode ? '#9bd8ff' : '#fff8df', darkMode ? '#07101b' : '#6b4533', 1.1]} />
       <directionalLight
@@ -448,10 +468,10 @@ function ChessScene({
         makeDefault
         target={[0, 0.1, 0]}
         enablePan={false}
-        minDistance={8.6}
-        maxDistance={15}
-        minPolarAngle={0.48}
-        maxPolarAngle={1.34}
+        minDistance={immersive ? 7.2 : 8.6}
+        maxDistance={immersive ? 18 : 15}
+        minPolarAngle={immersive ? 0.36 : 0.48}
+        maxPolarAngle={immersive ? 1.42 : 1.34}
         dampingFactor={0.08}
       />
     </>
@@ -467,6 +487,7 @@ export default function ChessBoard3D({
   whiteToMove,
   orientation,
   darkMode,
+  immersive = false,
   label,
   fallbackText,
   onSquareClick,
@@ -501,6 +522,7 @@ export default function ChessBoard3D({
           whiteToMove={whiteToMove}
           orientation={orientation}
           darkMode={darkMode}
+          immersive={immersive}
           onSquareClick={onSquareClick}
         />
       </Canvas>

@@ -3,6 +3,7 @@
 import {
   ArrowRight,
   Bot,
+  Box,
   ChartNoAxesCombined,
   Gamepad2,
   Globe2,
@@ -40,6 +41,12 @@ const MainPage = () => {
       description: t.homeFeatureStatsDescription || "Statistiche private e leggibili per capire dove migliori.",
       accent: "from-emerald-400 to-teal-500",
     },
+    {
+      icon: Box,
+      title: t.homeFeature3D || "Entra nella partita",
+      description: t.homeFeature3DDescription || "Passa al 3D a schermo intero, ruota la visuale e continua la stessa partita.",
+      accent: "from-cyan-400 to-emerald-500",
+    },
   ];
 
   return (
@@ -51,10 +58,17 @@ const MainPage = () => {
       <main className="bv-page-with-nav pb-10 sm:pb-16">
         <section className="bv-shell grid min-h-[calc(100svh-7rem)] items-center gap-10 py-10 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16 lg:py-16">
           <div className="relative z-10">
-            <span className="bv-eyebrow">
-              <Sparkles aria-hidden="true" className="h-3.5 w-3.5" />
-              {t.homeEyebrow || "La tua arena strategica"}
-            </span>
+            <div className="flex flex-wrap items-center gap-2">
+              <Link href="/gameMode" className="home-3d-announcement group">
+                <span>NEW 3D</span>
+                {t.home3DAnnouncement || "Scacchiera immersiva a schermo intero"}
+                <ArrowRight aria-hidden="true" className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+              </Link>
+              <span className="bv-eyebrow">
+                <Sparkles aria-hidden="true" className="h-3.5 w-3.5" />
+                {t.homeEyebrow || "La tua arena strategica"}
+              </span>
+            </div>
 
             <h1 className="bv-title mt-6">
               Pensa.
@@ -85,7 +99,7 @@ const MainPage = () => {
               </Link>
             </div>
 
-            <div className="mt-8 grid max-w-xl grid-cols-3 gap-2 sm:gap-3" aria-label={t.homeAtGlance || "BoardVerse in breve"}>
+            <div className="mt-8 grid max-w-xl grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3" aria-label={t.homeAtGlance || "BoardVerse in breve"}>
               <span className="bv-glass-soft flex min-w-0 items-center gap-2 rounded-2xl px-3 py-3 sm:px-4">
                 <Gamepad2 aria-hidden="true" className="h-4 w-4 shrink-0 text-emerald-500" />
                 <span className="min-w-0">
@@ -113,6 +127,15 @@ const MainPage = () => {
                   </span>
                 </span>
               </span>
+              <span className="bv-glass-soft flex min-w-0 items-center gap-2 rounded-2xl px-3 py-3 sm:px-4">
+                <Box aria-hidden="true" className="h-4 w-4 shrink-0 text-cyan-500" />
+                <span className="min-w-0">
+                  <strong className="block text-sm font-black">2D/3D</strong>
+                  <span className="block truncate text-[10px] font-bold uppercase tracking-[0.11em] text-[var(--bv-muted)] sm:text-xs">
+                    {t.homePerspectives || "Prospettive"}
+                  </span>
+                </span>
+              </span>
             </div>
           </div>
 
@@ -136,7 +159,7 @@ const MainPage = () => {
                 </span>
               </div>
 
-              <div className="relative mx-auto mt-5 aspect-square w-[78%] rotate-[-2deg] rounded-[1.6rem] border border-white/25 bg-[#6f4937] p-2 shadow-2xl sm:p-3">
+              <div className="home-board-preview-3d relative mx-auto mt-5 aspect-square w-[78%] rounded-[1.6rem] border border-white/25 bg-[#6f4937] p-2 shadow-2xl sm:p-3">
                 <div className="grid h-full grid-cols-4 overflow-hidden rounded-xl">
                   {Array.from({ length: 16 }).map((_, index) => {
                     const piece = previewPieces[index % previewPieces.length];
@@ -154,6 +177,10 @@ const MainPage = () => {
                     );
                   })}
                 </div>
+                <span className="home-board-preview-badge">
+                  <Box aria-hidden="true" className="h-3.5 w-3.5" />
+                  2D ↔ 3D
+                </span>
               </div>
 
               <div className="mt-5 flex items-center justify-between gap-3">
@@ -175,7 +202,7 @@ const MainPage = () => {
         </section>
 
         <section className="bv-shell bv-defer pb-8" aria-label="Funzionalità principali">
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {features.map((feature) => {
               const Icon = feature.icon;
               return (
