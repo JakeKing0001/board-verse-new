@@ -18,6 +18,7 @@ const contentSecurityPolicy = [
 ].join('; ');
 
 const nextConfig: NextConfig = {
+  agentRules: false,
   reactStrictMode: true,
   allowedDevOrigins: ['127.0.0.1'],
   turbopack: {

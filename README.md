@@ -1,50 +1,71 @@
-# Boardverse
+<div align="center">
+  <img src="public/logo.svg" width="88" alt="Boardverse logo" />
+  <h1>Boardverse</h1>
+  <p><strong>A full-stack chess platform for live play, focused training and measurable progress.</strong></p>
+  <p>
+    <a href="#product-tour">Product tour</a> ·
+    <a href="#engineering-highlights">Engineering</a> ·
+    <a href="#run-locally">Run locally</a>
+  </p>
+</div>
 
-Boardverse is a full-stack chess platform built as a portfolio project around a
-real product-shaped problem: authenticated players, live games, social features
-and persistent statistics in one application.
+![Boardverse home interface](docs/boardverse-preview.png)
 
-## Product highlights
+Boardverse turns a classic chess application into a complete product experience:
+authenticated profiles, private realtime games, Stockfish training, tactical
+challenges, social features and persistent statistics in one responsive interface.
 
-- Play chess locally, online or against Stockfish
-- Create and join timed games
-- Register, sign in and recover accounts with Supabase Auth
-- Add friends and exchange private messages
-- Complete chess challenges and track personal statistics
-- Use the interface in Italian, English, French, German or Spanish
-- Personalise profile, theme and account settings
+## Product tour
 
-## Technical overview
+| Play your way | Build a complete player journey |
+| --- | --- |
+| Local multiplayer, Stockfish, private online rooms and curated challenges | Account recovery, friends, private messages, profiles, themes and statistics |
+| Five interface languages | Responsive, accessible UI with dark and colour-blind modes |
+
+![Boardverse game mode selection](docs/boardverse-game-modes.png)
+
+## Engineering highlights
+
+- **Realtime multiplayer:** create or join private timed rooms and persist moves.
+- **Server-verified authentication:** Supabase sessions are validated before privileged operations.
+- **Database security:** Row Level Security, explicit grants and authenticated RPCs protect sensitive game flows.
+- **Chess intelligence:** `chess.js`, custom state logic and a Stockfish integration cover legal play and AI training.
+- **Product-level UX:** multilingual copy, responsive navigation, loading states, themes and accessibility preferences.
+- **Quality gates:** unit tests, browser smoke tests, linting and production builds run in CI.
+
+```mermaid
+flowchart LR
+  UI[Next.js interface] --> API[Route handlers and service layer]
+  API --> DB[(Supabase PostgreSQL + RLS)]
+  API --> RT[Realtime game events]
+  UI --> SF[Stockfish analysis]
+  DB --> AUTH[Supabase Auth]
+```
+
+## Stack
 
 | Area | Implementation |
 | --- | --- |
-| Web application | Next.js App Router, React and TypeScript |
-| Data and Auth | Supabase Auth and PostgreSQL |
-| Chess logic | `chess.js`, Stockfish integration and custom UI state |
-| Interface | Tailwind CSS, Headless UI and Three.js assets |
-| Charts | Recharts |
-| Testing | Vitest and Playwright |
-| Delivery | GitHub Actions with type, lint, test and build checks |
+| Application | Next.js App Router, React, TypeScript |
+| Data and identity | Supabase Auth, PostgreSQL, Realtime |
+| Chess | `chess.js`, Stockfish, custom game state |
+| Interface | Tailwind CSS, Headless UI, Three.js, Recharts |
+| Verification | Vitest, Playwright, ESLint, GitHub Actions |
 
-The application keeps privileged Supabase access on the server. Database changes
-are versioned in `supabase/migrations`, including Row Level Security policies,
-restricted grants and authenticated RPCs for sensitive game operations.
-
-## Repository structure
+## Repository map
 
 ```text
-src/app/                 # pages, route handlers and UI components
-services/                # application-level data operations
-lib/                     # Supabase clients, auth helpers and shared utilities
-src/lib/                 # chess and Stockfish logic with unit tests
-supabase/migrations/     # database security and schema changes
-tests/                   # Playwright smoke tests
-.github/workflows/       # continuous integration
+src/app/                 pages, route handlers and UI components
+services/                application-level data operations
+lib/                     Supabase clients and server auth helpers
+src/lib/                 chess and Stockfish logic with unit tests
+supabase/migrations/     versioned schema and security policies
+tests/                   Playwright smoke tests
 ```
 
 ## Run locally
 
-Requirements: Node.js 22, npm and access to a compatible Supabase project.
+Requirements: Node.js 22, npm and a compatible Supabase development project.
 
 ```bash
 git clone https://github.com/JakeKing0001/boardverse.git
@@ -54,14 +75,13 @@ npm ci
 npm run dev
 ```
 
-Complete `.env.local` with the values requested by `.env.example`. The
-publishable key is intended for browser use; `SUPABASE_SECRET_KEY` is server-only
-and must never be prefixed with `NEXT_PUBLIC_` or committed.
+Fill `.env.local` with the values documented in `.env.example`. Only the
+publishable Supabase key belongs in browser code; `SUPABASE_SECRET_KEY` is
+server-only and must never be committed or prefixed with `NEXT_PUBLIC_`.
 
-The migrations in this repository evolve the project's existing schema. Review
-them against a development Supabase project before applying them to another
-database; they are not presented as a one-command bootstrap for an unrelated
-fresh project.
+The migrations evolve the project's existing schema. Review them against a
+development database before applying them elsewhere; they are not presented as
+a one-command bootstrap for an unrelated project.
 
 ## Quality checks
 
@@ -72,22 +92,13 @@ npm run build
 npm run test:ui -- --project=desktop
 ```
 
-The CI workflow runs type checking, linting, unit tests, a production build and
-the desktop browser smoke suite for pushes and pull requests.
+## Project status
 
-## Security notes
-
-- Authentication state is verified server-side before privileged operations.
-- User-facing data access is constrained by RLS and explicit database grants.
-- Security-definer functions use limited entry points and explicit execute
-  permissions.
-- Local credentials and Supabase temporary files are ignored by Git.
-
-Boardverse is an actively developed portfolio project, not a hosted commercial
-service or a substitute for an independent production security review. Before a
-real deployment, validate the target schema, run Supabase security advisors,
-review rate limits and exercise the full authentication and multiplayer flows in
-a staging environment.
+Boardverse is an actively developed portfolio project. Its security controls and
+tests demonstrate production-minded engineering, but the repository is not
+presented as an independently audited commercial service. A real deployment
+should still validate the target schema, rate limits and complete multiplayer
+flows in staging.
 
 ## License
 

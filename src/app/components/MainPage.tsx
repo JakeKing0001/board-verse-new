@@ -4,10 +4,11 @@ import {
   ArrowRight,
   Bot,
   ChartNoAxesCombined,
+  Gamepad2,
+  Globe2,
   Puzzle,
-  ShieldCheck,
+  Radio,
   Sparkles,
-  Zap,
 } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
@@ -84,14 +85,33 @@ const MainPage = () => {
               </Link>
             </div>
 
-            <div className="mt-8 flex flex-wrap gap-x-5 gap-y-2 text-sm font-semibold text-[var(--bv-muted)]">
-              <span className="inline-flex items-center gap-2">
-                <ShieldCheck aria-hidden="true" className="h-4 w-4 text-emerald-500" />
-                {t.homePrivate || "Dati protetti"}
+            <div className="mt-8 grid max-w-xl grid-cols-3 gap-2 sm:gap-3" aria-label={t.homeAtGlance || "BoardVerse in breve"}>
+              <span className="bv-glass-soft flex min-w-0 items-center gap-2 rounded-2xl px-3 py-3 sm:px-4">
+                <Gamepad2 aria-hidden="true" className="h-4 w-4 shrink-0 text-emerald-500" />
+                <span className="min-w-0">
+                  <strong className="block text-sm font-black">4</strong>
+                  <span className="block truncate text-[10px] font-bold uppercase tracking-[0.11em] text-[var(--bv-muted)] sm:text-xs">
+                    {t.homeModes || "Modalità"}
+                  </span>
+                </span>
               </span>
-              <span className="inline-flex items-center gap-2">
-                <Zap aria-hidden="true" className="h-4 w-4 text-amber-500" />
-                {t.homeFast || "Esperienza veloce"}
+              <span className="bv-glass-soft flex min-w-0 items-center gap-2 rounded-2xl px-3 py-3 sm:px-4">
+                <Globe2 aria-hidden="true" className="h-4 w-4 shrink-0 text-violet-500" />
+                <span className="min-w-0">
+                  <strong className="block text-sm font-black">5</strong>
+                  <span className="block truncate text-[10px] font-bold uppercase tracking-[0.11em] text-[var(--bv-muted)] sm:text-xs">
+                    {t.homeLanguages || "Lingue"}
+                  </span>
+                </span>
+              </span>
+              <span className="bv-glass-soft flex min-w-0 items-center gap-2 rounded-2xl px-3 py-3 sm:px-4">
+                <Radio aria-hidden="true" className="h-4 w-4 shrink-0 text-amber-500" />
+                <span className="min-w-0">
+                  <strong className="block text-sm font-black">Live</strong>
+                  <span className="block truncate text-[10px] font-bold uppercase tracking-[0.11em] text-[var(--bv-muted)] sm:text-xs">
+                    {t.homeRealtime || "Realtime"}
+                  </span>
+                </span>
               </span>
             </div>
           </div>
