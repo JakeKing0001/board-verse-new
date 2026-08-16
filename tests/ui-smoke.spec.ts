@@ -88,6 +88,34 @@ test('muovere un pedone mantiene il DOM sincronizzato con React', async ({ page 
   expect(removeChildErrors).toEqual([]);
 });
 
+test('la visuale passa da 2D a 3D durante la partita senza perdere la posizione', async ({ page }) => {
+  const pageErrors: string[] = [];
+  page.on('pageerror', (error) => {
+    pageErrors.push(error.stack || error.message);
+  });
+
+  await page.goto('/chessboard?mode=multiplayer&time=600');
+
+  await page.locator('#e2').click();
+  await page.locator('#e4').click();
+  await expect(page.locator('#e4 img')).toHaveAttribute('src', /wp\.png$/);
+
+  const threeDimensionalView = page.getByRole('button', { name: 'Visuale 3D' });
+  await threeDimensionalView.click();
+  await expect(threeDimensionalView).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByRole('group', { name: 'Visuale 3D' })).toBeVisible();
+  await expect(page.locator('canvas')).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText('Trascina per ruotare · scorri per zoomare')).toBeVisible();
+
+  const twoDimensionalView = page.getByRole('button', { name: 'Visuale 2D' });
+  await twoDimensionalView.click();
+  await expect(twoDimensionalView).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('#e2 img')).toHaveCount(0);
+  await expect(page.locator('#e4 img')).toHaveAttribute('src', /wp\.png$/);
+
+  expect(pageErrors).toEqual([]);
+});
+
 test('ChooseTime conserva la modalità e avvia anche un tempo personalizzato', async ({ page }) => {
   await page.goto('/chooseTime?mode=ai');
 

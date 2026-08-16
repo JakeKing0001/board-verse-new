@@ -20,9 +20,19 @@ challenges, social features and persistent statistics in one responsive interfac
 | Play your way | Build a complete player journey |
 | --- | --- |
 | Local multiplayer, Stockfish, private online rooms and curated challenges | Account recovery, friends, private messages, profiles, themes and statistics |
+| Switch between an accessible 2D board and an interactive 3D view mid-game | One shared position keeps moves, turns, timers and realtime updates synchronized |
 | Five interface languages | Responsive, accessible UI with dark and colour-blind modes |
 
 ![Boardverse game mode selection](docs/boardverse-game-modes.png)
+
+### One match, two perspectives
+
+Players can move between the fast, accessible 2D board and an interactive 3D
+table at any point in a match. The 3D camera can rotate and zoom, while legal
+targets, captures, castling, check and the last move receive distinct visual
+feedback.
+
+![Boardverse interactive 3D chess view](docs/boardverse-3d.jpg)
 
 ## Engineering highlights
 
@@ -30,6 +40,7 @@ challenges, social features and persistent statistics in one responsive interfac
 - **Server-verified authentication:** Supabase sessions are validated before privileged operations.
 - **Database security:** Row Level Security, explicit grants and authenticated RPCs protect sensitive game flows.
 - **Chess intelligence:** `chess.js`, custom state logic and a Stockfish integration cover legal play and AI training.
+- **Dual board renderer:** the 2D and procedural Three.js boards consume the same FEN and legal-move model, so players can switch perspective without restarting a match.
 - **Product-level UX:** multilingual copy, responsive navigation, loading states, themes and accessibility preferences.
 - **Quality gates:** unit tests, browser smoke tests, linting and production builds run in CI.
 

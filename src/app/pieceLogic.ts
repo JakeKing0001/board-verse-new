@@ -1,4 +1,4 @@
-import { Chess, type Square } from 'chess.js';
+import { getLegalMoveTargets } from '../lib/chessView';
 
 const MOVE_HIGHLIGHT_CLASSES = [
     'move-quiet',
@@ -55,30 +55,13 @@ export function showPiece(
 ): NodeListOf<HTMLDivElement> {
     clearMoveHighlights();
 
-    let moves;
-    try {
-        const chess = new Chess(fen);
-        moves = chess.moves({
-            square: square as Square,
-            verbose: true,
-        });
-    } catch {
-        return document.querySelectorAll<HTMLDivElement>('.board-square.move-target');
-    }
+    const moves = getLegalMoveTargets(fen, square);
 
     moves.forEach((move) => {
-        const target = document.getElementById(move.to);
+        const target = document.getElementById(move.square);
         if (!target) return;
 
-        if (move.isEnPassant()) {
-            target.classList.add('move-en-passant');
-        } else if (move.isCapture()) {
-            target.classList.add('move-capture');
-        } else if (move.isKingsideCastle() || move.isQueensideCastle()) {
-            target.classList.add('move-castle');
-        } else {
-            target.classList.add('move-quiet');
-        }
+        target.classList.add(`move-${move.highlight}`);
     });
 
     return document.querySelectorAll<HTMLDivElement>(

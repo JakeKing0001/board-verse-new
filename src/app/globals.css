@@ -478,6 +478,85 @@ body {
     0 8px 18px rgb(255 255 255 / 0.06) inset;
 }
 
+.board-game-shell {
+  max-width: min(92vw, calc(100svh - 11rem), 52rem);
+}
+
+.board-view-switcher {
+  display: inline-flex;
+  gap: 0.3rem;
+  border-radius: 1rem;
+  padding: 0.3rem;
+}
+
+.board-view-switcher button {
+  display: inline-flex;
+  min-height: 2.65rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 1px solid transparent;
+  border-radius: 0.75rem;
+  padding: 0.55rem 0.85rem;
+  color: var(--bv-muted);
+  font-size: 0.78rem;
+  font-weight: 850;
+  transition: color 160ms ease, background-color 160ms ease, border-color 160ms ease, transform 160ms ease;
+}
+
+.board-view-switcher button:hover {
+  color: var(--bv-text);
+  transform: translateY(-1px);
+}
+
+.board-view-switcher button.is-active {
+  border-color: color-mix(in srgb, var(--bv-primary) 34%, transparent);
+  background: color-mix(in srgb, var(--bv-primary) 15%, var(--bv-glass-strong));
+  color: var(--bv-primary);
+  box-shadow: 0 8px 20px -15px color-mix(in srgb, var(--bv-primary) 72%, transparent);
+}
+
+.board-3d-frame {
+  isolation: isolate;
+  background:
+    radial-gradient(circle at 50% 12%, rgb(255 255 255 / 0.42), transparent 42%),
+    radial-gradient(circle at 12% 82%, color-mix(in srgb, var(--bv-primary) 18%, transparent), transparent 38%),
+    linear-gradient(155deg, color-mix(in srgb, var(--bv-bg-deep) 84%, white), var(--bv-bg));
+  box-shadow:
+    0 32px 84px -30px rgb(15 23 42 / 0.72),
+    0 0 0 1px rgb(255 255 255 / 0.08) inset;
+}
+
+.board-3d-stage {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.board-3d-stage > div,
+.board-3d-stage canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.board-3d-hint {
+  position: absolute;
+  z-index: 5;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  max-width: calc(100% - 1.5rem);
+  border: 1px solid var(--bv-stroke);
+  border-radius: 999px;
+  padding: 0.45rem 0.72rem;
+  background: color-mix(in srgb, var(--bv-glass-strong) 88%, transparent);
+  color: var(--bv-muted);
+  font-size: clamp(0.6rem, 1.8vw, 0.72rem);
+  font-weight: 800;
+  box-shadow: var(--bv-shadow-soft);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+
 .board-square {
   cursor: pointer;
   isolation: isolate;

@@ -1,4 +1,6 @@
-import React, { useState, useEffect, JSX } from 'react';
+import React, { useState, useEffect, useMemo, JSX } from 'react';
+import dynamic from 'next/dynamic';
+import { Box, Grid3X3 } from 'lucide-react';
 import Piece from './Piece';
 import {
     clearMoveHighlights,
@@ -36,6 +38,18 @@ import {
     stockfishDepthForDifficulty,
     STOCKFISH_LEVELS,
 } from '../../lib/stockfish';
+import { getLegalMoveTargets } from '../../lib/chessView';
+
+const ChessBoard3D = dynamic(() => import('./ChessBoard3D'), {
+    ssr: false,
+    loading: () => (
+        <div className="grid h-full place-items-center text-sm font-bold text-[var(--bv-muted)]">
+            Preparazione 3D…
+        </div>
+    ),
+});
+
+type BoardView = '2d' | '3d';
 
 // Sopprimi silenziosamente i NotFoundError generati da React quando prova a rimuovere un nodo già rimosso
 const letters = ["a", "b", "c", "d", "e", "f", "g", "h"];
@@ -79,6 +93,7 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
     const stockfishDepth = stockfishDepthForDifficulty(stockfishDifficulty);
     const stockfishLevel = STOCKFISH_LEVELS[stockfishDifficulty - 1];
     const { isGameOver, selectedPiece, setSelectedPiece, user, allUsers, challenges, setChallenges, darkMode, t } = usePieceContext();
+    const [boardView, setBoardView] = useState<BoardView>('2d');
 
     const hostUser = allUsers.find((u) => u.id === gameData?.host_id);
     const guestUser = allUsers.find((u) => u.id === gameData?.guest_id);
@@ -157,6 +172,23 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
     const [stockfishSource, setStockfishSource] = useState<'stockfish' | 'local-fallback' | null>(null);
 
     const [shouldRotate, setShouldRotate] = useState(false);
+
+    useEffect(() => {
+        const savedView = window.localStorage.getItem('boardverse-board-view');
+        if (savedView === '2d' || savedView === '3d') {
+            setBoardView(savedView);
+        }
+    }, []);
+
+    const legalMoveTargets = useMemo(
+        () => selectedPiece ? getLegalMoveTargets(fenState, selectedPiece) : [],
+        [fenState, selectedPiece],
+    );
+
+    const changeBoardView = (view: BoardView) => {
+        setBoardView(view);
+        window.localStorage.setItem('boardverse-board-view', view);
+    };
 
     const fenParts = initialFEN.split(" ");
     const castlingField = fenParts[2] || '-';
@@ -955,7 +987,7 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
                         </div>
                     )}
 
-                    <div className="flex flex-col items-center w-full max-w-[95vh] lg:max-w-[85vh] md:max-h-[85vh] xl:max-w-[86vh] mx-auto md:items-start lg:-translate-x-32 gap-3">
+                    <div className="board-game-shell flex w-full flex-col items-center gap-3 mx-auto md:items-start lg:-translate-x-32">
                         {mode === 'ai' && (
                             <div className={`flex items-center gap-2 self-center rounded-full border px-4 py-2 text-xs font-black shadow-lg backdrop-blur-md md:self-start ${
                                 darkMode
@@ -966,9 +998,35 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
                                 {t.stockfishDifficulty}: {t[stockfishLevel.key]} · {stockfishDifficulty}/5
                             </div>
                         )}
-                        {/* Scacchiera */}
                         <div
-                            className={`board-frame relative w-full aspect-square rounded-[1.4rem] border-[clamp(8px,1.6vw,16px)] p-0 shadow-2xl ${
+                            role="group"
+                            aria-label={t.boardViewLabel}
+                            className="board-view-switcher bv-glass-strong self-center md:self-start"
+                        >
+                            <button
+                                type="button"
+                                aria-pressed={boardView === '2d'}
+                                onClick={() => changeBoardView('2d')}
+                                className={boardView === '2d' ? 'is-active' : ''}
+                            >
+                                <Grid3X3 aria-hidden="true" className="h-4 w-4" />
+                                {t.boardView2D}
+                            </button>
+                            <button
+                                type="button"
+                                aria-pressed={boardView === '3d'}
+                                onClick={() => changeBoardView('3d')}
+                                className={boardView === '3d' ? 'is-active' : ''}
+                            >
+                                <Box aria-hidden="true" className="h-4 w-4" />
+                                {t.boardView3D}
+                            </button>
+                        </div>
+
+                        {/* Le due visuali condividono lo stesso stato di partita. */}
+                        <div
+                            aria-hidden={boardView !== '2d'}
+                            className={`board-frame relative w-full aspect-square rounded-[1.4rem] border-[clamp(8px,1.6vw,16px)] p-0 shadow-2xl ${boardView === '2d' ? '' : 'hidden'} ${
                                 darkMode
                                     ? 'border-slate-800 bg-slate-950'
                                     : 'border-[#5d3827] bg-[#3f2419]'
@@ -978,6 +1036,30 @@ export default function ChessBoard({ mode, time, fen_challenge, check_moves, gam
                                 {squares}
                             </div>
                         </div>
+                        {boardView === '3d' && (
+                            <div className={`board-3d-frame relative w-full aspect-square overflow-hidden rounded-[1.4rem] border shadow-2xl ${
+                                darkMode
+                                    ? 'border-white/10 bg-slate-950'
+                                    : 'border-emerald-950/10 bg-[#e6efe9]'
+                            }`}>
+                                <ChessBoard3D
+                                    board={board}
+                                    selectedSquare={selectedPiece}
+                                    legalMoves={legalMoveTargets}
+                                    lastMove={lastMove}
+                                    isInCheck={isInCheck}
+                                    whiteToMove={isWhite}
+                                    orientation={role === 'guest' || shouldRotate ? 'black' : 'white'}
+                                    darkMode={darkMode}
+                                    label={t.boardView3D}
+                                    fallbackText={t.boardViewUnavailable}
+                                    onSquareClick={handleSquareClick}
+                                />
+                                <div className="board-3d-hint" aria-hidden="true">
+                                    {t.boardView3DHint}
+                                </div>
+                            </div>
+                        )}
                     </div>
                     {(check_moves ?? 0) > 0 && (
                         <div
